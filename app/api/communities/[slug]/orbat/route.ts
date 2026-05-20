@@ -1,0 +1,54 @@
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+
+type Params = { params: { slug: string } }
+
+export async function GET(_req: NextRequest, { params }: Params) {
+  const community = await prisma.community.findUnique({
+    where: { slug: params.slug },
+    include: { orbat: true },
+  })
+
+  if (!community) return NextResponse.json({ error: "Not found" }, { status: 404 })
+
+  return NextResponse.json(community.orbat)
+}
+
+export async function PUT(req: NextRequest, { params }: Params) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  const community = await prisma.community.findUnique({ where: { slug: params.slug } })
+  if (!community) return NextResponse.json({ error: "Not found" }, { status: 404 })
+
+  const membership = await prisma.membership.findFirst({
+    where: {
+      userId: session.user.id as string,
+      communityId: community.id,
+      role: { in: ["OWNER", "ADMIN", "MODERATOR"] },
+    },
+  })
+  if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
+  const { nodes } = await req.json()
+
+  await prisma.orbatNode.deleteMany({ where: { communityId: community.id } })
+
+  if (nodes?.length) {
+    await prisma.orbatNode.createMany({
+      data: nodes.map((n: { id: string; type?: string; position: { x: number; y: number }; data?: Record<string, unknown> }) => ({
+        communityId: community.id,
+        nodeId: n.id,
+        type: n.type ?? "unit",
+        label: n.data?.label ?? "Unité",
+        positionX: n.position.x,
+        positionY: n.position.y,
+        data: n.data,
+      })),
+    })
+  }
+
+  return NextResponse.json({ ok: true })
+}
