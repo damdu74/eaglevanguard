@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select"
 import { OrbatUnitNode, type OrbatRole } from "./orbat-unit-node"
 import { NATO_TYPES, NATO_SIZES } from "./nato-symbol"
-import { Plus, Save, Trash2 } from "lucide-react"
+import { Loader2, Plus, Save, Trash2, Upload } from "lucide-react"
 import { toast } from "sonner"
 
 interface CommunityMember {
@@ -85,6 +85,8 @@ export function OrbatEditor({
   const [saving, setSaving] = useState(false)
   const [editState, setEditState] = useState<EditState | null>(null)
   const [members, setMembers] = useState<CommunityMember[]>([])
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch community members for role assignment
   useEffect(() => {
@@ -93,6 +95,28 @@ export function OrbatEditor({
       .then((data) => setMembers(data.members ?? []))
       .catch(() => {})
   }, [communitySlug])
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !editState) return
+    setUploading(true)
+    try {
+      const form = new FormData()
+      form.append("file", file)
+      const res = await fetch(`/api/communities/${communitySlug}/orbat/upload`, {
+        method: "POST",
+        body: form,
+      })
+      if (!res.ok) throw new Error()
+      const { url } = await res.json()
+      setEditState((prev) => prev ? { ...prev, imageUrl: url } : prev)
+    } catch {
+      toast.error("Erreur lors du téléversement")
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+  }
 
   const nodesRef = useRef(nodes)
   const edgesRef = useRef(edges)
@@ -336,22 +360,54 @@ export function OrbatEditor({
               </div>
 
               {/* Image */}
-              <div className="space-y-1.5">
-                <Label>Image de l&apos;unité <span className="text-muted-foreground text-xs">(URL, optionnel)</span></Label>
-                <Input
-                  value={editState.imageUrl}
-                  onChange={(e) => setEditState({ ...editState, imageUrl: e.target.value })}
-                  placeholder="https://..."
-                />
-                {editState.imageUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={editState.imageUrl}
-                    alt="Aperçu"
-                    className="h-16 w-16 rounded object-cover border border-border"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
-                  />
-                )}
+              <div className="space-y-2">
+                <Label>Image de l&apos;unité</Label>
+                <div className="flex gap-2 items-start">
+                  {editState.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={editState.imageUrl}
+                      alt="Aperçu"
+                      className="h-14 w-14 rounded object-cover border border-border shrink-0"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                    />
+                  ) : (
+                    <div className="h-14 w-14 rounded border border-dashed border-border bg-muted/30 shrink-0" />
+                  )}
+                  <div className="flex-1 space-y-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      disabled={uploading}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {uploading
+                        ? <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Téléversement...</>
+                        : <><Upload className="mr-2 h-3.5 w-3.5" />Depuis le PC</>
+                      }
+                    </Button>
+                    <div className="relative flex items-center gap-2">
+                      <div className="h-px flex-1 bg-border" />
+                      <span className="text-[10px] text-muted-foreground">ou URL</span>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+                    <Input
+                      value={editState.imageUrl}
+                      onChange={(e) => setEditState({ ...editState, imageUrl: e.target.value })}
+                      placeholder="https://..."
+                      className="text-xs h-8"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Postes */}
