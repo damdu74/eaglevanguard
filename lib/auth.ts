@@ -1,32 +1,62 @@
 import { NextAuthOptions } from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import DiscordProvider from "next-auth/providers/discord"
+import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 
 export const authOptions: NextAuthOptions = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adapter: PrismaAdapter(prisma) as any,
   providers: [
-    DiscordProvider({
-      clientId: process.env.DISCORD_CLIENT_ID!,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+    CredentialsProvider({
+      id: "steam-credentials",
+      name: "Steam",
+      credentials: { code: { type: "text" } },
+      async authorize(credentials) {
+        if (!credentials?.code) return null
+
+        const authCode = await prisma.steamAuthCode.findUnique({
+          where: { code: credentials.code },
+          include: { user: true },
+        })
+
+        if (!authCode || authCode.expiresAt < new Date()) {
+          if (authCode) await prisma.steamAuthCode.delete({ where: { code: credentials.code } }).catch(() => {})
+          return null
+        }
+
+        await prisma.steamAuthCode.delete({ where: { code: credentials.code } }).catch(() => {})
+
+        const u = authCode.user
+        return {
+          id: u.id,
+          name: u.steamName ?? u.name,
+          email: u.email,
+          image: u.steamAvatar ?? u.image,
+        }
+      },
     }),
-    // Steam uses a custom OpenID 2.0 flow — see /api/auth/steam and /api/auth/steam/callback
   ],
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
   },
   callbacks: {
     async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.sub!
+      if (token?.sub && session.user) {
+        session.user.id = token.sub
+        try {
+          const dbUser = await prisma.user.findUnique({ where: { id: token.sub } })
+          if (dbUser) {
+            session.user.name = dbUser.steamName ?? dbUser.discordName ?? dbUser.name ?? session.user.name
+            session.user.image = dbUser.customAvatar ?? dbUser.steamAvatar ?? dbUser.discordAvatar ?? dbUser.image ?? session.user.image
+          }
+        } catch {}
       }
       return session
     },
     async jwt({ token, user }) {
-      if (user) {
-        token.sub = user.id
-      }
+      if (user) token.sub = user.id
       return token
     },
   },

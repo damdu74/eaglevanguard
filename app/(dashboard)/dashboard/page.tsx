@@ -6,7 +6,15 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Users, Calendar, Shield, Plus } from "lucide-react"
 
-export const metadata = { title: "Dashboard" }
+export const metadata = { title: "Tableau de bord" }
+
+const ROLE_LABELS: Record<string, string> = {
+  OWNER: "Propriétaire",
+  ADMIN: "Administrateur",
+  MODERATOR: "Modérateur",
+  MEMBER: "Membre",
+  RECRUIT: "Recrue",
+}
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)!
@@ -104,7 +112,7 @@ export default async function DashboardPage() {
                   <CardHeader>
                     <CardTitle className="text-base">{m.community.name}</CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      {m.rank?.name ?? m.role} · {m.community._count.memberships} membres
+                      {m.rank?.name ?? ROLE_LABELS[m.role] ?? m.role} · {m.community._count.memberships} membres
                     </p>
                   </CardHeader>
                 </Card>

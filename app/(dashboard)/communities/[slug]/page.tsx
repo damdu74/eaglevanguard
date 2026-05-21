@@ -38,6 +38,14 @@ export default async function CommunityPage({ params }: PageProps) {
     : null
   const isAdmin = membership && ["OWNER", "ADMIN"].includes(membership.role)
 
+  const ROLE_LABELS: Record<string, string> = {
+    OWNER: "Propriétaire",
+    ADMIN: "Administrateur",
+    MODERATOR: "Modérateur",
+    MEMBER: "Membre",
+    RECRUIT: "Recrue",
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -103,7 +111,7 @@ export default async function CommunityPage({ params }: PageProps) {
           <CardContent className="flex gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Rôle</p>
-              <p className="font-medium">{membership.role}</p>
+              <p className="font-medium">{ROLE_LABELS[membership.role] ?? membership.role}</p>
             </div>
             {membership.rank && (
               <div>

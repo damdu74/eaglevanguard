@@ -1,25 +1,37 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Shield, Users, Calendar, GitBranch } from "lucide-react"
 
 export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col">
+      {/* Navbar */}
+      <header className="flex items-center justify-between border-b px-6" style={{ paddingTop: "0.2mm", paddingBottom: "0.2mm" }}>
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/icon.svg" alt="NEXUS" width={256} height={256} priority />
+        </Link>
+        <div className="flex gap-3">
+          <Button variant="ghost" asChild>
+            <Link href="/communities">Communautés</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/auth/signin">Connexion</Link>
+          </Button>
+        </div>
+      </header>
+
       {/* Hero */}
-      <section className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-24 text-center">
-        <Badge variant="secondary" className="text-sm">
-          N · E · X · U · S
-        </Badge>
+      <section className="flex flex-1 flex-col items-center gap-8 px-4 pt-10 pb-24 text-center">
+        <Image src="/logo.svg" alt="NEXUS" width={520} height={399} priority />
         <h1 className="text-5xl font-bold tracking-tight lg:text-7xl">
-          Gérez votre communauté
+          Gérez votre unité
           <br />
-          <span className="text-primary">gaming</span>
+          <span className="text-primary">ARMA 3</span>
         </h1>
         <p className="max-w-2xl text-lg text-muted-foreground">
           Organisez vos unités, planifiez vos opérations, gérez vos joueurs et
-          construisez votre ORBAT avec la plateforme dédiée aux communautés
-          de simulation militaire.
+          construisez votre ORBAT avec la plateforme dédiée aux communautés MILSIM ARMA 3.
         </p>
         <div className="flex gap-4">
           <Button size="lg" asChild>

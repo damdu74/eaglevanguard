@@ -46,23 +46,71 @@ model VerificationToken {
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
 
+enum ProfileVisibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+}
+
 model User {
-  id            String    @id @default(cuid())
+  id            String            @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?           @unique
   emailVerified DateTime?
   image         String?
-  steamId       String?   @unique
-  discordId     String?   @unique
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  steamId       String?           @unique
+  steamName     String?
+  steamAvatar   String?
+  customAvatar  String?
+  bio           String?           @db.Text
+  theme         String            @default("system")
+  visibility    ProfileVisibility @default(PUBLIC)
+  discordId     String?           @unique
+  discordName   String?
+  discordAvatar String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   accounts           Account[]
   sessions           Session[]
   memberships        Membership[]
   applications       Application[]
-  createdCommunities Community[]      @relation("CommunityCreator")
+  createdCommunities Community[]       @relation("CommunityCreator")
   events             EventParticipant[]
+  steamAuthCodes     SteamAuthCode[]
+  sentFriendRequests     Friendship[]  @relation("SentRequests")
+  receivedFriendRequests Friendship[]  @relation("ReceivedRequests")
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  receiverId  String
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  requester User @relation("SentRequests", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiver  User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, receiverId])
+  @@index([receiverId, status])
+}
+
+model SteamAuthCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  userId    String
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
 }
 
 // ─── COMMUNITIES ──────────────────────────────────────────────────────────────
@@ -74,7 +122,7 @@ model Community {
   description String?  @db.Text
   logoUrl     String?
   bannerUrl   String?
-  game        String
+  game        String   @default("ARMA 3")
   language    String   @default("fr")
   isPublic    Boolean  @default(true)
   createdAt   DateTime @default(now())
