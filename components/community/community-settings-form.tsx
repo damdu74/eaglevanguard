@@ -99,12 +99,14 @@ export function CommunitySettingsForm({ community, isOwner }: Props) {
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
 
-          <Button onClick={save} disabled={saving || !name.trim()}>
-            {saving
-              ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sauvegarde…</>
-              : "Sauvegarder"
-            }
-          </Button>
+          <div className="flex justify-end">
+            <Button onClick={save} disabled={saving || !name.trim()}>
+              {saving
+                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sauvegarde…</>
+                : "Sauvegarder"
+              }
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -129,16 +131,18 @@ export function CommunitySettingsForm({ community, isOwner }: Props) {
                 placeholder={community.name}
               />
             </div>
-            <Button
-              variant="destructive"
-              onClick={deleteCommunity}
-              disabled={deleting || confirmDelete !== community.name}
-            >
-              {deleting
-                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Suppression…</>
-                : <><Trash2 className="mr-2 h-4 w-4" />Supprimer la communauté</>
-              }
-            </Button>
+            <div className="flex justify-end">
+              <Button
+                variant="destructive"
+                onClick={deleteCommunity}
+                disabled={deleting || confirmDelete !== community.name}
+              >
+                {deleting
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Suppression…</>
+                  : <><Trash2 className="mr-2 h-4 w-4" />Supprimer la communauté</>
+                }
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
