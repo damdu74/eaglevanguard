@@ -6,11 +6,11 @@ import { Shield, Users, Calendar, GitBranch } from "lucide-react"
 
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col">
+    <div className="flex h-screen flex-col">
       {/* Navbar */}
-      <header className="flex items-center justify-between border-b px-6" style={{ paddingTop: "0.2mm", paddingBottom: "0.2mm" }}>
+      <header className="flex shrink-0 items-center justify-between border-b bg-background px-6 py-2 z-50">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/icon.svg" alt="NEXUS" width={256} height={256} priority />
+          <Image src="/icon.png" alt="NEXUS" width={40} height={40} priority />
         </Link>
         <div className="flex gap-3">
           <Button variant="ghost" asChild>
@@ -22,8 +22,11 @@ export default function HomePage() {
         </div>
       </header>
 
+      {/* Contenu scrollable */}
+      <div className="flex-1 overflow-auto">
+
       {/* Hero */}
-      <section className="flex flex-1 flex-col items-center gap-8 px-4 pt-10 pb-24 text-center">
+      <section className="flex flex-col items-center gap-8 px-4 pt-10 pb-24 text-center">
         <Image src="/logo.svg" alt="NEXUS" width={520} height={399} priority />
         <h1 className="text-5xl font-bold tracking-tight lg:text-7xl">
           Gérez votre unité
@@ -81,7 +84,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      </div>{/* fin contenu scrollable */}
+
       <Footer />
-    </main>
+    </div>
   )
 }
