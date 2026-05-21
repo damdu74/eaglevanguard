@@ -30,8 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { OrbatUnitNode, type OrbatRole } from "./orbat-unit-node"
-import { NATO_TYPES, NATO_SIZES, NATO_MODIFIERS, NatoModifierSymbol } from "./nato-symbol"
-import { cn } from "@/lib/utils"
+import { NATO_TYPES, NATO_SIZES, NATO_MODIFIERS } from "./nato-symbol"
 import { Loader2, Plus, Save, Trash2, Upload } from "lucide-react"
 import { toast } from "sonner"
 
@@ -406,30 +405,21 @@ export function OrbatEditor({
                 </Select>
               </div>
 
-              {/* Modificateur */}
+              {/* Symbole complémentaire */}
               <div className="space-y-1.5">
-                <Label>Symbole complémentaire <span className="text-muted-foreground text-xs">(optionnel — cliquer pour sélectionner / désélectionner)</span></Label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {NATO_MODIFIERS.map((mod) => (
-                    <button
-                      key={mod.value}
-                      type="button"
-                      onClick={() => setEditState({ ...editState!, modifier: editState!.modifier === mod.value ? "" : mod.value })}
-                      className={cn(
-                        "flex flex-col items-center gap-0.5 p-1 rounded border-2 transition-colors",
-                        editState?.modifier === mod.value
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-muted-foreground/60"
-                      )}
-                    >
-                      <svg viewBox="0 0 60 40" width="44" height="30">
-                        <rect x="1.5" y="1.5" width="57" height="37" fill="white" stroke="#111111" strokeWidth="3" />
-                        <NatoModifierSymbol modifier={mod.value} />
-                      </svg>
-                      <span className="text-[9px] text-center leading-tight text-muted-foreground">{mod.label}</span>
-                    </button>
-                  ))}
-                </div>
+                <Label>Symbole complémentaire <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                <Select
+                  value={editState.modifier || "__none__"}
+                  onValueChange={(v) => setEditState({ ...editState, modifier: v === "__none__" ? "" : v })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Aucun</SelectItem>
+                    {NATO_MODIFIERS.map((mod) => (
+                      <SelectItem key={mod.value} value={mod.value}>{mod.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Callsign */}
