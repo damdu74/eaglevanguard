@@ -1,0 +1,61 @@
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+
+interface Params {
+  params: { slug: string; id: string }
+}
+
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
+
+  const community = await prisma.community.findUnique({ where: { slug: params.slug } })
+  if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
+
+  const adminMembership = await prisma.membership.findFirst({
+    where: {
+      communityId: community.id,
+      userId: session.user.id as string,
+      role: { in: ["OWNER", "ADMIN"] },
+    },
+  })
+  if (!adminMembership) return NextResponse.json({ error: "Permissions insuffisantes" }, { status: 403 })
+
+  const application = await prisma.application.findFirst({
+    where: { id: params.id, communityId: community.id },
+  })
+  if (!application) return NextResponse.json({ error: "Candidature introuvable" }, { status: 404 })
+  if (application.status !== "PENDING") {
+    return NextResponse.json({ error: "Candidature déjà traitée" }, { status: 400 })
+  }
+
+  const { action, response } = await req.json()
+  if (!["accept", "reject"].includes(action)) {
+    return NextResponse.json({ error: "Action invalide" }, { status: 400 })
+  }
+
+  if (action === "accept") {
+    await prisma.$transaction([
+      prisma.application.update({
+        where: { id: application.id },
+        data: { status: "ACCEPTED", response: response ?? null },
+      }),
+      prisma.membership.create({
+        data: {
+          communityId: community.id,
+          userId: application.userId,
+          role: "RECRUIT",
+        },
+      }),
+    ])
+  } else {
+    await prisma.application.update({
+      where: { id: application.id },
+      data: { status: "REJECTED", response: response ?? null },
+    })
+  }
+
+  return NextResponse.json({ ok: true })
+}

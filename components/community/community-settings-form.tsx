@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Trash2 } from "lucide-react"
+import { Loader2, Trash2, ChevronRight } from "lucide-react"
+import Link from "next/link"
 
 interface Props {
   community: {
@@ -18,6 +19,7 @@ interface Props {
     slug: string
     description: string | null
     isPublic: boolean
+    game: string
   }
   isOwner: boolean
 }
@@ -107,6 +109,30 @@ export function CommunitySettingsForm({ community, isOwner }: Props) {
               }
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Gestion avancée</CardTitle>
+          <CardDescription>Grades, candidatures et structure de la communauté.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-1 p-0">
+          <Link
+            href={`/communities/${community.slug}/settings/ranks`}
+            className="flex items-center justify-between px-6 py-3 hover:bg-muted/50 transition-colors"
+          >
+            <span className="text-sm font-medium">Gérer les grades</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+          <Separator />
+          <Link
+            href={`/communities/${community.slug}/applications`}
+            className="flex items-center justify-between px-6 py-3 hover:bg-muted/50 transition-colors"
+          >
+            <span className="text-sm font-medium">Candidatures</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
         </CardContent>
       </Card>
 
