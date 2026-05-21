@@ -33,20 +33,11 @@ export default async function RpPage({ params }: PageProps) {
 
   const isStaff = !!membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
 
-  const [units, characters] = await Promise.all([
-    prisma.rpUnit.findMany({
-      where: { communityId: community.id },
-      orderBy: { createdAt: "asc" },
-    }),
-    prisma.rpCharacter.findMany({
-      where: { communityId: community.id },
-      include: {
-        user: { select: { id: true, name: true, image: true, customAvatar: true } },
-        rpUnit: true,
-      },
-      orderBy: { createdAt: "asc" },
-    }),
-  ])
+  const units = await prisma.rpUnit.findMany({
+    where: { communityId: community.id },
+    include: { _count: { select: { characters: true } } },
+    orderBy: { createdAt: "asc" },
+  })
 
   return (
     <div className="space-y-6">
@@ -63,9 +54,7 @@ export default async function RpPage({ params }: PageProps) {
       <RpRoster
         communitySlug={params.slug}
         units={units}
-        characters={characters}
         isStaff={isStaff}
-        currentUserId={session?.user?.id ?? null}
       />
     </div>
   )
