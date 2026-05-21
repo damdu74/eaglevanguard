@@ -43,7 +43,7 @@ export default async function CommunityPage({ params }: PageProps) {
     ADMIN: "Administrateur",
     MODERATOR: "Modérateur",
     MEMBER: "Membre",
-    RECRUIT: "Recrue",
+    RECRUIT: "Nouveau",
   }
 
   return (

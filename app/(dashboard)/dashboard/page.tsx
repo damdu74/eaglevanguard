@@ -18,7 +18,7 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Administrateur",
   MODERATOR: "Modérateur",
   MEMBER: "Membre",
-  RECRUIT: "Recrue",
+  RECRUIT: "Nouveau",
 }
 
 export default async function DashboardPage() {

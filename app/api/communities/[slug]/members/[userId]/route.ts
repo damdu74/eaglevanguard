@@ -49,6 +49,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   let hasUpdate = false
 
   if (body.role !== undefined) {
+    if (body.role === "RECRUIT") {
+      return NextResponse.json({ error: "Le rôle Nouveau est automatique et ne peut pas être attribué manuellement" }, { status: 403 })
+    }
     const newRolePower = ROLE_POWER[body.role] ?? -1
     if (newRolePower >= actorPower) {
       return NextResponse.json({ error: "Vous ne pouvez pas attribuer ce rôle" }, { status: 403 })

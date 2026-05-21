@@ -25,7 +25,7 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Administrateur",
   MODERATOR: "Modérateur",
   MEMBER: "Membre",
-  RECRUIT: "Recrue",
+  RECRUIT: "Nouveau",
 }
 
 const ROLE_ORDER: Record<string, number> = {

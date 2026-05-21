@@ -22,7 +22,7 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Administrateur",
   MODERATOR: "Modérateur",
   MEMBER: "Membre",
-  RECRUIT: "Recrue",
+  RECRUIT: "Nouveau",
 }
 
 interface Props {
@@ -46,9 +46,9 @@ export function MemberActions({
   const [loading, setLoading] = useState(false)
 
   const availableRoles = (() => {
-    if (myRole === "OWNER") return ["ADMIN", "MODERATOR", "MEMBER", "RECRUIT"]
-    if (myRole === "ADMIN") return ["MODERATOR", "MEMBER", "RECRUIT"]
-    return ["MEMBER", "RECRUIT"]
+    if (myRole === "OWNER") return ["ADMIN", "MODERATOR", "MEMBER"]
+    if (myRole === "ADMIN") return ["MODERATOR", "MEMBER"]
+    return ["MEMBER"]
   })()
 
   async function patch(body: object) {
