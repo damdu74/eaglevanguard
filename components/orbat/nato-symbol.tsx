@@ -51,14 +51,8 @@ export const NATO_TYPES: { value: string; label: string; category: string }[] = 
   { value: "maintenance",   label: "Maintenance",             category: "Soutien" },
 ]
 
-// Indique si un type utilise le style inversé (fond noir, symboles blancs)
-function isInverted(type: string) {
-  return type === "sf"
-}
-
 // Symboles intérieurs SVG (viewBox 60×40)
 function TypeSymbol({ type }: { type: string }) {
-  const c = isInverted(type) ? "white" : S
   const sw = SW
 
   switch (type) {
@@ -107,12 +101,10 @@ function TypeSymbol({ type }: { type: string }) {
       </>
 
     case "sf":
-      // Forces spéciales : fond noir, X blanc + barre horizontale blanche
-      // (le fond noir est géré par le parent via isInverted)
       return <>
-        <line x1="7" y1="6"  x2="53" y2="34" stroke={c} strokeWidth={sw} strokeLinecap="round" />
-        <line x1="53" y1="6" x2="7"  y2="34" stroke={c} strokeWidth={sw} strokeLinecap="round" />
-        <line x1="7" y1="20" x2="53" y2="20"  stroke={c} strokeWidth={sw - 1} strokeLinecap="round" />
+        <line x1="7" y1="6"  x2="53" y2="34" stroke={S} strokeWidth={sw} strokeLinecap="round" />
+        <line x1="53" y1="6" x2="7"  y2="34" stroke={S} strokeWidth={sw} strokeLinecap="round" />
+        <line x1="7" y1="20" x2="53" y2="20"  stroke={S} strokeWidth={sw - 1} strokeLinecap="round" />
       </>
 
     case "sniper":
@@ -249,11 +241,9 @@ interface NatoSymbolProps {
 
 export function NatoSymbol({ type, size, label, callsign, isRoot, selected, compact }: NatoSymbolProps) {
   const sizeMarker = NATO_SIZES.find((s) => s.value === size)?.marker ?? ""
-  const inverted = isInverted(type)
-
-  const borderColor = selected ? "#7c3aed" : isRoot ? "#4c1d95" : "#111111"
-  const borderWidth = selected ? 4 : 3.5
-  const fillColor = inverted ? "#111111" : isRoot ? "#ede9fe" : "white"
+  const borderColor = "#111111"
+  const borderWidth = selected ? 4.5 : 3.5
+  const fillColor = "white"
   // ●/ø sont des glyphes naturellement plus petits — on grossit leur rendu
   const isCircleMarker = /^[●ø]+$/.test(sizeMarker)
 
