@@ -149,6 +149,7 @@ model Community {
   ranks        Rank[]
   units        Unit[]
   orbat        OrbatNode[]
+  orbatEdges   OrbatEdge[]
   events       Event[]
   applications Application[]
 }
@@ -223,6 +224,19 @@ model OrbatNode {
   community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
 
   @@unique([communityId, nodeId])
+}
+
+model OrbatEdge {
+  id          String @id @default(cuid())
+  communityId String
+  edgeId      String
+  source      String
+  target      String
+  data        Json?
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, edgeId])
 }
 
 // ─── EVENTS ───────────────────────────────────────────────────────────────────

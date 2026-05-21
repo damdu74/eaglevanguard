@@ -4,12 +4,14 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { OrbatEditor } from "@/components/orbat/orbat-editor"
 
+export const dynamic = "force-dynamic"
+
 interface PageProps {
   params: { slug: string }
 }
 
 export async function generateMetadata() {
-  return { title: `ORBAT` }
+  return { title: "ORBAT" }
 }
 
 export default async function OrbatPage({ params }: PageProps) {
@@ -19,6 +21,7 @@ export default async function OrbatPage({ params }: PageProps) {
     where: { slug: params.slug },
     include: {
       orbat: true,
+      orbatEdges: true,
       memberships: session?.user?.id
         ? { where: { userId: session.user.id as string } }
         : false,
@@ -37,6 +40,13 @@ export default async function OrbatPage({ params }: PageProps) {
     data: n.data ?? { label: n.label },
   }))
 
+  const edges = community.orbatEdges.map((e) => ({
+    id: e.edgeId,
+    source: e.source,
+    target: e.target,
+    ...(e.data as object ?? {}),
+  }))
+
   return (
     <div className="space-y-4">
       <div>
@@ -46,7 +56,7 @@ export default async function OrbatPage({ params }: PageProps) {
       <OrbatEditor
         communitySlug={params.slug}
         initialNodes={nodes}
-        initialEdges={[]}
+        initialEdges={edges}
         readOnly={!canEdit}
       />
     </div>
