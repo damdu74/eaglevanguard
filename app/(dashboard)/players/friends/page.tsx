@@ -3,8 +3,10 @@ import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { FriendsPanel } from "@/components/friends/friends-panel"
+import { PendingRequests } from "@/components/friends/pending-requests"
 import { UserSearch } from "@/components/friends/user-search"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Amis" }
@@ -57,28 +59,52 @@ export default async function FriendsPage() {
   ]
 
   return (
-    <div className="space-y-6 max-w-xl">
+    <div className="space-y-6">
       <h1 className="text-2xl font-bold">Amis</h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Ma liste d&apos;amis</CardTitle>
-          <CardDescription>Gérez vos amis et les demandes reçues.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FriendsPanel friends={friends} received={pendingReceived} />
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
+        {/* Colonne gauche — liste d'amis */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Ma liste d&apos;amis</CardTitle>
+            <CardDescription>
+              {friends.length} ami{friends.length > 1 ? "s" : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FriendsPanel friends={friends} received={[]} />
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Ajouter un ami</CardTitle>
-          <CardDescription>Recherchez un joueur par son pseudo.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <UserSearch />
-        </CardContent>
-      </Card>
+        {/* Colonne droite */}
+        <div className="space-y-4">
+          {/* Invitations en attente */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Invitations en attente</CardTitle>
+                {pendingReceived.length > 0 && (
+                  <Badge>{pendingReceived.length}</Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <PendingRequests initialReceived={pendingReceived} />
+            </CardContent>
+          </Card>
+
+          {/* Ajouter un ami */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Ajouter un ami</CardTitle>
+              <CardDescription>Recherchez un joueur par son pseudo.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <UserSearch />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
