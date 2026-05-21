@@ -301,6 +301,60 @@ export function OrbatEditor({
           </DialogHeader>
           {editState && (
             <div className="space-y-4">
+              {/* Image */}
+              <div className="space-y-2">
+                <Label>Image de l&apos;unité</Label>
+                {/* Aperçu centré au-dessus */}
+                <div className="flex justify-center">
+                  {editState.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={editState.imageUrl}
+                      alt="Aperçu"
+                      style={{ maxWidth: 96, maxHeight: 96, objectFit: "contain", display: "block" }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                    />
+                  ) : (
+                    <div className="h-24 w-24 rounded border border-dashed border-border bg-muted/30 flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground">Aucune image</span>
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      disabled={uploading}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {uploading
+                        ? <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Téléversement...</>
+                        : <><Upload className="mr-2 h-3.5 w-3.5" />Depuis le PC</>
+                      }
+                    </Button>
+                    <div className="relative flex items-center gap-2">
+                      <div className="h-px flex-1 bg-border" />
+                      <span className="text-[10px] text-muted-foreground">ou URL</span>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+                    <Input
+                      value={editState.imageUrl}
+                      onChange={(e) => setEditState({ ...editState, imageUrl: e.target.value })}
+                      placeholder="https://..."
+                      className="text-xs h-8"
+                    />
+                </div>
+              </div>
+
               {/* Nom */}
               <div className="space-y-1.5">
                 <Label>Nom</Label>
@@ -357,60 +411,6 @@ export function OrbatEditor({
                   placeholder="Ex: Alpha-1"
                   onKeyDown={(e) => e.key === "Enter" && applyEdit()}
                 />
-              </div>
-
-              {/* Image */}
-              <div className="space-y-2">
-                <Label>Image de l&apos;unité</Label>
-                {/* Aperçu centré au-dessus */}
-                <div className="flex justify-center">
-                  {editState.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={editState.imageUrl}
-                      alt="Aperçu"
-                      style={{ maxWidth: 96, maxHeight: 96, objectFit: "contain", display: "block" }}
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
-                    />
-                  ) : (
-                    <div className="h-24 w-24 rounded border border-dashed border-border bg-muted/30 flex items-center justify-center">
-                      <span className="text-xs text-muted-foreground">Aucune image</span>
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      disabled={uploading}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {uploading
-                        ? <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Téléversement...</>
-                        : <><Upload className="mr-2 h-3.5 w-3.5" />Depuis le PC</>
-                      }
-                    </Button>
-                    <div className="relative flex items-center gap-2">
-                      <div className="h-px flex-1 bg-border" />
-                      <span className="text-[10px] text-muted-foreground">ou URL</span>
-                      <div className="h-px flex-1 bg-border" />
-                    </div>
-                    <Input
-                      value={editState.imageUrl}
-                      onChange={(e) => setEditState({ ...editState, imageUrl: e.target.value })}
-                      placeholder="https://..."
-                      className="text-xs h-8"
-                    />
-                </div>
               </div>
 
               {/* Postes */}
