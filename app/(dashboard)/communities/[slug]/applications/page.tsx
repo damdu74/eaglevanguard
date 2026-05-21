@@ -175,7 +175,7 @@ function ApplicationRow({
   communitySlug: string
   showActions: boolean
 }) {
-  const { user, status, message, createdAt } = app
+  const { user, status, message, response, createdAt } = app
   const displayName = user.steamName ?? user.discordName ?? user.name ?? "Joueur"
   const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar
 
@@ -206,6 +206,13 @@ function ApplicationRow({
 
       {message && (
         <p className="text-sm text-muted-foreground pl-12 line-clamp-3">{message}</p>
+      )}
+
+      {response && status === "REJECTED" && (
+        <div className="pl-12">
+          <p className="text-xs text-muted-foreground mb-0.5">Raison du refus</p>
+          <p className="text-sm text-red-600">{response}</p>
+        </div>
       )}
 
       {showActions && (
