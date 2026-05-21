@@ -3,7 +3,9 @@ import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { SignInButtons } from "@/components/auth/sign-in-buttons"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Footer } from "@/components/layout/footer"
 import { Shield } from "lucide-react"
+import Link from "next/link"
 
 export const metadata = { title: "Connexion" }
 
@@ -12,19 +14,28 @@ export default async function SignInPage() {
   if (session) redirect("/dashboard")
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Shield className="h-6 w-6 text-primary" />
-          </div>
-          <CardTitle>NEXUS</CardTitle>
-          <CardDescription>Connectez-vous pour accéder à votre communauté</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <SignInButtons />
-        </CardContent>
-      </Card>
-    </main>
+    <div className="flex h-screen flex-col">
+      <header className="shrink-0 border-b bg-background px-6 py-4">
+        <Link href="/" className="flex items-center gap-2 font-bold w-fit">
+          <Shield className="h-5 w-5 text-primary" />
+          NEXUS
+        </Link>
+      </header>
+      <main className="flex flex-1 items-center justify-center overflow-auto px-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <Shield className="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle>NEXUS</CardTitle>
+            <CardDescription>Connectez-vous pour accéder à votre communauté</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SignInButtons />
+          </CardContent>
+        </Card>
+      </main>
+      <Footer />
+    </div>
   )
 }
