@@ -155,6 +155,7 @@ model Community {
   applications Application[]
   rpUnits      RpUnit[]
   rpCharacters RpCharacter[]
+  rpGroups     RpGroup[]
 }
 
 enum MemberRole {
@@ -302,6 +303,20 @@ model RpUnit {
 
   community   Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
   characters  RpCharacter[]
+  rpGroups    RpGroup[]
+}
+
+model RpGroup {
+  id          String        @id @default(cuid())
+  communityId String
+  rpUnitId    String
+  name        String
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+
+  community   Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  rpUnit      RpUnit        @relation(fields: [rpUnitId], references: [id], onDelete: Cascade)
+  characters  RpCharacter[]
 }
 
 model RpCharacter {
@@ -309,6 +324,7 @@ model RpCharacter {
   communityId String
   userId      String
   rpUnitId    String?
+  rpGroupId   String?
   name        String
   role        String?
   description String?   @db.Text
@@ -319,6 +335,7 @@ model RpCharacter {
   community Community  @relation(fields: [communityId], references: [id], onDelete: Cascade)
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   rpUnit    RpUnit?    @relation(fields: [rpUnitId], references: [id], onDelete: SetNull)
+  rpGroup   RpGroup?   @relation(fields: [rpGroupId], references: [id], onDelete: SetNull)
 
   @@unique([communityId, userId])
 }

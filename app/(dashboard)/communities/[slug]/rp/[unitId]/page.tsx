@@ -37,13 +37,17 @@ export default async function RpUnitPage({ params }: PageProps) {
 
   const isStaff = !!membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
 
-  const characters = await prisma.rpCharacter.findMany({
-    where: { rpUnitId: params.unitId },
-    include: {
-      user: { select: { id: true, name: true, image: true, customAvatar: true } },
-    },
-    orderBy: { createdAt: "asc" },
-  })
+  const [characters, groups] = await Promise.all([
+    prisma.rpCharacter.findMany({
+      where: { rpUnitId: params.unitId },
+      include: { user: { select: { id: true, name: true, image: true, customAvatar: true } } },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.rpGroup.findMany({
+      where: { rpUnitId: params.unitId },
+      orderBy: { order: "asc" },
+    }),
+  ])
 
   const hasCharacterElsewhere = session?.user?.id
     ? !!(await prisma.rpCharacter.findFirst({
@@ -72,6 +76,7 @@ export default async function RpUnitPage({ params }: PageProps) {
         communitySlug={params.slug}
         unitId={unit.id}
         characters={characters}
+        groups={groups}
         isStaff={isStaff}
         currentUserId={session?.user?.id ?? null}
         hasCharacterElsewhere={hasCharacterElsewhere}
