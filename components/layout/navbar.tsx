@@ -17,9 +17,10 @@ import type { Session } from "next-auth"
 interface NavbarProps {
   user: Session["user"]
   pendingFriendsCount?: number
+  pendingApplicationsCount?: number
 }
 
-export function Navbar({ user, pendingFriendsCount = 0 }: NavbarProps) {
+export function Navbar({ user, pendingFriendsCount = 0, pendingApplicationsCount = 0 }: NavbarProps) {
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
       <div className="flex h-14 items-center px-4 gap-4">
@@ -44,7 +45,7 @@ export function Navbar({ user, pendingFriendsCount = 0 }: NavbarProps) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <NotificationBell initialCount={pendingFriendsCount} />
+          <NotificationBell initialFriendRequests={pendingFriendsCount} initialPendingApplications={pendingApplicationsCount} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring">
