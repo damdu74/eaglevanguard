@@ -8,7 +8,7 @@ export const NATO_SIZES: { value: string; label: string; marker: string }[] = [
   { value: "binome",    label: "Binôme",           marker: "ø"    },
   { value: "escouade",  label: "Escouade",          marker: "●"    },
   { value: "groupe",    label: "Groupe de combat",  marker: "●●"   },
-  { value: "section",   label: "Section de combat", marker: "°°°"  },
+  { value: "section",   label: "Section de combat", marker: "●●●"  },
   { value: "compagnie", label: "Compagnie",         marker: "|"    },
   { value: "bataillon", label: "Bataillon",         marker: "||"   },
   { value: "regiment",  label: "Régiment",          marker: "|||"  },
