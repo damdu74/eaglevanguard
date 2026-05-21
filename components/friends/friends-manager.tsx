@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -43,6 +44,7 @@ function avatar(u: FriendUser) {
 }
 
 export function FriendsManager({ initialFriends, initialReceived }: Props) {
+  const router = useRouter()
   const [friends, setFriends] = useState(initialFriends)
   const [received, setReceived] = useState(initialReceived)
   const [loading, setLoading] = useState<string | null>(null)
@@ -53,6 +55,7 @@ export function FriendsManager({ initialFriends, initialReceived }: Props) {
     if (res.ok) {
       setReceived((prev) => prev.filter((r) => r.id !== request.id))
       setFriends((prev) => [...prev, { friendshipId: request.id, user: request.requester }])
+      router.refresh()
     }
     setLoading(null)
   }
@@ -60,7 +63,10 @@ export function FriendsManager({ initialFriends, initialReceived }: Props) {
   async function decline(id: string) {
     setLoading(id)
     const res = await fetch(`/api/friends/${id}`, { method: "DELETE" })
-    if (res.ok) setReceived((prev) => prev.filter((r) => r.id !== id))
+    if (res.ok) {
+      setReceived((prev) => prev.filter((r) => r.id !== id))
+      router.refresh()
+    }
     setLoading(null)
   }
 
