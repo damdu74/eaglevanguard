@@ -39,6 +39,23 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   const isInvolved = friendship.requesterId === session.user.id || friendship.receiverId === session.user.id
   if (!isInvolved) return NextResponse.json({ error: "Interdit" }, { status: 403 })
 
-  await prisma.friendship.delete({ where: { id: params.id } })
+  const isRefusal = friendship.status === "PENDING" && friendship.receiverId === session.user.id
+
+  if (isRefusal) {
+    await prisma.$transaction([
+      prisma.friendship.delete({ where: { id: params.id } }),
+      prisma.notification.create({
+        data: {
+          userId: friendship.requesterId,
+          type: "FRIEND_REJECTED",
+          message: `Votre demande d'ami a été refusée.`,
+          link: `/players`,
+        },
+      }),
+    ])
+  } else {
+    await prisma.friendship.delete({ where: { id: params.id } })
+  }
+
   return NextResponse.json({ ok: true })
 }

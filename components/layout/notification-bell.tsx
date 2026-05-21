@@ -26,6 +26,7 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   APPLICATION_ACCEPTED: <span className="text-green-500 text-xs font-bold">✓</span>,
   APPLICATION_REJECTED: <span className="text-red-500 text-xs font-bold">✗</span>,
   FRIEND_ACCEPTED: <Users className="h-3.5 w-3.5 text-blue-500" />,
+  FRIEND_REJECTED: <Users className="h-3.5 w-3.5 text-red-500" />,
 }
 
 export function NotificationBell({ initialFriendRequests, initialPendingApplications }: Props) {
