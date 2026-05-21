@@ -4,21 +4,34 @@ import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { PaginationBar } from "@/components/ui/pagination-bar"
 import Link from "next/link"
 import { Users, Calendar, Plus, Shield, Lock, Globe } from "lucide-react"
 
 export const dynamic = "force-dynamic"
-export const metadata = { title: "Communautés" }
+export const metadata = { title: "Annuaire des communautés" }
 
-export default async function CommunitiesPage() {
+const PER_PAGE = 12
+
+interface PageProps {
+  searchParams: { page?: string }
+}
+
+export default async function CommunitiesPage({ searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
+  const page = Math.max(1, parseInt(searchParams.page ?? "1", 10))
 
-  const communities = await prisma.community.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: { select: { memberships: true, events: true } },
-    },
-  })
+  const [total, communities] = await Promise.all([
+    prisma.community.count(),
+    prisma.community.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        _count: { select: { memberships: true, events: true } },
+      },
+      skip: (page - 1) * PER_PAGE,
+      take: PER_PAGE,
+    }),
+  ])
 
   const memberCommunityIds = session?.user?.id
     ? await prisma.membership
@@ -32,7 +45,10 @@ export default async function CommunitiesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Communautés</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Annuaire des communautés</h1>
+          <p className="text-sm text-muted-foreground">{total} communauté{total > 1 ? "s" : ""}</p>
+        </div>
         {session && (
           <Button asChild>
             <Link href="/communities/new">
@@ -57,69 +73,73 @@ export default async function CommunitiesPage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {communities.map((community) => {
-            const isMember = memberCommunityIds.has(community.id)
-            const isPrivate = !community.isPublic
-            const showDetails = !isPrivate || isMember
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {communities.map((community) => {
+              const isMember = memberCommunityIds.has(community.id)
+              const isPrivate = !community.isPublic
+              const showDetails = !isPrivate || isMember
 
-            return (
-              <Link key={community.id} href={`/communities/${community.slug}`}>
-                <Card className="h-full transition-colors hover:bg-muted/50">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-base leading-tight">{community.name}</CardTitle>
-                      {isMember && (
-                        <Badge variant="secondary" className="shrink-0 text-xs">Membre</Badge>
-                      )}
-                    </div>
-                    {showDetails && (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-xs">{community.game}</Badge>
+              return (
+                <Link key={community.id} href={`/communities/${community.slug}`}>
+                  <Card className="h-full transition-colors hover:bg-muted/50">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <CardTitle className="text-base leading-tight">{community.name}</CardTitle>
+                        {isMember && (
+                          <Badge variant="secondary" className="shrink-0 text-xs">Membre</Badge>
+                        )}
                       </div>
-                    )}
-                  </CardHeader>
-                  {showDetails ? (
-                    <CardContent className="space-y-3">
-                      {community.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {community.description}
-                        </p>
+                      {showDetails && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="text-xs">{community.game}</Badge>
+                        </div>
                       )}
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <div className="flex items-center gap-4">
+                    </CardHeader>
+                    {showDetails ? (
+                      <CardContent className="space-y-3">
+                        {community.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {community.description}
+                          </p>
+                        )}
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <div className="flex items-center gap-4">
+                            <span className="flex items-center gap-1">
+                              <Users className="h-3.5 w-3.5" />
+                              {community._count.memberships} membre{community._count.memberships > 1 ? "s" : ""}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3.5 w-3.5" />
+                              {community._count.events} événement{community._count.events > 1 ? "s" : ""}
+                            </span>
+                          </div>
                           <span className="flex items-center gap-1">
-                            <Users className="h-3.5 w-3.5" />
-                            {community._count.memberships} membre{community._count.memberships > 1 ? "s" : ""}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {community._count.events} événement{community._count.events > 1 ? "s" : ""}
+                            {isPrivate
+                              ? <><Lock className="h-3 w-3" />Privée</>
+                              : <><Globe className="h-3 w-3" />Publique</>
+                            }
                           </span>
                         </div>
-                        <span className="flex items-center gap-1">
-                          {isPrivate
-                            ? <><Lock className="h-3 w-3" />Privée</>
-                            : <><Globe className="h-3 w-3" />Publique</>
-                          }
-                        </span>
-                      </div>
-                    </CardContent>
-                  ) : (
-                    <CardContent>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <p className="italic">Informations réservées aux membres.</p>
-                        <span className="flex items-center gap-1 shrink-0">
-                          <Lock className="h-3 w-3" />Privée
-                        </span>
-                      </div>
-                    </CardContent>
-                  )}
-                </Card>
-              </Link>
-            )
-          })}
-        </div>
+                      </CardContent>
+                    ) : (
+                      <CardContent>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <p className="italic">Informations réservées aux membres.</p>
+                          <span className="flex items-center gap-1 shrink-0">
+                            <Lock className="h-3 w-3" />Privée
+                          </span>
+                        </div>
+                      </CardContent>
+                    )}
+                  </Card>
+                </Link>
+              )
+            })}
+          </div>
+
+          <PaginationBar page={page} total={total} perPage={PER_PAGE} />
+        </>
       )}
     </div>
   )

@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
 
@@ -21,12 +20,9 @@ const schema = z.object({
     .max(30)
     .regex(/^[a-z0-9-]+$/, "Uniquement lettres minuscules, chiffres et tirets"),
   description: z.string().max(500).optional(),
-  game: z.string().min(1, "Sélectionnez un jeu"),
 })
 
 type FormData = z.infer<typeof schema>
-
-const GAMES = ["ArmA 3", "ArmA Reforger", "Squad", "Hell Let Loose", "DCS World", "Autre"]
 
 export function CreateCommunityForm() {
   const router = useRouter()
@@ -53,7 +49,7 @@ export function CreateCommunityForm() {
       const res = await fetch("/api/communities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, language: "fr" }),
+        body: JSON.stringify({ ...data, game: "ArmA 3", language: "fr" }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error((json.error as string) ?? "Erreur")
@@ -91,21 +87,6 @@ export function CreateCommunityForm() {
               <Input id="slug" {...register("slug")} placeholder="1ere-compagnie" />
             </div>
             {errors.slug && <p className="text-sm text-destructive">{errors.slug.message}</p>}
-          </div>
-
-          <div className="space-y-1">
-            <Label>Jeu</Label>
-            <Select onValueChange={(v) => setValue("game", v as string)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez un jeu" />
-              </SelectTrigger>
-              <SelectContent>
-                {GAMES.map((g) => (
-                  <SelectItem key={g} value={g}>{g}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.game && <p className="text-sm text-destructive">{errors.game.message}</p>}
           </div>
 
           <div className="space-y-1">
