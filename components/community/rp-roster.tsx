@@ -53,7 +53,6 @@ export function RpRoster({ communitySlug, units, characters, isStaff, currentUse
   const [unitEra, setUnitEra] = useState("")
 
   const [charName, setCharName] = useState("")
-  const [charRole, setCharRole] = useState("")
   const [charDesc, setCharDesc] = useState("")
   const [charUnit, setCharUnit] = useState("__none__")
 
@@ -109,7 +108,6 @@ export function RpRoster({ communitySlug, units, characters, isStaff, currentUse
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: charName.trim(),
-          role: charRole.trim() || null,
           description: charDesc.trim() || null,
           rpUnitId: charUnit === "__none__" ? null : charUnit,
         }),
@@ -118,7 +116,7 @@ export function RpRoster({ communitySlug, units, characters, isStaff, currentUse
       if (!res.ok) { toast.error(data.error ?? "Erreur"); return }
       toast.success("Personnage créé")
       setCharDialog(false)
-      setCharName(""); setCharRole(""); setCharDesc(""); setCharUnit("__none__")
+      setCharName(""); setCharDesc(""); setCharUnit("__none__")
       router.refresh()
     } catch {
       toast.error("Erreur lors de la création")
@@ -141,7 +139,6 @@ export function RpRoster({ communitySlug, units, characters, isStaff, currentUse
   function openEditChar() {
     if (!myCharacter) return
     setCharName(myCharacter.name)
-    setCharRole(myCharacter.role ?? "")
     setCharDesc(myCharacter.description ?? "")
     setCharUnit(myCharacter.rpUnitId ?? "__none__")
     setEditCharDialog(true)
@@ -156,7 +153,6 @@ export function RpRoster({ communitySlug, units, characters, isStaff, currentUse
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: charName.trim(),
-          role: charRole.trim() || null,
           description: charDesc.trim() || null,
           rpUnitId: charUnit === "__none__" ? null : charUnit,
         }),
@@ -298,7 +294,6 @@ export function RpRoster({ communitySlug, units, characters, isStaff, currentUse
           <DialogHeader><DialogTitle>Créer mon personnage</DialogTitle></DialogHeader>
           <CharacterForm
             charName={charName} setCharName={setCharName}
-            charRole={charRole} setCharRole={setCharRole}
             charDesc={charDesc} setCharDesc={setCharDesc}
             charUnit={charUnit} setCharUnit={setCharUnit}
             units={units}
@@ -319,7 +314,6 @@ export function RpRoster({ communitySlug, units, characters, isStaff, currentUse
           <DialogHeader><DialogTitle>Modifier mon personnage</DialogTitle></DialogHeader>
           <CharacterForm
             charName={charName} setCharName={setCharName}
-            charRole={charRole} setCharRole={setCharRole}
             charDesc={charDesc} setCharDesc={setCharDesc}
             charUnit={charUnit} setCharUnit={setCharUnit}
             units={units}
@@ -339,13 +333,11 @@ export function RpRoster({ communitySlug, units, characters, isStaff, currentUse
 
 function CharacterForm({
   charName, setCharName,
-  charRole, setCharRole,
   charDesc, setCharDesc,
   charUnit, setCharUnit,
   units,
 }: {
   charName: string; setCharName: (v: string) => void
-  charRole: string; setCharRole: (v: string) => void
   charDesc: string; setCharDesc: (v: string) => void
   charUnit: string; setCharUnit: (v: string) => void
   units: RpUnit[]
@@ -355,10 +347,6 @@ function CharacterForm({
       <div className="space-y-1">
         <Label>Nom du personnage</Label>
         <Input value={charName} onChange={(e) => setCharName(e.target.value)} placeholder="Ex: John Coffee" />
-      </div>
-      <div className="space-y-1">
-        <Label>Rôle / Spécialité <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-        <Input value={charRole} onChange={(e) => setCharRole(e.target.value)} placeholder="Ex: Parachutiste, Sniper, Médecin…" />
       </div>
       <div className="space-y-1">
         <Label>Unité <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
