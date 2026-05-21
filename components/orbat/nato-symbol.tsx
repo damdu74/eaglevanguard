@@ -51,6 +51,74 @@ export const NATO_TYPES: { value: string; label: string; category: string }[] = 
   { value: "maintenance",   label: "Maintenance",             category: "Soutien" },
 ]
 
+// Modificateurs combinables avec n'importe quel type de base
+export const NATO_MODIFIERS: { value: string; label: string }[] = [
+  { value: "armored",     label: "Blindé" },
+  { value: "wheeled",     label: "Motorisé" },
+  { value: "airborne",    label: "Aéroporté" },
+  { value: "air_assault", label: "Assaut aérien" },
+  { value: "amphibious",  label: "Amphibie" },
+  { value: "mountain",    label: "Montagne" },
+  { value: "sf",          label: "Forces spéciales" },
+  { value: "recon",       label: "Reconnaissance" },
+]
+
+const MW = 3.5 // trait modificateur (plus fin que le type de base)
+
+// Symbole du modificateur — exporté pour l'aperçu dans le sélecteur
+export function NatoModifierSymbol({ modifier }: { modifier: string }) {
+  switch (modifier) {
+    case "armored":
+      // Ovale (blindé/mécanisé)
+      return <ellipse cx="30" cy="20" rx="22" ry="10" fill="none" stroke={S} strokeWidth={MW} />
+
+    case "wheeled":
+      // Deux roues en bas (motorisé)
+      return <>
+        <circle cx="19" cy="30" r="6" fill="none" stroke={S} strokeWidth={MW - 0.5} />
+        <circle cx="41" cy="30" r="6" fill="none" stroke={S} strokeWidth={MW - 0.5} />
+        <line x1="8"  y1="30" x2="13" y2="30" stroke={S} strokeWidth={MW - 1} strokeLinecap="round" />
+        <line x1="47" y1="30" x2="52" y2="30" stroke={S} strokeWidth={MW - 1} strokeLinecap="round" />
+        <line x1="25" y1="30" x2="35" y2="30" stroke={S} strokeWidth={MW - 1} strokeLinecap="round" />
+      </>
+
+    case "airborne":
+      // Arc parabolique en bas (parachute)
+      return <path d="M12,34 Q30,18 48,34" fill="none" stroke={S} strokeWidth={MW} strokeLinecap="round" />
+
+    case "air_assault":
+      // Rotor d'hélicoptère en haut
+      return <>
+        <line x1="12" y1="10" x2="48" y2="10" stroke={S} strokeWidth={MW} strokeLinecap="round" />
+        <path d="M12,10 Q21,3 30,10 Q39,3 48,10" fill="none" stroke={S} strokeWidth={MW - 0.5} strokeLinecap="round" />
+        <line x1="30" y1="10" x2="30" y2="18" stroke={S} strokeWidth={MW - 1} strokeLinecap="round" />
+      </>
+
+    case "amphibious":
+      // Vague en bas (amphibie)
+      return <path d="M8,30 Q16,23 24,30 Q32,37 40,30 Q48,23 52,27" fill="none" stroke={S} strokeWidth={MW} strokeLinecap="round" />
+
+    case "mountain":
+      // Triangle montagne en haut
+      return <polygon points="30,5 16,22 44,22" fill="none" stroke={S} strokeWidth={MW - 0.5} strokeLinejoin="round" />
+
+    case "sf":
+      // Barre horizontale centrale (forces spéciales)
+      return <line x1="8" y1="20" x2="52" y2="20" stroke={S} strokeWidth={MW + 1} strokeLinecap="round" />
+
+    case "recon":
+      // Jumelles (reconnaissance)
+      return <>
+        <circle cx="22" cy="26" r="7" fill="none" stroke={S} strokeWidth={MW - 0.5} />
+        <circle cx="38" cy="26" r="7" fill="none" stroke={S} strokeWidth={MW - 0.5} />
+        <line x1="29" y1="26" x2="31" y2="26" stroke={S} strokeWidth={MW - 0.5} />
+      </>
+
+    default:
+      return null
+  }
+}
+
 // Symboles intérieurs SVG (viewBox 60×40)
 function TypeSymbol({ type }: { type: string }) {
   const sw = SW
@@ -237,9 +305,10 @@ interface NatoSymbolProps {
   isRoot?: boolean
   selected?: boolean
   compact?: boolean
+  modifier?: string
 }
 
-export function NatoSymbol({ type, size, label, callsign, selected, compact }: NatoSymbolProps) {
+export function NatoSymbol({ type, size, label, callsign, selected, compact, modifier }: NatoSymbolProps) {
   const sizeMarker = NATO_SIZES.find((s) => s.value === size)?.marker ?? ""
   const borderColor = "#111111"
   const borderWidth = selected ? 4.5 : 3.5
@@ -264,6 +333,7 @@ export function NatoSymbol({ type, size, label, callsign, selected, compact }: N
           <rect x="1.5" y="1.5" width="57" height="37"
             fill={fillColor} stroke={borderColor} strokeWidth={borderWidth} />
           <TypeSymbol type={type} />
+          {modifier && <NatoModifierSymbol modifier={modifier} />}
         </svg>
       </div>
     )
@@ -292,6 +362,7 @@ export function NatoSymbol({ type, size, label, callsign, selected, compact }: N
         <rect x="1.5" y="1.5" width="57" height="37"
           fill={fillColor} stroke={borderColor} strokeWidth={borderWidth} />
         <TypeSymbol type={type} />
+        {modifier && <NatoModifierSymbol modifier={modifier} />}
       </svg>
 
       {/* Label et callsign */}

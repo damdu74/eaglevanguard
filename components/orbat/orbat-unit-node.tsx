@@ -19,6 +19,7 @@ interface UnitNodeData {
   size?: string
   callsign?: string
   imageUrl?: string
+  modifier?: string
   isRoot?: boolean
   readOnly?: boolean
   roles?: OrbatRole[]
@@ -80,6 +81,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
               label={data.label}
               isRoot={data.isRoot}
               selected={selected}
+              modifier={data.modifier}
               compact
             />
           </div>

@@ -30,7 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { OrbatUnitNode, type OrbatRole } from "./orbat-unit-node"
-import { NATO_TYPES, NATO_SIZES } from "./nato-symbol"
+import { NATO_TYPES, NATO_SIZES, NATO_MODIFIERS, NatoModifierSymbol } from "./nato-symbol"
+import { cn } from "@/lib/utils"
 import { Loader2, Plus, Save, Trash2, Upload } from "lucide-react"
 import { toast } from "sonner"
 
@@ -68,6 +69,7 @@ interface EditState {
   size: string
   callsign: string
   imageUrl: string
+  modifier: string
   roles: OrbatRole[]
 }
 
@@ -140,7 +142,7 @@ export function OrbatEditor({
           x: parentNode.position.x + offset,
           y: parentNode.position.y + 180,
         },
-        data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", roles: [] },
+        data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [] },
       },
     ])
 
@@ -154,7 +156,7 @@ export function OrbatEditor({
       },
     ])
 
-    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", roles: [] })
+    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [] })
   }, [setNodes, setEdges])
 
   const nodesWithCallbacks = useMemo(
@@ -187,6 +189,7 @@ export function OrbatEditor({
       size: node.data.size ?? "",
       callsign: node.data.callsign ?? "",
       imageUrl: node.data.imageUrl ?? "",
+      modifier: node.data.modifier ?? "",
       roles: node.data.roles ?? [],
     })
   }, [readOnly])
@@ -205,6 +208,7 @@ export function OrbatEditor({
                 size: editState.size,
                 callsign: editState.callsign,
                 imageUrl: editState.imageUrl,
+                modifier: editState.modifier,
                 roles: editState.roles,
               },
             }
@@ -400,6 +404,32 @@ export function OrbatEditor({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Modificateur */}
+              <div className="space-y-1.5">
+                <Label>Modificateur <span className="text-muted-foreground text-xs">(optionnel — cliquer pour sélectionner / désélectionner)</span></Label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {NATO_MODIFIERS.map((mod) => (
+                    <button
+                      key={mod.value}
+                      type="button"
+                      onClick={() => setEditState({ ...editState!, modifier: editState!.modifier === mod.value ? "" : mod.value })}
+                      className={cn(
+                        "flex flex-col items-center gap-0.5 p-1 rounded border-2 transition-colors",
+                        editState?.modifier === mod.value
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-muted-foreground/60"
+                      )}
+                    >
+                      <svg viewBox="0 0 60 40" width="44" height="30">
+                        <rect x="1.5" y="1.5" width="57" height="37" fill="white" stroke="#111111" strokeWidth="3" />
+                        <NatoModifierSymbol modifier={mod.value} />
+                      </svg>
+                      <span className="text-[9px] text-center leading-tight text-muted-foreground">{mod.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Callsign */}
