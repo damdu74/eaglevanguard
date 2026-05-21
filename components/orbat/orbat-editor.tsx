@@ -390,7 +390,7 @@ export function OrbatEditor({
 
               {/* Type */}
               <div className="space-y-1.5">
-                <Label>Type d&apos;unité</Label>
+                <Label>Symbole de base</Label>
                 <Select value={editState.type} onValueChange={(v) => setEditState({ ...editState, type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent className="max-h-72">
@@ -408,7 +408,7 @@ export function OrbatEditor({
 
               {/* Modificateur */}
               <div className="space-y-1.5">
-                <Label>Modificateur <span className="text-muted-foreground text-xs">(optionnel — cliquer pour sélectionner / désélectionner)</span></Label>
+                <Label>Symbole complémentaire <span className="text-muted-foreground text-xs">(optionnel — cliquer pour sélectionner / désélectionner)</span></Label>
                 <div className="grid grid-cols-4 gap-1.5">
                   {NATO_MODIFIERS.map((mod) => (
                     <button
