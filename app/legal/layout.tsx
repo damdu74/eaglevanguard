@@ -5,6 +5,8 @@ import { ChevronLeft } from "lucide-react"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
+export const dynamic = "force-dynamic"
+
 export default async function LegalLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
   const backHref = session ? "/dashboard" : "/"
