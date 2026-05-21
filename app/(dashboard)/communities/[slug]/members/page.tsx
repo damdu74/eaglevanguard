@@ -79,6 +79,9 @@ export default async function CommunityMembersPage({ params }: PageProps) {
     (a, b) => (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99)
   )
 
+  const staff = sorted.filter((m) => ["OWNER", "ADMIN", "MODERATOR"].includes(m.role))
+  const regular = sorted.filter((m) => ["MEMBER", "RECRUIT"].includes(m.role))
+
   const myRole = myMembership?.role ?? null
   const isAdmin = myRole === "OWNER" || myRole === "ADMIN"
   const isModerator = myRole === "MODERATOR"
@@ -105,68 +108,70 @@ export default async function CommunityMembersPage({ params }: PageProps) {
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="divide-y">
-            {sorted.map(({ user, role, rank }) => {
-              const displayName = user.steamName ?? user.discordName ?? user.name ?? "Joueur"
-              const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar
-              const isMe = user.id === session?.user?.id
-              const isTarget = user.id === community.creatorId
+      {/* Staff */}
+      {staff.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Gestion
+          </h2>
+          <Card>
+            <CardContent className="p-0">
+              <div className="divide-y">
+                {staff.map(({ user, role, rank }) => (
+                  <MemberRow
+                    key={user.id}
+                    user={user}
+                    role={role}
+                    rank={rank ?? null}
+                    isMe={user.id === session?.user?.id}
+                    canActOnTarget={canManage && user.id !== session?.user?.id && (() => {
+                      if (myRole === "OWNER") return role !== "OWNER" || user.id !== community.creatorId
+                      if (myRole === "ADMIN") return !["OWNER", "ADMIN"].includes(role)
+                      return false
+                    })()}
+                    communitySlug={params.slug}
+                    ranks={ranks}
+                    myRole={myRole}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      )}
 
-              const canActOnTarget = canManage && !isMe && (() => {
-                if (myRole === "OWNER") return role !== "OWNER" || !isTarget
-                if (myRole === "ADMIN") return !["OWNER", "ADMIN"].includes(role)
-                if (myRole === "MODERATOR") return ["MEMBER", "RECRUIT"].includes(role)
-                return false
-              })()
-
-              return (
-                <div key={user.id} className="flex items-center justify-between px-4 py-3 gap-3">
-                  <Link
-                    href={isMe ? "/profile" : `/profile/${user.id}`}
-                    className="flex items-center gap-3 hover:opacity-80 transition-opacity min-w-0"
-                  >
-                    <Avatar className="h-9 w-9 shrink-0">
-                      <AvatarImage src={avatar ?? undefined} />
-                      <AvatarFallback className="text-xs">
-                        {displayName.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium leading-none truncate">
-                        {displayName}
-                        {isMe && (
-                          <span className="ml-2 text-xs text-muted-foreground">(vous)</span>
-                        )}
-                      </p>
-                      {rank && (
-                        <p className="text-xs text-muted-foreground mt-0.5">{rank.name}</p>
-                      )}
-                    </div>
-                  </Link>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge variant="outline" className="text-xs">
-                      {ROLE_LABELS[role] ?? role}
-                    </Badge>
-                    {canActOnTarget && (
-                      <MemberActions
-                        communitySlug={params.slug}
-                        userId={user.id}
-                        currentRole={role}
-                        currentRankId={rank?.id ?? null}
-                        ranks={ranks}
-                        myRole={myRole!}
-                      />
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Membres */}
+      {regular.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Membres ({regular.length})
+          </h2>
+          <Card>
+            <CardContent className="p-0">
+              <div className="divide-y">
+                {regular.map(({ user, role, rank }) => (
+                  <MemberRow
+                    key={user.id}
+                    user={user}
+                    role={role}
+                    rank={rank ?? null}
+                    isMe={user.id === session?.user?.id}
+                    canActOnTarget={canManage && user.id !== session?.user?.id && (() => {
+                      if (myRole === "OWNER") return true
+                      if (myRole === "ADMIN") return true
+                      if (myRole === "MODERATOR") return true
+                      return false
+                    })()}
+                    communitySlug={params.slug}
+                    ranks={ranks}
+                    myRole={myRole}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      )}
 
       {isAdmin && (
         <div className="flex justify-end">
@@ -178,6 +183,61 @@ export default async function CommunityMembersPage({ params }: PageProps) {
           </Link>
         </div>
       )}
+    </div>
+  )
+}
+
+function MemberRow({
+  user, role, rank, isMe, canActOnTarget, communitySlug, ranks, myRole,
+}: {
+  user: { id: string; steamName: string | null; discordName: string | null; name: string | null; customAvatar: string | null; steamAvatar: string | null; discordAvatar: string | null }
+  role: string
+  rank: { id: string; name: string } | null
+  isMe: boolean
+  canActOnTarget: boolean
+  communitySlug: string
+  ranks: { id: string; name: string; abbreviation: string }[]
+  myRole: string | null
+}) {
+  const displayName = user.steamName ?? user.discordName ?? user.name ?? "Joueur"
+  const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar
+
+  return (
+    <div className="flex items-center justify-between px-4 py-3 gap-3">
+      <Link
+        href={isMe ? "/profile" : `/profile/${user.id}`}
+        className="flex items-center gap-3 hover:opacity-80 transition-opacity min-w-0"
+      >
+        <Avatar className="h-9 w-9 shrink-0">
+          <AvatarImage src={avatar ?? undefined} />
+          <AvatarFallback className="text-xs">
+            {displayName.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0">
+          <p className="text-sm font-medium leading-none truncate">
+            {displayName}
+            {isMe && <span className="ml-2 text-xs text-muted-foreground">(vous)</span>}
+          </p>
+          {rank && <p className="text-xs text-muted-foreground mt-0.5">{rank.name}</p>}
+        </div>
+      </Link>
+
+      <div className="flex items-center gap-2 shrink-0">
+        <Badge variant="outline" className="text-xs">
+          {ROLE_LABELS[role] ?? role}
+        </Badge>
+        {canActOnTarget && (
+          <MemberActions
+            communitySlug={communitySlug}
+            userId={user.id}
+            currentRole={role}
+            currentRankId={rank?.id ?? null}
+            ranks={ranks}
+            myRole={myRole!}
+          />
+        )}
+      </div>
     </div>
   )
 }
