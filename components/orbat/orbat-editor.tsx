@@ -241,7 +241,7 @@ export function OrbatEditor({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Type d'unité</Label>
+                <Label>Type d&apos;unité</Label>
                 <Select value={editState.type} onValueChange={(v) => setEditState({ ...editState, type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent className="max-h-72">
