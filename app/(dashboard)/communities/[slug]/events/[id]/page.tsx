@@ -21,17 +21,6 @@ const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secon
   CANCELLED: { label: "Annulé", variant: "destructive" },
 }
 
-const PARTICIPATION_VARIANTS: Record<string, string> = {
-  CONFIRMED: "text-green-600",
-  TENTATIVE: "text-yellow-600",
-  DECLINED: "text-muted-foreground",
-}
-
-const PARTICIPATION_LABELS: Record<string, string> = {
-  CONFIRMED: "Présent",
-  TENTATIVE: "Peut-être",
-  DECLINED: "Absent",
-}
 
 export async function generateMetadata({ params }: PageProps) {
   const event = await prisma.event.findFirst({ where: { id: params.id, community: { slug: params.slug } } })
