@@ -367,6 +367,23 @@ export function OrbatEditor({
                 />
               </div>
 
+              {/* Échelon */}
+              <div className="space-y-1.5">
+                <Label>Échelon <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                <Select
+                  value={editState.size || "__none__"}
+                  onValueChange={(v) => setEditState({ ...editState, size: v === "__none__" ? "" : v })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Aucun</SelectItem>
+                    {NATO_SIZES.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>{s.marker} — {s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Type */}
               <div className="space-y-1.5">
                 <Label>Type d&apos;unité</Label>
@@ -380,23 +397,6 @@ export function OrbatEditor({
                           <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
                         ))}
                       </div>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Échelon */}
-              <div className="space-y-1.5">
-                <Label>Échelon <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-                <Select
-                  value={editState.size || "__none__"}
-                  onValueChange={(v) => setEditState({ ...editState, size: v === "__none__" ? "" : v })}
-                >
-                  <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">Aucun</SelectItem>
-                    {NATO_SIZES.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>{s.marker} — {s.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
