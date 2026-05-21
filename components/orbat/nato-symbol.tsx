@@ -239,7 +239,7 @@ interface NatoSymbolProps {
   compact?: boolean
 }
 
-export function NatoSymbol({ type, size, label, callsign, isRoot, selected, compact }: NatoSymbolProps) {
+export function NatoSymbol({ type, size, label, callsign, selected, compact }: NatoSymbolProps) {
   const sizeMarker = NATO_SIZES.find((s) => s.value === size)?.marker ?? ""
   const borderColor = "#111111"
   const borderWidth = selected ? 4.5 : 3.5
