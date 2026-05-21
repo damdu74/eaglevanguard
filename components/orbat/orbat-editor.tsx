@@ -362,19 +362,23 @@ export function OrbatEditor({
               {/* Image */}
               <div className="space-y-2">
                 <Label>Image de l&apos;unité</Label>
-                <div className="flex gap-2 items-start">
+                {/* Aperçu centré au-dessus */}
+                <div className="flex justify-center">
                   {editState.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={editState.imageUrl}
                       alt="Aperçu"
-                      className="h-14 w-14 rounded object-cover border border-border shrink-0"
+                      style={{ maxWidth: 96, maxHeight: 96, objectFit: "contain", display: "block" }}
                       onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
                     />
                   ) : (
-                    <div className="h-14 w-14 rounded border border-dashed border-border bg-muted/30 shrink-0" />
+                    <div className="h-24 w-24 rounded border border-dashed border-border bg-muted/30 flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground">Aucune image</span>
+                    </div>
                   )}
-                  <div className="flex-1 space-y-2">
+                </div>
+                <div className="space-y-2">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -406,7 +410,6 @@ export function OrbatEditor({
                       placeholder="https://..."
                       className="text-xs h-8"
                     />
-                  </div>
                 </div>
               </div>
 
