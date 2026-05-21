@@ -162,6 +162,7 @@ function ApplicationRow({
     message: string | null
     response: string | null
     createdAt: Date
+    updatedAt: Date
     user: {
       id: string
       steamName: string | null
@@ -175,7 +176,7 @@ function ApplicationRow({
   communitySlug: string
   showActions: boolean
 }) {
-  const { user, status, message, response, createdAt } = app
+  const { user, status, message, response, updatedAt } = app
   const displayName = user.steamName ?? user.discordName ?? user.name ?? "Joueur"
   const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar
 
@@ -195,7 +196,7 @@ function ApplicationRow({
           <div>
             <p className="text-sm font-medium">{displayName}</p>
             <p className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: fr })}
+              {formatDistanceToNow(new Date(updatedAt), { addSuffix: true, locale: fr })}
             </p>
           </div>
         </Link>
