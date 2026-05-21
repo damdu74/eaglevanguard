@@ -7,8 +7,8 @@ const SW = 5          // trait épais H&G
 export const NATO_SIZES: { value: string; label: string; marker: string }[] = [
   { value: "binome",    label: "Team",              marker: "ø"    },
   { value: "escouade",  label: "Squad",             marker: "●"    },
-  { value: "groupe",    label: "Groupe de combat",  marker: "●●"   },
-  { value: "section",   label: "Section de combat", marker: "●●●"  },
+  { value: "groupe",    label: "Section",           marker: "●●"   },
+  { value: "section",   label: "Platoon",           marker: "●●●"  },
   { value: "compagnie", label: "Compagnie",         marker: "|"    },
   { value: "bataillon", label: "Bataillon",         marker: "||"   },
   { value: "regiment",  label: "Régiment",          marker: "|||"  },
