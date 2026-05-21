@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { LinkDiscordButton } from "@/components/profile/link-discord-button"
 import { AvatarUpload } from "@/components/profile/avatar-upload"
 import { BioEdit } from "@/components/profile/bio-edit"
+import { VisibilityEdit } from "@/components/profile/visibility-edit"
 import Image from "next/image"
 
 export const metadata = { title: "Profil" }
@@ -69,6 +70,17 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
             <p className="text-sm font-medium mb-2">Bio</p>
             <BioEdit initialBio={user.bio} />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Confidentialité */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Confidentialité</CardTitle>
+          <CardDescription>Choisissez qui peut voir votre profil.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <VisibilityEdit initialVisibility={user.visibility} />
         </CardContent>
       </Card>
 
