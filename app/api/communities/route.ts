@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
   }
 
   const body = await req.json()
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   const existing = await prisma.community.findUnique({ where: { slug } })
   if (existing) {
-    return NextResponse.json({ error: "Slug already taken" }, { status: 409 })
+    return NextResponse.json({ error: "Cet identifiant est déjà pris" }, { status: 409 })
   }
 
   const community = await prisma.community.create({

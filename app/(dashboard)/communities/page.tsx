@@ -1,0 +1,99 @@
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Users, Calendar, Plus, Shield } from "lucide-react"
+
+export const metadata = { title: "Communautés" }
+
+export default async function CommunitiesPage() {
+  const session = await getServerSession(authOptions)
+
+  const communities = await prisma.community.findMany({
+    where: { isPublic: true },
+    orderBy: { createdAt: "desc" },
+    include: {
+      _count: { select: { memberships: true, events: true } },
+    },
+  })
+
+  const memberCommunityIds = session?.user?.id
+    ? await prisma.membership
+        .findMany({
+          where: { userId: session.user.id as string },
+          select: { communityId: true },
+        })
+        .then((ms) => new Set(ms.map((m) => m.communityId)))
+    : new Set<string>()
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Communautés</h1>
+        {session && (
+          <Button asChild>
+            <Link href="/communities/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Nouvelle communauté
+            </Link>
+          </Button>
+        )}
+      </div>
+
+      {communities.length === 0 ? (
+        <div className="flex flex-col items-center gap-4 py-24 text-muted-foreground text-center">
+          <Shield className="h-12 w-12" />
+          <div>
+            <p className="font-medium">Aucune communauté pour le moment.</p>
+            <p className="text-sm">Soyez le premier à en créer une !</p>
+          </div>
+          {session && (
+            <Button asChild>
+              <Link href="/communities/new">Créer une communauté</Link>
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {communities.map((community) => (
+            <Link key={community.id} href={`/communities/${community.slug}`}>
+              <Card className="h-full transition-colors hover:bg-muted/50">
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-base leading-tight">{community.name}</CardTitle>
+                    {memberCommunityIds.has(community.id) && (
+                      <Badge variant="secondary" className="shrink-0 text-xs">Membre</Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-xs">{community.game}</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {community.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {community.description}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3.5 w-3.5" />
+                      {community._count.memberships} membre{community._count.memberships > 1 ? "s" : ""}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      {community._count.events} événement{community._count.events > 1 ? "s" : ""}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
