@@ -137,12 +137,7 @@ export default async function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Mes communautés */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Mes communautés</h2>
-            <Link href="/communities/mine" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
-              Voir tout <ChevronRight className="h-3 w-3" />
-            </Link>
-          </div>
+          <h2 className="text-lg font-semibold">Mes communautés</h2>
           {memberships.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
