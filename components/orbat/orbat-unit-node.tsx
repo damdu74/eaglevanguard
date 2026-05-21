@@ -42,11 +42,11 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
         )}
       >
         {/* En-tête 3 colonnes : image | nom | symbole OTAN */}
-        <div className="grid grid-cols-[52px_1fr_52px] items-center gap-1 px-2 py-2">
+        <div className="grid grid-cols-[72px_1fr_60px] items-center gap-1 px-2 py-2">
           {/* Image (gauche) */}
           <div className="flex items-center justify-center">
             {data.imageUrl ? (
-              <div style={{ width: 44, height: 44, borderRadius: 6, overflow: "hidden", border: "1px solid hsl(var(--border))", flexShrink: 0 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 6, overflow: "hidden", border: "1px solid hsl(var(--border))", flexShrink: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={data.imageUrl}
@@ -55,8 +55,8 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
                 />
               </div>
             ) : (
-              <div style={{ width: 44, height: 44, borderRadius: 6, flexShrink: 0 }} className="border border-dashed border-border/60 bg-muted/30 flex items-center justify-center">
-                <ImageIcon className="h-4 w-4 text-muted-foreground/40" />
+              <div style={{ width: 64, height: 64, borderRadius: 6, flexShrink: 0 }} className="border border-dashed border-border/60 bg-muted/30 flex items-center justify-center">
+                <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
               </div>
             )}
           </div>
