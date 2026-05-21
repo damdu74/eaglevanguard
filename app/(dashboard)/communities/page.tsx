@@ -106,12 +106,10 @@ export default async function CommunitiesPage() {
                       </div>
                     </CardContent>
                   ) : (
-                    <CardContent className="space-y-3">
-                      <p className="text-xs text-muted-foreground italic">
-                        Informations réservées aux membres.
-                      </p>
-                      <div className="flex justify-end text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
+                    <CardContent>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <p className="italic">Informations réservées aux membres.</p>
+                        <span className="flex items-center gap-1 shrink-0">
                           <Lock className="h-3 w-3" />Privée
                         </span>
                       </div>
