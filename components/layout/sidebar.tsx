@@ -3,8 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Users, Shield, Plus, UserSearch, UserCheck, BookOpen } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { LayoutDashboard, Users, Shield, UserSearch, UserCheck, BookOpen } from "lucide-react"
 
 const navSections = [
   {
@@ -58,14 +57,7 @@ export function Sidebar() {
         </div>
       ))}
 
-      <div className="mt-auto">
-        <Button size="sm" className="w-full gap-2" asChild>
-          <Link href="/communities/new">
-            <Plus className="h-4 w-4" />
-            Nouvelle communauté
-          </Link>
-        </Button>
-      </div>
+
     </aside>
   )
 }
