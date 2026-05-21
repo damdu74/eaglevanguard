@@ -37,7 +37,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
   const displayAvatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar ?? user.image
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-4xl">
       <h1 className="text-2xl font-bold">Mon profil</h1>
 
       {searchParams.discord_linked && (
@@ -51,27 +51,59 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
         </div>
       )}
 
-      {/* Identity */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Identité</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-6">
-            <AvatarUpload currentImage={displayAvatar} displayName={displayName} />
-            <div>
-              <p className="text-lg font-semibold">{displayName}</p>
-              <p className="text-sm text-muted-foreground">
-                Membre depuis le {new Date(user.createdAt).toLocaleDateString("fr-FR")}
-              </p>
+      {/* Identity + Linked accounts */}
+      <div className="grid grid-cols-2 gap-6 items-start">
+        <Card>
+          <CardHeader>
+            <CardTitle>Identité</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              <AvatarUpload currentImage={displayAvatar} displayName={displayName} />
+              <div>
+                <p className="text-lg font-semibold">{displayName}</p>
+                <p className="text-sm text-muted-foreground">
+                  Membre depuis le {new Date(user.createdAt).toLocaleDateString("fr-FR")}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="border-t pt-4">
-            <p className="text-sm font-medium mb-2">Bio</p>
-            <BioEdit initialBio={user.bio} />
-          </div>
-        </CardContent>
-      </Card>
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium mb-2">Bio</p>
+              <BioEdit initialBio={user.bio} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Comptes liés</CardTitle>
+            <CardDescription>Connectez vos comptes Steam et Discord.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Image src="/steam-logo.svg" alt="Steam" width={24} height={24} />
+                <div>
+                  <p className="font-medium">Steam</p>
+                  {user.steamName && <p className="text-sm text-muted-foreground">{user.steamName}</p>}
+                </div>
+              </div>
+              {user.steamId ? <Badge variant="secondary">Lié</Badge> : <Badge variant="outline">Non lié</Badge>}
+            </div>
+            <div className="border-t" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Image src="/discord-logo.svg" alt="Discord" width={24} height={24} />
+                <div>
+                  <p className="font-medium">Discord</p>
+                  {user.discordName && <p className="text-sm text-muted-foreground">{user.discordName}</p>}
+                </div>
+              </div>
+              {user.discordId ? <Badge variant="secondary">Lié</Badge> : <LinkDiscordButton />}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Confidentialité */}
       <Card>
@@ -81,37 +113,6 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
         </CardHeader>
         <CardContent>
           <VisibilityEdit initialVisibility={user.visibility} />
-        </CardContent>
-      </Card>
-
-      {/* Linked accounts */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Comptes liés</CardTitle>
-          <CardDescription>Connectez vos comptes Steam et Discord.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Image src="/steam-logo.svg" alt="Steam" width={24} height={24} />
-              <div>
-                <p className="font-medium">Steam</p>
-                {user.steamName && <p className="text-sm text-muted-foreground">{user.steamName}</p>}
-              </div>
-            </div>
-            {user.steamId ? <Badge variant="secondary">Lié</Badge> : <Badge variant="outline">Non lié</Badge>}
-          </div>
-          <div className="border-t" />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Image src="/discord-logo.svg" alt="Discord" width={24} height={24} />
-              <div>
-                <p className="font-medium">Discord</p>
-                {user.discordName && <p className="text-sm text-muted-foreground">{user.discordName}</p>}
-              </div>
-            </div>
-            {user.discordId ? <Badge variant="secondary">Lié</Badge> : <LinkDiscordButton />}
-          </div>
         </CardContent>
       </Card>
 
