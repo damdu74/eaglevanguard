@@ -64,7 +64,7 @@ export function FriendsManager({ initialFriends, initialReceived }: Props) {
       } catch {}
     }
 
-    const interval = setInterval(poll, 15000)
+    const interval = setInterval(poll, 10000)
     return () => clearInterval(interval)
   }, [])
 

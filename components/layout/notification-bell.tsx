@@ -27,7 +27,7 @@ export function NotificationBell({ initialCount }: Props) {
       } catch {}
     }
 
-    const interval = setInterval(fetchCount, 15000)
+    const interval = setInterval(fetchCount, 10000)
     return () => clearInterval(interval)
   }, [count, router])
 
