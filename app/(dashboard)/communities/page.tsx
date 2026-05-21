@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Users, Calendar, Plus, Shield, Lock } from "lucide-react"
+import { Users, Calendar, Plus, Shield, Lock, Globe } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Communautés" }
@@ -69,17 +69,9 @@ export default async function CommunitiesPage() {
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="text-base leading-tight">{community.name}</CardTitle>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {isPrivate && (
-                          <Badge variant="outline" className="text-xs gap-1">
-                            <Lock className="h-3 w-3" />
-                            Privée
-                          </Badge>
-                        )}
-                        {isMember && (
-                          <Badge variant="secondary" className="text-xs">Membre</Badge>
-                        )}
-                      </div>
+                      {isMember && (
+                        <Badge variant="secondary" className="shrink-0 text-xs">Membre</Badge>
+                      )}
                     </div>
                     {showDetails && (
                       <div className="flex items-center gap-2 flex-wrap">
@@ -94,22 +86,35 @@ export default async function CommunitiesPage() {
                           {community.description}
                         </p>
                       )}
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center gap-4">
+                          <span className="flex items-center gap-1">
+                            <Users className="h-3.5 w-3.5" />
+                            {community._count.memberships} membre{community._count.memberships > 1 ? "s" : ""}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {community._count.events} événement{community._count.events > 1 ? "s" : ""}
+                          </span>
+                        </div>
                         <span className="flex items-center gap-1">
-                          <Users className="h-3.5 w-3.5" />
-                          {community._count.memberships} membre{community._count.memberships > 1 ? "s" : ""}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {community._count.events} événement{community._count.events > 1 ? "s" : ""}
+                          {isPrivate
+                            ? <><Lock className="h-3 w-3" />Privée</>
+                            : <><Globe className="h-3 w-3" />Publique</>
+                          }
                         </span>
                       </div>
                     </CardContent>
                   ) : (
-                    <CardContent>
+                    <CardContent className="space-y-3">
                       <p className="text-xs text-muted-foreground italic">
                         Informations réservées aux membres.
                       </p>
+                      <div className="flex justify-end text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Lock className="h-3 w-3" />Privée
+                        </span>
+                      </div>
                     </CardContent>
                   )}
                 </Card>
