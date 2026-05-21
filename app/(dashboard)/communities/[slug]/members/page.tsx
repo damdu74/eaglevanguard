@@ -9,6 +9,8 @@ import { MemberActions } from "@/components/community/member-actions"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 interface PageProps {
   params: { slug: string }
 }
