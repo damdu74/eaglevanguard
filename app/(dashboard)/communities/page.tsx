@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Users, Calendar, Plus, Shield } from "lucide-react"
+import { Users, Calendar, Plus, Shield, Lock } from "lucide-react"
 
 export const metadata = { title: "Communautés" }
 
@@ -13,7 +13,6 @@ export default async function CommunitiesPage() {
   const session = await getServerSession(authOptions)
 
   const communities = await prisma.community.findMany({
-    where: { isPublic: true },
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { memberships: true, events: true } },
@@ -58,40 +57,64 @@ export default async function CommunitiesPage() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {communities.map((community) => (
-            <Link key={community.id} href={`/communities/${community.slug}`}>
-              <Card className="h-full transition-colors hover:bg-muted/50">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base leading-tight">{community.name}</CardTitle>
-                    {memberCommunityIds.has(community.id) && (
-                      <Badge variant="secondary" className="shrink-0 text-xs">Membre</Badge>
+          {communities.map((community) => {
+            const isMember = memberCommunityIds.has(community.id)
+            const isPrivate = !community.isPublic
+            const showDetails = !isPrivate || isMember
+
+            return (
+              <Link key={community.id} href={`/communities/${community.slug}`}>
+                <Card className="h-full transition-colors hover:bg-muted/50">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-base leading-tight">{community.name}</CardTitle>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {isPrivate && (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <Lock className="h-3 w-3" />
+                            Privée
+                          </Badge>
+                        )}
+                        {isMember && (
+                          <Badge variant="secondary" className="text-xs">Membre</Badge>
+                        )}
+                      </div>
+                    </div>
+                    {showDetails && (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-xs">{community.game}</Badge>
+                      </div>
                     )}
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="text-xs">{community.game}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {community.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {community.description}
-                    </p>
+                  </CardHeader>
+                  {showDetails ? (
+                    <CardContent className="space-y-3">
+                      {community.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {community.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3.5 w-3.5" />
+                          {community._count.memberships} membre{community._count.memberships > 1 ? "s" : ""}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {community._count.events} événement{community._count.events > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    </CardContent>
+                  ) : (
+                    <CardContent>
+                      <p className="text-xs text-muted-foreground italic">
+                        Informations réservées aux membres.
+                      </p>
+                    </CardContent>
                   )}
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5" />
-                      {community._count.memberships} membre{community._count.memberships > 1 ? "s" : ""}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {community._count.events} événement{community._count.events > 1 ? "s" : ""}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                </Card>
+              </Link>
+            )
+          })}
         </div>
       )}
     </div>
