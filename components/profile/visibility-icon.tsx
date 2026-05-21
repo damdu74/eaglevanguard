@@ -14,10 +14,10 @@ import { Button } from "@/components/ui/button"
 
 type Visibility = "PUBLIC" | "FRIENDS" | "PRIVATE"
 
-const options: { value: Visibility; label: string; description: string; icon: typeof Globe; color: string }[] = [
-  { value: "PUBLIC", label: "Public", description: "Visible par tous", icon: Globe, color: "text-blue-500" },
-  { value: "FRIENDS", label: "Amis", description: "Amis uniquement", icon: Users, color: "text-violet-500" },
-  { value: "PRIVATE", label: "Privé", description: "Vous seul", icon: Lock, color: "text-foreground" },
+const options: { value: Visibility; label: string; description: string; icon: typeof Globe; bg: string; iconColor: string }[] = [
+  { value: "PUBLIC", label: "Public", description: "Visible par tous", icon: Globe, bg: "bg-blue-500 hover:bg-blue-600 border-blue-500 text-white", iconColor: "text-white" },
+  { value: "FRIENDS", label: "Amis", description: "Amis uniquement", icon: Users, bg: "bg-violet-500 hover:bg-violet-600 border-violet-500 text-white", iconColor: "text-white" },
+  { value: "PRIVATE", label: "Privé", description: "Vous seul", icon: Lock, bg: "bg-black hover:bg-neutral-800 border-black text-white dark:bg-neutral-800 dark:border-neutral-700", iconColor: "text-white" },
 ]
 
 export function VisibilityIcon({ initialVisibility }: { initialVisibility: Visibility }) {
@@ -26,7 +26,6 @@ export function VisibilityIcon({ initialVisibility }: { initialVisibility: Visib
 
   const current = options.find((o) => o.value === visibility)!
   const Icon = current.icon
-  const color = current.color
 
   async function handleChange(value: Visibility) {
     if (value === visibility || saving) return
@@ -50,9 +49,9 @@ export function VisibilityIcon({ initialVisibility }: { initialVisibility: Visib
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2" disabled={saving}>
-          <Icon className={cn("h-4 w-4", color)} />
-          <span className={cn("text-sm", color)}>{current.label}</span>
+        <Button variant="outline" size="sm" className={cn("gap-2", current.bg)} disabled={saving}>
+          <Icon className="h-4 w-4 text-white" />
+          <span className="text-sm text-white">{current.label}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -62,7 +61,7 @@ export function VisibilityIcon({ initialVisibility }: { initialVisibility: Visib
             onClick={() => handleChange(value)}
             className={cn("gap-3 cursor-pointer", value === visibility && "font-medium")}
           >
-            <Ico className={cn("h-4 w-4 shrink-0", color)} />
+            <Ico className="h-4 w-4 shrink-0" />
             <div>
               <p>{label}</p>
               <p className="text-xs text-muted-foreground">{description}</p>
