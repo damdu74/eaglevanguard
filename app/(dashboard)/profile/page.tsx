@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Crown, User } from "lucide-react"
 import { LinkDiscordButton } from "@/components/profile/link-discord-button"
 import { AvatarUpload } from "@/components/profile/avatar-upload"
 import { BioEdit } from "@/components/profile/bio-edit"
@@ -12,13 +13,6 @@ import Image from "next/image"
 
 export const metadata = { title: "Profil" }
 
-const ROLE_LABELS: Record<string, string> = {
-  OWNER: "Propriétaire",
-  ADMIN: "Administrateur",
-  MODERATOR: "Modérateur",
-  MEMBER: "Membre",
-  RECRUIT: "Recrue",
-}
 
 export default async function ProfilePage({ searchParams }: { searchParams: { discord_linked?: string; error?: string } }) {
   const session = await getServerSession(authOptions)
@@ -118,7 +112,10 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
             {user.memberships.map((m) => (
               <div key={m.communityId} className="flex items-center justify-between">
                 <p className="font-medium">{m.community.name}</p>
-                <Badge variant="outline">{ROLE_LABELS[m.role] ?? m.role}</Badge>
+                {m.role === "OWNER"
+                  ? <Crown className="h-4 w-4 text-yellow-500" />
+                  : <User className="h-4 w-4 text-muted-foreground" />
+                }
               </div>
             ))}
           </CardContent>
