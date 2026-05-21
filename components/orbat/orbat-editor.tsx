@@ -1,14 +1,12 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import ReactFlow, {
   Background,
   Controls,
   MiniMap,
-  addEdge,
   useNodesState,
   useEdgesState,
-  type Connection,
   type Edge,
   type Node,
   Panel,
@@ -32,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { OrbatUnitNode } from "./orbat-unit-node"
-import { Save, Plus, Trash2 } from "lucide-react"
+import { Save, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 const nodeTypes = { unit: OrbatUnitNode }
@@ -48,6 +46,16 @@ const UNIT_TYPES = [
   { value: "medical", label: "➕ Médical" },
 ]
 
+const ROOT_ID = "root"
+const ROOT_NODE: Node = {
+  id: ROOT_ID,
+  type: "unit",
+  position: { x: 0, y: 0 },
+  draggable: false,
+  deletable: false,
+  data: { label: "Commandement", type: "hq", isRoot: true, callsign: "" },
+}
+
 interface OrbatEditorProps {
   communitySlug: string
   initialNodes?: Node[]
@@ -62,37 +70,73 @@ interface EditState {
   callsign: string
 }
 
+function buildNodesWithCallbacks(
+  nodes: Node[],
+  readOnly: boolean,
+  onAddChild: (id: string) => void
+): Node[] {
+  return nodes.map((n) => ({
+    ...n,
+    data: { ...n.data, readOnly, onAddChild: readOnly ? undefined : onAddChild },
+  }))
+}
+
 export function OrbatEditor({
   communitySlug,
   initialNodes = [],
   initialEdges = [],
   readOnly = false,
 }: OrbatEditorProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
+  const hasRoot = initialNodes.some((n) => n.id === ROOT_ID)
+  const baseNodes = hasRoot ? initialNodes : [ROOT_NODE, ...initialNodes]
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [saving, setSaving] = useState(false)
   const [editState, setEditState] = useState<EditState | null>(null)
 
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge({ ...params, type: "smoothstep" }, eds)),
-    [setEdges]
-  )
+  const addChildNode = useCallback((parentId: string) => {
+    const parentNode = nodes.find((n) => n.id === parentId)
+    if (!parentNode) return
 
-  const addNode = useCallback(() => {
-    const id = `unit-${Date.now()}`
-    setNodes((nds) => [
-      ...nds,
-      {
-        id,
-        type: "unit",
-        position: { x: Math.random() * 400 + 100, y: Math.random() * 200 + 100 },
-        data: { label: "Nouvelle unité", type: "infantry", callsign: "" },
+    const siblings = edges.filter((e) => e.source === parentId)
+    const siblingCount = siblings.length
+    const childId = `unit-${Date.now()}`
+
+    const offsetX = (siblingCount - Math.floor(siblingCount / 2)) * 200 - (siblingCount % 2 === 0 ? 100 : 0)
+
+    const newNode: Node = {
+      id: childId,
+      type: "unit",
+      position: {
+        x: parentNode.position.x + offsetX,
+        y: parentNode.position.y + 160,
       },
-    ])
-  }, [setNodes])
+      data: { label: "Nouvelle unité", type: "infantry", callsign: "" },
+    }
+
+    const newEdge: Edge = {
+      id: `edge-${Date.now()}`,
+      source: parentId,
+      target: childId,
+      type: "smoothstep",
+    }
+
+    setNodes((nds) => [...nds, newNode])
+    setEdges((eds) => [...eds, newEdge])
+
+    // Ouvrir le dialog d'édition immédiatement
+    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", callsign: "" })
+  }, [nodes, edges, setNodes, setEdges])
+
+  // Injecter les callbacks dans les données des nœuds
+  useEffect(() => {
+    setNodes((nds) => buildNodesWithCallbacks(nds, readOnly, addChildNode))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readOnly, addChildNode])
 
   const removeSelected = useCallback(() => {
-    setNodes((nds) => nds.filter((n) => !n.selected))
+    setNodes((nds) => nds.filter((n) => !n.selected || n.id === ROOT_ID))
     setEdges((eds) => eds.filter((e) => !e.selected))
   }, [setNodes, setEdges])
 
@@ -143,12 +187,12 @@ export function OrbatEditor({
           edges={edges}
           onNodesChange={readOnly ? undefined : onNodesChange}
           onEdgesChange={readOnly ? undefined : onEdgesChange}
-          onConnect={readOnly ? undefined : onConnect}
           onNodeDoubleClick={onNodeDoubleClick}
           nodeTypes={nodeTypes}
           fitView
           proOptions={{ hideAttribution: true }}
-          defaultEdgeOptions={{ type: "smoothstep", animated: false }}
+          defaultEdgeOptions={{ type: "smoothstep" }}
+          nodesConnectable={false}
         >
           <Background />
           <Controls />
@@ -156,13 +200,9 @@ export function OrbatEditor({
 
           {!readOnly && (
             <Panel position="top-right" className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={addNode}>
-                <Plus className="mr-1 h-4 w-4" />
-                Unité
-              </Button>
               <Button size="sm" variant="outline" onClick={removeSelected}>
                 <Trash2 className="mr-1 h-4 w-4" />
-                Supprimer
+                Supprimer la sélection
               </Button>
               <Button size="sm" onClick={save} disabled={saving}>
                 <Save className="mr-1 h-4 w-4" />
@@ -174,7 +214,7 @@ export function OrbatEditor({
           {!readOnly && (
             <Panel position="bottom-center">
               <p className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded border">
-                Double-clic sur une unité pour la modifier · Glisser entre deux nœuds pour les relier
+                Survolez une unité → cliquez <strong>+</strong> pour ajouter un subordonné · Double-clic pour modifier
               </p>
             </Panel>
           )}
@@ -184,7 +224,9 @@ export function OrbatEditor({
       <Dialog open={!!editState} onOpenChange={(open) => { if (!open) setEditState(null) }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Modifier l&apos;unité</DialogTitle>
+            <DialogTitle>
+              {editState?.nodeId === ROOT_ID ? "Modifier le commandement" : "Modifier l'unité"}
+            </DialogTitle>
           </DialogHeader>
           {editState && (
             <div className="space-y-4">
@@ -195,6 +237,7 @@ export function OrbatEditor({
                   onChange={(e) => setEditState({ ...editState, label: e.target.value })}
                   placeholder="Ex: 1ère Section"
                   autoFocus
+                  onKeyDown={(e) => e.key === "Enter" && applyEdit()}
                 />
               </div>
               <div className="space-y-1.5">
@@ -219,6 +262,7 @@ export function OrbatEditor({
                   value={editState.callsign}
                   onChange={(e) => setEditState({ ...editState, callsign: e.target.value })}
                   placeholder="Ex: Alpha-1"
+                  onKeyDown={(e) => e.key === "Enter" && applyEdit()}
                 />
               </div>
             </div>
