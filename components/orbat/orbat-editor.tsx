@@ -30,19 +30,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { OrbatUnitNode } from "./orbat-unit-node"
+import { NATO_TYPES, NATO_SIZES } from "./nato-symbol"
 import { Save, Trash2 } from "lucide-react"
 import { toast } from "sonner"
-
-const UNIT_TYPES = [
-  { value: "hq", label: "⭐ QG" },
-  { value: "infantry", label: "⚔️ Infanterie" },
-  { value: "armor", label: "🛡️ Blindé" },
-  { value: "aviation", label: "✈️ Aviation" },
-  { value: "artillery", label: "💥 Artillerie" },
-  { value: "logistics", label: "🔧 Logistique" },
-  { value: "recon", label: "👁️ Reconnaissance" },
-  { value: "medical", label: "➕ Médical" },
-]
 
 const ROOT_ID = "root"
 
@@ -53,7 +43,7 @@ function makeRootNode(): Node {
     position: { x: 0, y: 0 },
     draggable: false,
     deletable: false,
-    data: { label: "Commandement", type: "hq", isRoot: true, callsign: "" },
+    data: { label: "Commandement", type: "hq", size: "", isRoot: true, callsign: "" },
   }
 }
 
@@ -68,6 +58,7 @@ interface EditState {
   nodeId: string
   label: string
   type: string
+  size: string
   callsign: string
 }
 
@@ -109,7 +100,7 @@ export function OrbatEditor({
           x: parentNode.position.x + offset,
           y: parentNode.position.y + 160,
         },
-        data: { label: "Nouvelle unité", type: "infantry", callsign: "" },
+        data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "" },
       },
     ])
 
@@ -123,7 +114,7 @@ export function OrbatEditor({
       },
     ])
 
-    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", callsign: "" })
+    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "" })
   }, [setNodes, setEdges])
 
   // Injecter onAddChild dans les données sans useEffect
@@ -154,6 +145,7 @@ export function OrbatEditor({
       nodeId: node.id,
       label: node.data.label ?? "",
       type: node.data.type ?? "infantry",
+      size: node.data.size ?? "",
       callsign: node.data.callsign ?? "",
     })
   }, [readOnly])
@@ -163,7 +155,7 @@ export function OrbatEditor({
     setNodes((nds) =>
       nds.map((n) =>
         n.id === editState.nodeId
-          ? { ...n, data: { ...n.data, label: editState.label, type: editState.type, callsign: editState.callsign } }
+          ? { ...n, data: { ...n.data, label: editState.label, type: editState.type, size: editState.size, callsign: editState.callsign } }
           : n
       )
     )
@@ -249,12 +241,29 @@ export function OrbatEditor({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Type</Label>
+                <Label>Type d'unité</Label>
                 <Select value={editState.type} onValueChange={(v) => setEditState({ ...editState, type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {Array.from(new Set(NATO_TYPES.map((t) => t.category))).map((cat) => (
+                      <div key={cat}>
+                        <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{cat}</div>
+                        {NATO_TYPES.filter((t) => t.category === cat).map((t) => (
+                          <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                        ))}
+                      </div>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Échelon <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                <Select value={editState.size || "__none__"} onValueChange={(v) => setEditState({ ...editState, size: v === "__none__" ? "" : v })}>
+                  <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
                   <SelectContent>
-                    {UNIT_TYPES.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    <SelectItem value="__none__">Aucun</SelectItem>
+                    {NATO_SIZES.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>{s.marker} — {s.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
