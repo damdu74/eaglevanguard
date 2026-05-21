@@ -27,7 +27,7 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="flex flex-col items-center gap-8 px-4 pt-10 pb-24 text-center">
-        <Image src="/logo.svg" alt="NEXUS" width={520} height={399} priority />
+        <Image src="/logo.png" alt="NEXUS" width={520} height={399} priority />
         <h1 className="text-5xl font-bold tracking-tight lg:text-7xl">
           Gérez votre unité
           <br />
