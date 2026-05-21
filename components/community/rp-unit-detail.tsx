@@ -436,7 +436,7 @@ function CharacterTable({
             <TableHead>Joueur</TableHead>
             <TableHead>Rôle</TableHead>
             <TableHead className="hidden md:table-cell">Backstory</TableHead>
-            {isStaff && groups.length > 0 && <TableHead>Groupe</TableHead>}
+            {isStaff && groups.length > 0 && <TableHead className="text-center">Groupe</TableHead>}
             <TableHead className="w-20" />
           </TableRow>
         </TableHeader>
@@ -467,12 +467,12 @@ function CharacterTable({
                   <span className="line-clamp-1">{char.description ?? "—"}</span>
                 </TableCell>
                 {isStaff && groups.length > 0 && (
-                  <TableCell>
+                  <TableCell className="text-center">
                     <Select
                       value={char.rpGroupId ?? "none"}
                       onValueChange={(val) => onAssign(char.id, val === "none" ? null : val)}
                     >
-                      <SelectTrigger className="h-7 w-[140px] text-xs">
+                      <SelectTrigger className="h-7 w-[180px] text-xs mx-auto">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
