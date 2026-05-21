@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { PaginationBar } from "@/components/ui/pagination-bar"
+import { CommunitySearch } from "@/components/community/community-search"
 import Link from "next/link"
 import { Users, Calendar, Plus, Shield, Lock, Globe } from "lucide-react"
 
@@ -14,16 +15,24 @@ export const metadata = { title: "Annuaire des communautés" }
 const PER_PAGE = 12
 
 interface PageProps {
-  searchParams: { page?: string }
+  searchParams: { page?: string; q?: string; game?: string }
 }
 
 export default async function CommunitiesPage({ searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
   const page = Math.max(1, parseInt(searchParams.page ?? "1", 10))
+  const q = searchParams.q?.trim() ?? ""
+  const gameFilter = searchParams.game?.trim() ?? ""
 
-  const [total, communities] = await Promise.all([
-    prisma.community.count(),
+  const where = {
+    ...(q ? { name: { contains: q, mode: "insensitive" as const } } : {}),
+    ...(gameFilter ? { game: gameFilter } : {}),
+  }
+
+  const [total, communities, allGames] = await Promise.all([
+    prisma.community.count({ where }),
     prisma.community.findMany({
+      where,
       orderBy: { createdAt: "desc" },
       include: {
         _count: { select: { memberships: true, events: true } },
@@ -31,6 +40,11 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
       skip: (page - 1) * PER_PAGE,
       take: PER_PAGE,
     }),
+    prisma.community.findMany({
+      select: { game: true },
+      distinct: ["game"],
+      orderBy: { game: "asc" },
+    }).then((rows) => rows.map((r) => r.game)),
   ])
 
   const memberCommunityIds = session?.user?.id
@@ -59,14 +73,22 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
         )}
       </div>
 
+      <CommunitySearch games={allGames} />
+
       {communities.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-24 text-muted-foreground text-center">
           <Shield className="h-12 w-12" />
           <div>
-            <p className="font-medium">Aucune communauté pour le moment.</p>
-            <p className="text-sm">Soyez le premier à en créer une !</p>
+            {q || gameFilter ? (
+              <p className="font-medium">Aucune communauté ne correspond à votre recherche.</p>
+            ) : (
+              <>
+                <p className="font-medium">Aucune communauté pour le moment.</p>
+                <p className="text-sm">Soyez le premier à en créer une !</p>
+              </>
+            )}
           </div>
-          {session && (
+          {session && !q && !gameFilter && (
             <Button asChild>
               <Link href="/communities/new">Créer une communauté</Link>
             </Button>
