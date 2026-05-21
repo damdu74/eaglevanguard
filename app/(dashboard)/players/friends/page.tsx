@@ -62,7 +62,7 @@ export default async function FriendsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Amis</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Colonne gauche — liste d'amis */}
         <Card>
           <CardHeader>
