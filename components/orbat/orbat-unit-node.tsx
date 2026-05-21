@@ -46,16 +46,16 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
           {/* Image (gauche) */}
           <div className="flex items-center justify-center">
             {data.imageUrl ? (
-              <div className="h-11 w-11 rounded overflow-hidden border border-border shrink-0">
+              <div style={{ width: 44, height: 44, borderRadius: 6, overflow: "hidden", border: "1px solid hsl(var(--border))", flexShrink: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={data.imageUrl}
                   alt=""
-                  className="w-full h-full object-cover"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 />
               </div>
             ) : (
-              <div className="h-11 w-11 rounded border border-dashed border-border/60 bg-muted/30 flex items-center justify-center shrink-0">
+              <div style={{ width: 44, height: 44, borderRadius: 6, flexShrink: 0 }} className="border border-dashed border-border/60 bg-muted/30 flex items-center justify-center">
                 <ImageIcon className="h-4 w-4 text-muted-foreground/40" />
               </div>
             )}
