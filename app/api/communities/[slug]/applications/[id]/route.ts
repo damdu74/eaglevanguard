@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         data: { status: "ACCEPTED", response: response ?? null },
       }),
       prisma.membership.create({
-        data: { communityId: community.id, userId: application.userId, role: "RECRUIT", joinedAt: application.createdAt },
+        data: { communityId: community.id, userId: application.userId, role: "RECRUIT" },
       }),
       prisma.notification.create({
         data: {
