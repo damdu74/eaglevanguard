@@ -254,13 +254,18 @@ export function NatoSymbol({ type, size, label, callsign, isRoot, selected, comp
   const borderColor = selected ? "#7c3aed" : isRoot ? "#4c1d95" : "#111111"
   const borderWidth = selected ? 4 : 3.5
   const fillColor = inverted ? "#111111" : isRoot ? "#ede9fe" : "white"
+  // ●/ø sont des glyphes naturellement plus petits — on grossit leur rendu
+  const isCircleMarker = /^[●ø]+$/.test(sizeMarker)
 
   if (compact) {
     return (
       <div className="flex flex-col items-center select-none shrink-0">
         <div className="h-4 flex items-end justify-center">
           {sizeMarker && (
-            <span className="text-[9px] font-black" style={{ color: "#111111" }}>
+            <span
+              className="font-black"
+              style={{ color: "#111111", fontSize: isCircleMarker ? "13px" : "9px" }}
+            >
               {sizeMarker}
             </span>
           )}
@@ -279,7 +284,14 @@ export function NatoSymbol({ type, size, label, callsign, isRoot, selected, comp
       {/* Indicateur de taille */}
       <div className="h-5 flex items-end justify-center">
         {sizeMarker && (
-          <span className="text-xs font-black tracking-widest" style={{ color: "#111111", letterSpacing: "1px" }}>
+          <span
+            className="font-black"
+            style={{
+              color: "#111111",
+              fontSize: isCircleMarker ? "17px" : "12px",
+              letterSpacing: isCircleMarker ? "1px" : "1px",
+            }}
+          >
             {sizeMarker}
           </span>
         )}
