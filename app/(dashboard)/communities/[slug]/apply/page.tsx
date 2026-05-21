@@ -17,12 +17,6 @@ export async function generateMetadata({ params }: PageProps) {
   return { title: community ? `Candidater — ${community.name}` : "Candidature" }
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  PENDING: "En attente",
-  ACCEPTED: "Acceptée",
-  REJECTED: "Refusée",
-  WITHDRAWN: "Retirée",
-}
 
 export default async function ApplyPage({ params }: PageProps) {
   const session = await getServerSession(authOptions)
@@ -69,14 +63,12 @@ export default async function ApplyPage({ params }: PageProps) {
         </CardHeader>
       </Card>
 
-      {existingApplication && existingApplication.status !== "WITHDRAWN" ? (
+      {existingApplication?.status === "PENDING" ? (
         <Card>
           <CardContent className="pt-6 space-y-3">
             <p className="text-sm font-medium">
               Statut de votre candidature :{" "}
-              <span className="text-primary">
-                {STATUS_LABELS[existingApplication.status] ?? existingApplication.status}
-              </span>
+              <span className="text-primary">En attente</span>
             </p>
             {existingApplication.message && (
               <div>
@@ -84,19 +76,23 @@ export default async function ApplyPage({ params }: PageProps) {
                 <p className="text-sm">{existingApplication.message}</p>
               </div>
             )}
-            {existingApplication.response && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Réponse de la communauté</p>
-                <p className="text-sm">{existingApplication.response}</p>
-              </div>
-            )}
-            {existingApplication.status === "PENDING" && (
-              <ApplyForm communitySlug={params.slug} mode="withdraw" />
-            )}
+            <ApplyForm communitySlug={params.slug} mode="withdraw" />
           </CardContent>
         </Card>
       ) : (
-        <ApplyForm communitySlug={params.slug} mode="apply" />
+        <>
+          {existingApplication?.status === "REJECTED" && (
+            <Card className="border-red-500/30 bg-red-500/5">
+              <CardContent className="pt-6 space-y-2">
+                <p className="text-sm font-medium text-red-600">Candidature précédente refusée</p>
+                {existingApplication.response && (
+                  <p className="text-sm text-muted-foreground">{existingApplication.response}</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+          <ApplyForm communitySlug={params.slug} mode="apply" />
+        </>
       )}
     </div>
   )
