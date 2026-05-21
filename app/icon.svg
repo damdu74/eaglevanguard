@@ -1,8 +1,0 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-  <rect width="200" height="200" fill="#0f0a1e"/>
-  <g transform="translate(100, 100)">
-    <polygon points="0,-70 60.6,-35 60.6,35 0,70 -60.6,35 -60.6,-35" fill="#1A1035" stroke="#7C5CFC" stroke-width="2"/>
-    <polygon points="0,-52 45,-26 45,26 0,52 -45,26 -45,-26" fill="none" stroke="#5B3FD9" stroke-width="1" opacity="0.5"/>
-    <text x="0" y="20" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="52" fill="#C084FC">N</text>
-  </g>
-</svg>
