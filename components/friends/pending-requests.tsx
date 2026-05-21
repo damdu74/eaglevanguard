@@ -84,7 +84,7 @@ export function PendingRequests({ initialReceived }: Props) {
           <div className="flex gap-1 shrink-0">
             <Button
               size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 bg-green-600 hover:bg-green-700 text-white"
               disabled={loading === r.id}
               onClick={() => accept(r.id)}
               title="Accepter"
@@ -93,8 +93,7 @@ export function PendingRequests({ initialReceived }: Props) {
             </Button>
             <Button
               size="icon"
-              variant="outline"
-              className="h-8 w-8"
+              className="h-8 w-8 bg-red-600 hover:bg-red-700 text-white"
               disabled={loading === r.id}
               onClick={() => decline(r.id)}
               title="Refuser"
