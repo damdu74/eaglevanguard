@@ -5,6 +5,7 @@ import { SignInButtons } from "@/components/auth/sign-in-buttons"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Footer } from "@/components/layout/footer"
 import { Shield } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 
 export const metadata = { title: "Connexion" }
@@ -16,9 +17,8 @@ export default async function SignInPage() {
   return (
     <div className="flex h-screen flex-col">
       <header className="shrink-0 border-b bg-background px-6 py-4">
-        <Link href="/" className="flex items-center gap-2 font-bold w-fit">
-          <Shield className="h-5 w-5 text-primary" />
-          NEXUS
+        <Link href="/" className="flex items-center w-fit">
+          <Image src="/icon.png" alt="NEXUS" width={36} height={36} />
         </Link>
       </header>
       <main className="flex flex-1 items-center justify-center overflow-auto px-4">

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { signOut } from "next-auth/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -10,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Shield, LogOut, Settings, User } from "lucide-react"
+import { LogOut, Settings, User } from "lucide-react"
 import { NotificationBell } from "@/components/layout/notification-bell"
 import type { Session } from "next-auth"
 
@@ -24,9 +25,8 @@ export function Navbar({ user, pendingFriendsCount = 0, pendingApplicationsCount
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
       <div className="flex h-14 items-center px-4 gap-4">
-        <Link href="/dashboard" className="flex items-center gap-2 font-bold">
-          <Shield className="h-5 w-5 text-primary" />
-          NEXUS
+        <Link href="/dashboard" className="flex items-center">
+          <Image src="/icon.png" alt="NEXUS" width={36} height={36} priority />
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 ml-4">

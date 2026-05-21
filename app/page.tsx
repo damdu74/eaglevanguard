@@ -10,7 +10,7 @@ export default function HomePage() {
       {/* Navbar */}
       <header className="flex shrink-0 items-center justify-between border-b bg-background px-6 py-2 z-50">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/icon.png" alt="NEXUS" width={40} height={40} priority />
+          <Image src="/icon.png" alt="NEXUS" width={36} height={36} priority />
         </Link>
         <div className="flex gap-3">
           <Button variant="ghost" asChild>

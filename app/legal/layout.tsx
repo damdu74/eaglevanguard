@@ -1,14 +1,13 @@
 import Link from "next/link"
-import { Shield } from "lucide-react"
+import Image from "next/image"
 import { Footer } from "@/components/layout/footer"
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen flex-col">
       <header className="shrink-0 border-b bg-background px-6 py-4">
-        <Link href="/" className="flex items-center gap-2 font-bold w-fit">
-          <Shield className="h-5 w-5 text-primary" />
-          NEXUS
+        <Link href="/" className="flex items-center w-fit">
+          <Image src="/icon.png" alt="NEXUS" width={36} height={36} />
         </Link>
       </header>
       <main className="flex-1 overflow-auto">
