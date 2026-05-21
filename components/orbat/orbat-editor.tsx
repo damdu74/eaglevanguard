@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import ReactFlow, {
   Background,
   Controls,
@@ -33,8 +33,6 @@ import { OrbatUnitNode } from "./orbat-unit-node"
 import { Save, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
-const nodeTypes = { unit: OrbatUnitNode }
-
 const UNIT_TYPES = [
   { value: "hq", label: "⭐ QG" },
   { value: "infantry", label: "⚔️ Infanterie" },
@@ -47,13 +45,16 @@ const UNIT_TYPES = [
 ]
 
 const ROOT_ID = "root"
-const ROOT_NODE: Node = {
-  id: ROOT_ID,
-  type: "unit",
-  position: { x: 0, y: 0 },
-  draggable: false,
-  deletable: false,
-  data: { label: "Commandement", type: "hq", isRoot: true, callsign: "" },
+
+function makeRootNode(): Node {
+  return {
+    id: ROOT_ID,
+    type: "unit",
+    position: { x: 0, y: 0 },
+    draggable: false,
+    deletable: false,
+    data: { label: "Commandement", type: "hq", isRoot: true, callsign: "" },
+  }
 }
 
 interface OrbatEditorProps {
@@ -70,17 +71,6 @@ interface EditState {
   callsign: string
 }
 
-function buildNodesWithCallbacks(
-  nodes: Node[],
-  readOnly: boolean,
-  onAddChild: (id: string) => void
-): Node[] {
-  return nodes.map((n) => ({
-    ...n,
-    data: { ...n.data, readOnly, onAddChild: readOnly ? undefined : onAddChild },
-  }))
-}
-
 export function OrbatEditor({
   communitySlug,
   initialNodes = [],
@@ -88,52 +78,70 @@ export function OrbatEditor({
   readOnly = false,
 }: OrbatEditorProps) {
   const hasRoot = initialNodes.some((n) => n.id === ROOT_ID)
-  const baseNodes = hasRoot ? initialNodes : [ROOT_NODE, ...initialNodes]
+  const baseNodes = hasRoot ? initialNodes : [makeRootNode(), ...initialNodes]
 
   const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [saving, setSaving] = useState(false)
   const [editState, setEditState] = useState<EditState | null>(null)
 
+  // Refs stables pour éviter les boucles dans les callbacks
+  const nodesRef = useRef(nodes)
+  const edgesRef = useRef(edges)
+  nodesRef.current = nodes
+  edgesRef.current = edges
+
+  // Callback stable : ne dépend que de setNodes/setEdges
   const addChildNode = useCallback((parentId: string) => {
-    const parentNode = nodes.find((n) => n.id === parentId)
+    const parentNode = nodesRef.current.find((n) => n.id === parentId)
     if (!parentNode) return
 
-    const siblings = edges.filter((e) => e.source === parentId)
-    const siblingCount = siblings.length
+    const siblingCount = edgesRef.current.filter((e) => e.source === parentId).length
+    const offset = (siblingCount % 2 === 0 ? 1 : -1) * Math.ceil(siblingCount / 2) * 200
     const childId = `unit-${Date.now()}`
 
-    const offsetX = (siblingCount - Math.floor(siblingCount / 2)) * 200 - (siblingCount % 2 === 0 ? 100 : 0)
-
-    const newNode: Node = {
-      id: childId,
-      type: "unit",
-      position: {
-        x: parentNode.position.x + offsetX,
-        y: parentNode.position.y + 160,
+    setNodes((nds) => [
+      ...nds,
+      {
+        id: childId,
+        type: "unit",
+        position: {
+          x: parentNode.position.x + offset,
+          y: parentNode.position.y + 160,
+        },
+        data: { label: "Nouvelle unité", type: "infantry", callsign: "" },
       },
-      data: { label: "Nouvelle unité", type: "infantry", callsign: "" },
-    }
+    ])
 
-    const newEdge: Edge = {
-      id: `edge-${Date.now()}`,
-      source: parentId,
-      target: childId,
-      type: "smoothstep",
-    }
+    setEdges((eds) => [
+      ...eds,
+      {
+        id: `edge-${Date.now()}`,
+        source: parentId,
+        target: childId,
+        type: "smoothstep",
+      },
+    ])
 
-    setNodes((nds) => [...nds, newNode])
-    setEdges((eds) => [...eds, newEdge])
-
-    // Ouvrir le dialog d'édition immédiatement
     setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", callsign: "" })
-  }, [nodes, edges, setNodes, setEdges])
+  }, [setNodes, setEdges])
 
-  // Injecter les callbacks dans les données des nœuds
-  useEffect(() => {
-    setNodes((nds) => buildNodesWithCallbacks(nds, readOnly, addChildNode))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readOnly, addChildNode])
+  // Injecter onAddChild dans les données sans useEffect
+  const nodesWithCallbacks = useMemo(
+    () =>
+      nodes.map((n) => ({
+        ...n,
+        data: {
+          ...n.data,
+          readOnly,
+          onAddChild: readOnly ? undefined : addChildNode,
+        },
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [nodes, readOnly]
+  )
+
+  const nodeTypes = useMemo(() => ({ unit: OrbatUnitNode }), [])
 
   const removeSelected = useCallback(() => {
     setNodes((nds) => nds.filter((n) => !n.selected || n.id === ROOT_ID))
@@ -183,7 +191,7 @@ export function OrbatEditor({
     <>
       <div className="h-[72vh] w-full rounded-lg border">
         <ReactFlow
-          nodes={nodes}
+          nodes={nodesWithCallbacks}
           edges={edges}
           onNodesChange={readOnly ? undefined : onNodesChange}
           onEdgesChange={readOnly ? undefined : onEdgesChange}
@@ -214,7 +222,7 @@ export function OrbatEditor({
           {!readOnly && (
             <Panel position="bottom-center">
               <p className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded border">
-                Survolez une unité → cliquez <strong>+</strong> pour ajouter un subordonné · Double-clic pour modifier
+                Survolez une unité → <strong>+</strong> pour ajouter un subordonné · Double-clic pour modifier
               </p>
             </Panel>
           )}
@@ -242,13 +250,8 @@ export function OrbatEditor({
               </div>
               <div className="space-y-1.5">
                 <Label>Type</Label>
-                <Select
-                  value={editState.type}
-                  onValueChange={(v) => setEditState({ ...editState, type: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                <Select value={editState.type} onValueChange={(v) => setEditState({ ...editState, type: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {UNIT_TYPES.map((t) => (
                       <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
