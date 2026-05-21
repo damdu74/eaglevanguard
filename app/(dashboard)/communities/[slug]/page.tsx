@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ImageIcon } from "lucide-react"
 import Link from "next/link"
-import { Users, Calendar, GitBranch, Settings } from "lucide-react"
+import { Users, Calendar, GitBranch, Settings, Sword } from "lucide-react"
 
 interface PageProps {
   params: { slug: string }
@@ -102,6 +102,7 @@ export default async function CommunityPage({ params }: PageProps) {
           { href: "members", label: "Membres", icon: Users, count: community._count.memberships },
           { href: "events", label: "Événements", icon: Calendar, count: community._count.events },
           { href: "orbat", label: "ORBAT", icon: GitBranch, count: null },
+          { href: "rp", label: "Roster RP", icon: Sword, count: null },
         ].map(({ href, label, icon: Icon, count }) => (
           <Link key={href} href={`/communities/${params.slug}/${href}`}>
             <Card className="transition-colors hover:bg-muted/50">

@@ -86,6 +86,7 @@ model User {
   sentFriendRequests     Friendship[]  @relation("SentRequests")
   receivedFriendRequests Friendship[]  @relation("ReceivedRequests")
   notifications      Notification[]
+  rpCharacters       RpCharacter[]
 }
 
 model Notification {
@@ -152,6 +153,8 @@ model Community {
   orbatEdges   OrbatEdge[]
   events       Event[]
   applications Application[]
+  rpUnits      RpUnit[]
+  rpCharacters RpCharacter[]
 }
 
 enum MemberRole {
@@ -285,6 +288,39 @@ model EventParticipant {
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, userId])
+}
+
+// ─── ROSTER RP ────────────────────────────────────────────────────────────────
+
+model RpUnit {
+  id          String        @id @default(cuid())
+  communityId String
+  name        String
+  description String?       @db.Text
+  era         String?
+  createdAt   DateTime      @default(now())
+
+  community   Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  characters  RpCharacter[]
+}
+
+model RpCharacter {
+  id          String    @id @default(cuid())
+  communityId String
+  userId      String
+  rpUnitId    String?
+  name        String
+  role        String?
+  description String?   @db.Text
+  imageUrl    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  community Community  @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rpUnit    RpUnit?    @relation(fields: [rpUnitId], references: [id], onDelete: SetNull)
+
+  @@unique([communityId, userId])
 }
 
 // ─── APPLICATIONS ─────────────────────────────────────────────────────────────
