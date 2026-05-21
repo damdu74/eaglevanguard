@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Users, Calendar, Plus, Shield, Lock } from "lucide-react"
 
+export const dynamic = "force-dynamic"
 export const metadata = { title: "Communautés" }
 
 export default async function CommunitiesPage() {
