@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { CommunitySettingsForm } from "@/components/community/community-settings-form"
+import { CommunityLogoUpload } from "@/components/community/community-logo-upload"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 
@@ -21,7 +22,7 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
 
   const community = await prisma.community.findUnique({
     where: { slug: params.slug },
-    select: { id: true, name: true, slug: true, description: true, game: true, isPublic: true, creatorId: true },
+    select: { id: true, name: true, slug: true, description: true, game: true, isPublic: true, creatorId: true, logoUrl: true },
   })
   if (!community) notFound()
 
@@ -47,6 +48,8 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
         <h1 className="text-2xl font-bold">Paramètres</h1>
         <p className="text-sm text-muted-foreground">{community.name}</p>
       </div>
+
+      <CommunityLogoUpload slug={params.slug} currentLogoUrl={community.logoUrl} />
 
       <CommunitySettingsForm
         community={community}

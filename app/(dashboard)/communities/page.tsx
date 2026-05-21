@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { PaginationBar } from "@/components/ui/pagination-bar"
 import { CommunitySearch } from "@/components/community/community-search"
 import Link from "next/link"
-import { Users, Calendar, Plus, Shield, Lock, Globe } from "lucide-react"
+import { Users, Calendar, Plus, Shield, Lock, Globe, ImageIcon } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Annuaire des communautés" }
@@ -107,11 +107,26 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
                   <Card className="h-full transition-colors hover:bg-muted/50">
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-base leading-tight">{community.name}</CardTitle>
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded border border-border bg-muted/30 flex items-center justify-center shrink-0 overflow-hidden">
+                            {community.logoUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={community.logoUrl}
+                                alt={community.name}
+                                style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+                              />
+                            ) : (
+                              <ImageIcon className="h-4 w-4 text-muted-foreground/40" />
+                            )}
+                          </div>
+                          <CardTitle className="text-base leading-tight">{community.name}</CardTitle>
+                        </div>
                         {isMember && (
                           <Badge variant="secondary" className="shrink-0 text-xs">Membre</Badge>
                         )}
                       </div>
+
                       {showDetails && (
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge variant="outline" className="text-xs">{community.game}</Badge>
