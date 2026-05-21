@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -48,6 +48,25 @@ export function FriendsManager({ initialFriends, initialReceived }: Props) {
   const [friends, setFriends] = useState(initialFriends)
   const [received, setReceived] = useState(initialReceived)
   const [loading, setLoading] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function poll() {
+      try {
+        const res = await fetch("/api/friends")
+        if (!res.ok) return
+        const data = await res.json()
+        const incoming: PendingRequest[] = data.received ?? []
+        setReceived((prev) => {
+          const existingIds = new Set(prev.map((r) => r.id))
+          const newOnes = incoming.filter((r) => !existingIds.has(r.id))
+          return newOnes.length > 0 ? [...prev, ...newOnes] : prev
+        })
+      } catch {}
+    }
+
+    const interval = setInterval(poll, 15000)
+    return () => clearInterval(interval)
+  }, [])
 
   async function accept(request: PendingRequest) {
     setLoading(request.id)
