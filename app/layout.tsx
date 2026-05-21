@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   description: "Plateforme de gestion de communautés ARMA 3",
   icons: {
-    icon: "/logo.svg",
+    icon: "/icon.png",
   },
 }
 
