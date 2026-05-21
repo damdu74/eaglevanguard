@@ -44,7 +44,7 @@ export function Navbar({ user, pendingFriendsCount = 0 }: NavbarProps) {
 
         <div className="ml-auto flex items-center gap-2">
           <Link
-            href="/profile"
+            href="/players/friends"
             className="relative flex items-center justify-center h-8 w-8 rounded-full hover:bg-muted transition-colors"
             title={pendingFriendsCount > 0 ? `${pendingFriendsCount} demande${pendingFriendsCount > 1 ? "s" : ""} d'ami` : "Notifications"}
           >

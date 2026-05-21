@@ -2,12 +2,10 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { LinkDiscordButton } from "@/components/profile/link-discord-button"
 import { AvatarUpload } from "@/components/profile/avatar-upload"
-import { FriendsPanel } from "@/components/friends/friends-panel"
-import { UserSearch } from "@/components/friends/user-search"
 import Image from "next/image"
 
 export const metadata = { title: "Profil" }
@@ -28,31 +26,13 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
     where: { id: session.user.id },
     include: {
       memberships: { include: { community: true }, take: 5 },
-      sentFriendRequests: {
-        where: { status: "ACCEPTED" },
-        include: { receiver: { select: { id: true, steamName: true, discordName: true, name: true, customAvatar: true, steamAvatar: true, discordAvatar: true, image: true } } },
-      },
-      receivedFriendRequests: {
-        where: { status: "ACCEPTED" },
-        include: { requester: { select: { id: true, steamName: true, discordName: true, name: true, customAvatar: true, steamAvatar: true, discordAvatar: true, image: true } } },
-      },
     },
   })
 
   if (!user) redirect("/auth/signin")
 
-  const pendingReceived = await prisma.friendship.findMany({
-    where: { receiverId: session.user.id, status: "PENDING" },
-    include: { requester: { select: { id: true, steamName: true, discordName: true, name: true, customAvatar: true, steamAvatar: true, discordAvatar: true, image: true } } },
-  })
-
   const displayName = user.steamName ?? user.discordName ?? user.name ?? "Joueur"
   const displayAvatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar ?? user.image
-
-  const friends = [
-    ...user.sentFriendRequests.map((f) => ({ friendshipId: f.id, user: f.receiver })),
-    ...user.receivedFriendRequests.map((f) => ({ friendshipId: f.id, user: f.requester })),
-  ]
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -133,27 +113,6 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
         </Card>
       )}
 
-      {/* Friends */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Amis</CardTitle>
-          <CardDescription>Gérez votre liste d&apos;amis et les demandes reçues.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FriendsPanel friends={friends} received={pendingReceived} />
-        </CardContent>
-      </Card>
-
-      {/* Add friend */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Ajouter un ami</CardTitle>
-          <CardDescription>Recherchez un joueur par son pseudo.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <UserSearch />
-        </CardContent>
-      </Card>
     </div>
   )
 }

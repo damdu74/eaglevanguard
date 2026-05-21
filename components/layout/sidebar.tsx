@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Users, Shield, Plus, UserSearch } from "lucide-react"
+import { LayoutDashboard, Users, Shield, Plus, UserSearch, UserCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navSections = [
@@ -24,6 +24,7 @@ const navSections = [
     label: "Joueurs",
     items: [
       { href: "/players", label: "Annuaire joueurs", icon: UserSearch },
+      { href: "/players/friends", label: "Mes amis", icon: UserCheck },
     ],
   },
 ]
