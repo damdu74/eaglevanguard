@@ -197,12 +197,36 @@ interface NatoSymbolProps {
   callsign?: string
   isRoot?: boolean
   selected?: boolean
+  compact?: boolean
 }
 
-export function NatoSymbol({ type, size, label, callsign, isRoot, selected }: NatoSymbolProps) {
+export function NatoSymbol({ type, size, label, callsign, isRoot, selected, compact }: NatoSymbolProps) {
   const sizeMarker = NATO_SIZES.find((s) => s.value === size)?.marker ?? ""
   const borderColor = selected ? "#7c3aed" : isRoot ? "#4c1d95" : S
   const fillColor = isRoot ? "#ede9fe" : "white"
+
+  if (compact) {
+    return (
+      <div className="flex flex-col items-center select-none shrink-0">
+        <div className="h-4 flex items-end justify-center">
+          {sizeMarker && (
+            <span className="text-[9px] font-bold" style={{ color: S }}>
+              {sizeMarker}
+            </span>
+          )}
+        </div>
+        <svg viewBox="0 0 60 40" width="54" height="36">
+          <rect
+            x="1.5" y="1.5" width="57" height="37"
+            fill={fillColor}
+            stroke={borderColor}
+            strokeWidth={selected ? 3 : 2.5}
+          />
+          <TypeSymbol type={type} />
+        </svg>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col items-center select-none">

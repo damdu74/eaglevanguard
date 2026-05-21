@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import ReactFlow, {
   Background,
   Controls,
@@ -29,10 +29,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { OrbatUnitNode } from "./orbat-unit-node"
+import { OrbatUnitNode, type OrbatRole } from "./orbat-unit-node"
 import { NATO_TYPES, NATO_SIZES } from "./nato-symbol"
-import { Save, Trash2 } from "lucide-react"
+import { Plus, Save, Trash2 } from "lucide-react"
 import { toast } from "sonner"
+
+interface CommunityMember {
+  id: string
+  name: string
+  image?: string | null
+  role: string
+}
 
 const ROOT_ID = "root"
 
@@ -43,7 +50,7 @@ function makeRootNode(): Node {
     position: { x: 0, y: 0 },
     draggable: false,
     deletable: false,
-    data: { label: "Commandement", type: "hq", size: "", isRoot: true, callsign: "" },
+    data: { label: "Commandement", type: "hq", size: "", isRoot: true, callsign: "", roles: [] },
   }
 }
 
@@ -60,6 +67,7 @@ interface EditState {
   type: string
   size: string
   callsign: string
+  roles: OrbatRole[]
 }
 
 export function OrbatEditor({
@@ -75,20 +83,27 @@ export function OrbatEditor({
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [saving, setSaving] = useState(false)
   const [editState, setEditState] = useState<EditState | null>(null)
+  const [members, setMembers] = useState<CommunityMember[]>([])
 
-  // Refs stables pour éviter les boucles dans les callbacks
+  // Fetch community members for role assignment
+  useEffect(() => {
+    fetch(`/api/communities/${communitySlug}/members`)
+      .then((r) => r.json())
+      .then((data) => setMembers(data.members ?? []))
+      .catch(() => {})
+  }, [communitySlug])
+
   const nodesRef = useRef(nodes)
   const edgesRef = useRef(edges)
   nodesRef.current = nodes
   edgesRef.current = edges
 
-  // Callback stable : ne dépend que de setNodes/setEdges
   const addChildNode = useCallback((parentId: string) => {
     const parentNode = nodesRef.current.find((n) => n.id === parentId)
     if (!parentNode) return
 
     const siblingCount = edgesRef.current.filter((e) => e.source === parentId).length
-    const offset = (siblingCount % 2 === 0 ? 1 : -1) * Math.ceil(siblingCount / 2) * 200
+    const offset = (siblingCount % 2 === 0 ? 1 : -1) * Math.ceil(siblingCount / 2) * 300
     const childId = `unit-${Date.now()}`
 
     setNodes((nds) => [
@@ -98,9 +113,9 @@ export function OrbatEditor({
         type: "unit",
         position: {
           x: parentNode.position.x + offset,
-          y: parentNode.position.y + 160,
+          y: parentNode.position.y + 180,
         },
-        data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "" },
+        data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", roles: [] },
       },
     ])
 
@@ -114,10 +129,9 @@ export function OrbatEditor({
       },
     ])
 
-    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "" })
+    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", roles: [] })
   }, [setNodes, setEdges])
 
-  // Injecter onAddChild dans les données sans useEffect
   const nodesWithCallbacks = useMemo(
     () =>
       nodes.map((n) => ({
@@ -147,6 +161,7 @@ export function OrbatEditor({
       type: node.data.type ?? "infantry",
       size: node.data.size ?? "",
       callsign: node.data.callsign ?? "",
+      roles: node.data.roles ?? [],
     })
   }, [readOnly])
 
@@ -155,12 +170,41 @@ export function OrbatEditor({
     setNodes((nds) =>
       nds.map((n) =>
         n.id === editState.nodeId
-          ? { ...n, data: { ...n.data, label: editState.label, type: editState.type, size: editState.size, callsign: editState.callsign } }
+          ? {
+              ...n,
+              data: {
+                ...n.data,
+                label: editState.label,
+                type: editState.type,
+                size: editState.size,
+                callsign: editState.callsign,
+                roles: editState.roles,
+              },
+            }
           : n
       )
     )
     setEditState(null)
   }, [editState, setNodes])
+
+  const updateRole = (index: number, patch: Partial<OrbatRole>) => {
+    if (!editState) return
+    const newRoles = editState.roles.map((r, i) => i === index ? { ...r, ...patch } : r)
+    setEditState({ ...editState, roles: newRoles })
+  }
+
+  const addRole = () => {
+    if (!editState) return
+    setEditState({
+      ...editState,
+      roles: [...editState.roles, { id: `role-${Date.now()}`, title: "", memberId: "", memberName: "" }],
+    })
+  }
+
+  const removeRole = (index: number) => {
+    if (!editState) return
+    setEditState({ ...editState, roles: editState.roles.filter((_, i) => i !== index) })
+  }
 
   const save = async () => {
     setSaving(true)
@@ -222,14 +266,15 @@ export function OrbatEditor({
       </div>
 
       <Dialog open={!!editState} onOpenChange={(open) => { if (!open) setEditState(null) }}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editState?.nodeId === ROOT_ID ? "Modifier le commandement" : "Modifier l'unité"}
+              {editState?.nodeId === ROOT_ID ? "Modifier le commandement" : "Modifier l&apos;unité"}
             </DialogTitle>
           </DialogHeader>
           {editState && (
             <div className="space-y-4">
+              {/* Nom */}
               <div className="space-y-1.5">
                 <Label>Nom</Label>
                 <Input
@@ -240,6 +285,8 @@ export function OrbatEditor({
                   onKeyDown={(e) => e.key === "Enter" && applyEdit()}
                 />
               </div>
+
+              {/* Type */}
               <div className="space-y-1.5">
                 <Label>Type d&apos;unité</Label>
                 <Select value={editState.type} onValueChange={(v) => setEditState({ ...editState, type: v })}>
@@ -256,9 +303,14 @@ export function OrbatEditor({
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Échelon */}
               <div className="space-y-1.5">
                 <Label>Échelon <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-                <Select value={editState.size || "__none__"} onValueChange={(v) => setEditState({ ...editState, size: v === "__none__" ? "" : v })}>
+                <Select
+                  value={editState.size || "__none__"}
+                  onValueChange={(v) => setEditState({ ...editState, size: v === "__none__" ? "" : v })}
+                >
                   <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Aucun</SelectItem>
@@ -268,6 +320,8 @@ export function OrbatEditor({
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Callsign */}
               <div className="space-y-1.5">
                 <Label>Callsign <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
                 <Input
@@ -276,6 +330,55 @@ export function OrbatEditor({
                   placeholder="Ex: Alpha-1"
                   onKeyDown={(e) => e.key === "Enter" && applyEdit()}
                 />
+              </div>
+
+              {/* Postes */}
+              <div className="space-y-2">
+                <Label>Postes</Label>
+                {editState.roles.length === 0 && (
+                  <p className="text-xs text-muted-foreground">Aucun poste défini.</p>
+                )}
+                {editState.roles.map((role, i) => (
+                  <div key={role.id} className="flex gap-2 items-center">
+                    <Input
+                      value={role.title}
+                      onChange={(e) => updateRole(i, { title: e.target.value })}
+                      placeholder="Titre du poste"
+                      className="text-xs h-8 flex-1"
+                    />
+                    <Select
+                      value={role.memberId || "__vacant__"}
+                      onValueChange={(v) => {
+                        if (v === "__vacant__") {
+                          updateRole(i, { memberId: "", memberName: "" })
+                        } else {
+                          const m = members.find((m) => m.id === v)
+                          updateRole(i, { memberId: v, memberName: m?.name ?? "" })
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-xs w-36"><SelectValue placeholder="Vacant" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__vacant__">Vacant</SelectItem>
+                        {members.map((m) => (
+                          <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeRole(i)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" className="w-full h-8 text-xs" onClick={addRole}>
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Ajouter un poste
+                </Button>
               </div>
             </div>
           )}
