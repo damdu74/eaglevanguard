@@ -84,7 +84,7 @@ export default async function FriendsPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Invitations en attente</CardTitle>
                 {pendingReceived.length > 0 && (
-                  <Badge>{pendingReceived.length}</Badge>
+                  <Badge variant="destructive">{pendingReceived.length}</Badge>
                 )}
               </div>
             </CardHeader>
