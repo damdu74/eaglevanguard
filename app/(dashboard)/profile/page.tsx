@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { LinkDiscordButton } from "@/components/profile/link-discord-button"
 import { AvatarUpload } from "@/components/profile/avatar-upload"
+import { BioEdit } from "@/components/profile/bio-edit"
 import Image from "next/image"
 
 export const metadata = { title: "Profil" }
@@ -54,13 +55,19 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
         <CardHeader>
           <CardTitle>Identité</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center gap-6">
-          <AvatarUpload currentImage={displayAvatar} displayName={displayName} />
-          <div>
-            <p className="text-lg font-semibold">{displayName}</p>
-            <p className="text-sm text-muted-foreground">
-              Membre depuis le {new Date(user.createdAt).toLocaleDateString("fr-FR")}
-            </p>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-6">
+            <AvatarUpload currentImage={displayAvatar} displayName={displayName} />
+            <div>
+              <p className="text-lg font-semibold">{displayName}</p>
+              <p className="text-sm text-muted-foreground">
+                Membre depuis le {new Date(user.createdAt).toLocaleDateString("fr-FR")}
+              </p>
+            </div>
+          </div>
+          <div className="border-t pt-4">
+            <p className="text-sm font-medium mb-2">Bio</p>
+            <BioEdit initialBio={user.bio} />
           </div>
         </CardContent>
       </Card>
