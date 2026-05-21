@@ -11,21 +11,33 @@ export async function GET() {
 
   const userId = session.user.id
 
-  const [friendRequests, pendingApplications] = await Promise.all([
-    prisma.friendship.count({
-      where: { receiverId: userId, status: "PENDING" },
-    }),
+  const [friendRequests, pendingApplications, notifications, unreadCount] = await Promise.all([
+    prisma.friendship.count({ where: { receiverId: userId, status: "PENDING" } }),
     prisma.application.count({
       where: {
         status: "PENDING",
-        community: {
-          memberships: {
-            some: { userId, role: { in: ["OWNER", "ADMIN"] } },
-          },
-        },
+        community: { memberships: { some: { userId, role: { in: ["OWNER", "ADMIN"] } } } },
       },
     }),
+    prisma.notification.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.notification.count({ where: { userId, read: false } }),
   ])
 
-  return NextResponse.json({ friendRequests, pendingApplications })
+  return NextResponse.json({ friendRequests, pendingApplications, notifications, unreadCount })
+}
+
+export async function PATCH() {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+
+  await prisma.notification.updateMany({
+    where: { userId: session.user.id, read: false },
+    data: { read: true },
+  })
+
+  return NextResponse.json({ ok: true })
 }

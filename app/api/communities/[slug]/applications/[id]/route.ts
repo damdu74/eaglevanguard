@@ -43,18 +43,32 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         data: { status: "ACCEPTED", response: response ?? null },
       }),
       prisma.membership.create({
+        data: { communityId: community.id, userId: application.userId, role: "RECRUIT" },
+      }),
+      prisma.notification.create({
         data: {
-          communityId: community.id,
           userId: application.userId,
-          role: "RECRUIT",
+          type: "APPLICATION_ACCEPTED",
+          message: `Votre candidature à « ${community.name} » a été acceptée.`,
+          link: `/communities/${community.slug}`,
         },
       }),
     ])
   } else {
-    await prisma.application.update({
-      where: { id: application.id },
-      data: { status: "REJECTED", response: response ?? null },
-    })
+    await prisma.$transaction([
+      prisma.application.update({
+        where: { id: application.id },
+        data: { status: "REJECTED", response: response ?? null },
+      }),
+      prisma.notification.create({
+        data: {
+          userId: application.userId,
+          type: "APPLICATION_REJECTED",
+          message: `Votre candidature à « ${community.name} » a été refusée.`,
+          link: `/communities/${community.slug}/apply`,
+        },
+      }),
+    ])
   }
 
   return NextResponse.json({ ok: true })

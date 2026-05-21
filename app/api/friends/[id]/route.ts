@@ -14,10 +14,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (friendship.receiverId !== session.user.id) return NextResponse.json({ error: "Interdit" }, { status: 403 })
   if (friendship.status !== "PENDING") return NextResponse.json({ error: "Déjà traité" }, { status: 409 })
 
-  const updated = await prisma.friendship.update({
-    where: { id: params.id },
-    data: { status: "ACCEPTED" },
-  })
+  const [updated] = await prisma.$transaction([
+    prisma.friendship.update({ where: { id: params.id }, data: { status: "ACCEPTED" } }),
+    prisma.notification.create({
+      data: {
+        userId: friendship.requesterId,
+        type: "FRIEND_ACCEPTED",
+        message: `Votre demande d'ami a été acceptée.`,
+        link: `/players/friends`,
+      },
+    }),
+  ])
 
   return NextResponse.json(updated)
 }
