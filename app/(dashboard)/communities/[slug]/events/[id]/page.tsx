@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ParticipateButton } from "@/components/events/participate-button"
+import { EventStatusActions } from "@/components/events/event-status-actions"
 import Link from "next/link"
 import { ChevronLeft, Calendar, Clock, Users, Info } from "lucide-react"
 import Image from "next/image"
@@ -102,14 +103,23 @@ export default async function EventDetailPage({ params }: PageProps) {
             <p className="text-sm text-muted-foreground">{event.community.name}</p>
           </div>
 
-          {canParticipate && (
-            <ParticipateButton
-              communitySlug={params.slug}
-              eventId={event.id}
-              currentStatus={myParticipation?.status as "CONFIRMED" | "TENTATIVE" | "DECLINED" | null ?? null}
-              isMember={!!membership}
-            />
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {isStaff && (
+              <EventStatusActions
+                communitySlug={params.slug}
+                eventId={event.id}
+                currentStatus={event.status as "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED"}
+              />
+            )}
+            {canParticipate && (
+              <ParticipateButton
+                communitySlug={params.slug}
+                eventId={event.id}
+                currentStatus={myParticipation?.status as "CONFIRMED" | "TENTATIVE" | "DECLINED" | null ?? null}
+                isMember={!!membership}
+              />
+            )}
+          </div>
         </div>
       </div>
 
