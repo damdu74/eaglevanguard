@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { LinkDiscordButton } from "@/components/profile/link-discord-button"
 import { AvatarUpload } from "@/components/profile/avatar-upload"
 import { BioEdit } from "@/components/profile/bio-edit"
-import { VisibilityEdit } from "@/components/profile/visibility-edit"
+import { VisibilityIcon } from "@/components/profile/visibility-icon"
 import Image from "next/image"
 
 export const metadata = { title: "Profil" }
@@ -38,7 +38,10 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <h1 className="text-2xl font-bold">Mon profil</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Mon profil</h1>
+        <VisibilityIcon initialVisibility={user.visibility} />
+      </div>
 
       {searchParams.discord_linked && (
         <div className="rounded-md bg-green-500/10 border border-green-500/20 px-4 py-3 text-sm text-green-600">
@@ -104,17 +107,6 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
           </CardContent>
         </Card>
       </div>
-
-      {/* Confidentialité */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Confidentialité</CardTitle>
-          <CardDescription>Choisissez qui peut voir votre profil.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <VisibilityEdit initialVisibility={user.visibility} />
-        </CardContent>
-      </Card>
 
       {/* Communities */}
       {user.memberships.length > 0 && (
