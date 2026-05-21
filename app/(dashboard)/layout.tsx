@@ -25,15 +25,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
     : [0, 0]
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-screen flex-col">
       <Navbar user={session.user} pendingFriendsCount={pendingFriendsCount} pendingApplicationsCount={pendingApplicationsCount} />
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <div className="flex flex-1 flex-col overflow-auto">
-          <main className="flex-1 p-6">{children}</main>
-          <Footer />
-        </div>
+        <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
+      <Footer />
     </div>
   )
 }
