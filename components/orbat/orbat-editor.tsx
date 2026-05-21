@@ -50,7 +50,7 @@ function makeRootNode(): Node {
     position: { x: 0, y: 0 },
     draggable: false,
     deletable: false,
-    data: { label: "Commandement", type: "hq", size: "", isRoot: true, callsign: "", roles: [] },
+    data: { label: "Commandement", type: "hq", size: "", isRoot: true, callsign: "", imageUrl: "", roles: [] },
   }
 }
 
@@ -67,6 +67,7 @@ interface EditState {
   type: string
   size: string
   callsign: string
+  imageUrl: string
   roles: OrbatRole[]
 }
 
@@ -115,7 +116,7 @@ export function OrbatEditor({
           x: parentNode.position.x + offset,
           y: parentNode.position.y + 180,
         },
-        data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", roles: [] },
+        data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", roles: [] },
       },
     ])
 
@@ -129,7 +130,7 @@ export function OrbatEditor({
       },
     ])
 
-    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", roles: [] })
+    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", roles: [] })
   }, [setNodes, setEdges])
 
   const nodesWithCallbacks = useMemo(
@@ -161,6 +162,7 @@ export function OrbatEditor({
       type: node.data.type ?? "infantry",
       size: node.data.size ?? "",
       callsign: node.data.callsign ?? "",
+      imageUrl: node.data.imageUrl ?? "",
       roles: node.data.roles ?? [],
     })
   }, [readOnly])
@@ -178,6 +180,7 @@ export function OrbatEditor({
                 type: editState.type,
                 size: editState.size,
                 callsign: editState.callsign,
+                imageUrl: editState.imageUrl,
                 roles: editState.roles,
               },
             }
@@ -330,6 +333,25 @@ export function OrbatEditor({
                   placeholder="Ex: Alpha-1"
                   onKeyDown={(e) => e.key === "Enter" && applyEdit()}
                 />
+              </div>
+
+              {/* Image */}
+              <div className="space-y-1.5">
+                <Label>Image de l&apos;unité <span className="text-muted-foreground text-xs">(URL, optionnel)</span></Label>
+                <Input
+                  value={editState.imageUrl}
+                  onChange={(e) => setEditState({ ...editState, imageUrl: e.target.value })}
+                  placeholder="https://..."
+                />
+                {editState.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={editState.imageUrl}
+                    alt="Aperçu"
+                    className="h-16 w-16 rounded object-cover border border-border"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                  />
+                )}
               </div>
 
               {/* Postes */}

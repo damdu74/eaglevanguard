@@ -2,7 +2,7 @@
 
 import { memo } from "react"
 import { Handle, Position, type NodeProps } from "reactflow"
-import { Plus } from "lucide-react"
+import { ImageIcon, Plus } from "lucide-react"
 import { NatoSymbol } from "./nato-symbol"
 import { cn } from "@/lib/utils"
 
@@ -18,6 +18,7 @@ interface UnitNodeData {
   type: string
   size?: string
   callsign?: string
+  imageUrl?: string
   isRoot?: boolean
   readOnly?: boolean
   roles?: OrbatRole[]
@@ -35,22 +36,31 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
 
       <div
         className={cn(
-          "w-[260px] rounded-lg border-2 bg-background shadow-sm overflow-hidden transition-colors",
+          "w-[300px] rounded-lg border-2 bg-background shadow-sm overflow-hidden transition-colors",
           selected ? "border-primary" : data.isRoot ? "border-violet-500" : "border-border",
           data.isRoot && "bg-violet-50 dark:bg-violet-950/30"
         )}
       >
-        {/* En-tête : symbole OTAN + infos unité */}
-        <div className="flex items-center gap-2 px-3 py-2">
-          <NatoSymbol
-            type={data.type}
-            size={data.size}
-            label={data.label}
-            isRoot={data.isRoot}
-            selected={selected}
-            compact
-          />
-          <div className="flex-1 min-w-0">
+        {/* En-tête 3 colonnes : image | nom | symbole OTAN */}
+        <div className="grid grid-cols-[52px_1fr_52px] items-center gap-1 px-2 py-2">
+          {/* Image (gauche) */}
+          <div className="flex items-center justify-center">
+            {data.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={data.imageUrl}
+                alt=""
+                className="h-11 w-11 rounded object-cover border border-border"
+              />
+            ) : (
+              <div className="h-11 w-11 rounded border border-dashed border-border/60 bg-muted/30 flex items-center justify-center">
+                <ImageIcon className="h-4 w-4 text-muted-foreground/40" />
+              </div>
+            )}
+          </div>
+
+          {/* Nom (centre) */}
+          <div className="text-center min-w-0 px-1">
             <p className="text-xs font-bold leading-tight truncate">{data.label}</p>
             {data.callsign && (
               <p className="text-[10px] text-muted-foreground leading-none mt-0.5">{data.callsign}</p>
@@ -58,6 +68,18 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
             {data.isRoot && (
               <p className="text-[9px] text-violet-500 font-semibold uppercase tracking-wide mt-0.5">Commandement</p>
             )}
+          </div>
+
+          {/* Symbole OTAN (droite) */}
+          <div className="flex items-center justify-center">
+            <NatoSymbol
+              type={data.type}
+              size={data.size}
+              label={data.label}
+              isRoot={data.isRoot}
+              selected={selected}
+              compact
+            />
           </div>
         </div>
 
@@ -68,7 +90,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
               <div key={role.id} className="flex items-center px-3 py-1 gap-2">
                 <span className="text-[10px] text-muted-foreground flex-1 truncate">{role.title}</span>
                 {role.memberName ? (
-                  <span className="text-[10px] font-medium truncate max-w-[100px] text-foreground">{role.memberName}</span>
+                  <span className="text-[10px] font-medium truncate max-w-[110px] text-foreground">{role.memberName}</span>
                 ) : (
                   <span className="text-[10px] text-muted-foreground/50 italic">Vacant</span>
                 )}
