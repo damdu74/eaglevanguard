@@ -43,18 +43,18 @@ export function Navbar({ user, pendingFriendsCount = 0 }: NavbarProps) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          {pendingFriendsCount > 0 && (
-            <Link
-              href="/profile"
-              className="relative flex items-center justify-center h-8 w-8 rounded-full hover:bg-muted transition-colors"
-              title={`${pendingFriendsCount} demande${pendingFriendsCount > 1 ? "s" : ""} d'ami`}
-            >
-              <Bell className="h-4 w-4" />
+          <Link
+            href="/profile"
+            className="relative flex items-center justify-center h-8 w-8 rounded-full hover:bg-muted transition-colors"
+            title={pendingFriendsCount > 0 ? `${pendingFriendsCount} demande${pendingFriendsCount > 1 ? "s" : ""} d'ami` : "Notifications"}
+          >
+            <Bell className="h-4 w-4" />
+            {pendingFriendsCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                 {pendingFriendsCount > 9 ? "9+" : pendingFriendsCount}
               </span>
-            </Link>
-          )}
+            )}
+          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring">
