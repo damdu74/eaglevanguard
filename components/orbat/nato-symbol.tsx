@@ -3,18 +3,19 @@ import React from "react"
 const S = "#111111"   // noir H&G
 const SW = 5          // trait épais H&G
 
-// Indicateurs de taille OTAN (au-dessus du rectangle)
+// Indicateurs d'échelon (au-dessus du rectangle) — hiérarchie française / NATO APP-6
 export const NATO_SIZES: { value: string; label: string; marker: string }[] = [
-  { value: "team",      label: "Équipe",    marker: "·" },
-  { value: "squad",     label: "Groupe",    marker: "··" },
-  { value: "section",   label: "Section",   marker: "I" },
-  { value: "platoon",   label: "Peloton",   marker: "II" },
-  { value: "company",   label: "Compagnie", marker: "III" },
-  { value: "battalion", label: "Bataillon", marker: "X" },
-  { value: "regiment",  label: "Régiment",  marker: "XX" },
-  { value: "brigade",   label: "Brigade",   marker: "XXX" },
-  { value: "division",  label: "Division",  marker: "XXXX" },
-  { value: "corps",     label: "Corps",     marker: "XXXXX" },
+  { value: "binome",    label: "Binôme",           marker: "·"      },  // 2 soldats
+  { value: "escouade",  label: "Escouade",          marker: "··"     },  // ~4–6 soldats
+  { value: "groupe",    label: "Groupe de combat",  marker: "|"      },  // ~8–12 soldats
+  { value: "section",   label: "Section de combat", marker: "||"     },  // ~25–35 soldats
+  { value: "compagnie", label: "Compagnie",         marker: "|||"    },  // ~100–200 soldats
+  { value: "bataillon", label: "Bataillon",         marker: "X"      },  // ~300–1 000 soldats
+  { value: "regiment",  label: "Régiment",          marker: "XX"     },  // ~1 000–3 000 soldats
+  { value: "brigade",   label: "Brigade",           marker: "XXX"    },  // ~3 000–5 000 soldats
+  { value: "division",  label: "Division",          marker: "XXXX"   },  // ~10 000–20 000 soldats
+  { value: "corps",     label: "Corps d'armée",     marker: "XXXXX"  },  // ~20 000–45 000 soldats
+  { value: "armee",     label: "Armée",             marker: "XXXXXX" },  // 50 000+ soldats
 ]
 
 // Types d'unités avec symboles et labels
@@ -278,7 +279,14 @@ export function NatoSymbol({ type, size, label, callsign, isRoot, selected, comp
       {/* Indicateur de taille */}
       <div className="h-5 flex items-end justify-center">
         {sizeMarker && (
-          <span className="text-xs font-black tracking-widest" style={{ color: "#111111", letterSpacing: "1px" }}>
+          <span
+            className="font-black"
+            style={{
+              color: "#111111",
+              fontSize: sizeMarker.length > 4 ? "9px" : "12px",
+              letterSpacing: sizeMarker.length > 4 ? "0px" : "1px",
+            }}
+          >
             {sizeMarker}
           </span>
         )}
