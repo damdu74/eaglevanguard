@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Footer } from "@/components/layout/footer"
 import { Shield, Users, Calendar, GitBranch } from "lucide-react"
 
 export default function HomePage() {
@@ -79,6 +80,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <Footer />
     </main>
   )
 }
