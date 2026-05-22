@@ -25,17 +25,14 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
   const gameFilter = searchParams.game?.trim() ?? ""
   const userId = session?.user?.id as string | undefined
 
-  const visibilityFilter = userId
-    ? { OR: [{ isPublic: true }, { memberships: { some: { userId } } }] }
-    : { isPublic: true }
-
   const where = {
-    ...visibilityFilter,
+    isPublic: true,
+    ...(userId ? { memberships: { none: { userId } } } : {}),
     ...(q ? { name: { contains: q, mode: "insensitive" as const } } : {}),
     ...(gameFilter ? { game: gameFilter } : {}),
   }
 
-  const [total, communities, allGames, memberCommunityIds] = await Promise.all([
+  const [total, communities, allGames] = await Promise.all([
     prisma.community.count({ where }),
     prisma.community.findMany({
       where,
@@ -47,16 +44,11 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
       take: PER_PAGE,
     }),
     prisma.community.findMany({
-      where: visibilityFilter,
+      where: { isPublic: true },
       select: { game: true },
       distinct: ["game"],
       orderBy: { game: "asc" },
     }).then((rows) => rows.map((r) => r.game)),
-    userId
-      ? prisma.membership
-          .findMany({ where: { userId }, select: { communityId: true } })
-          .then((ms) => new Set(ms.map((m) => m.communityId)))
-      : Promise.resolve(new Set<string>()),
   ])
 
   return (
@@ -101,7 +93,6 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {communities.map((community) => {
-              const isMember = memberCommunityIds.has(community.id)
               const isPrivate = !community.isPublic
 
               return (
@@ -124,9 +115,6 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
                           </div>
                           <CardTitle className="text-base leading-tight">{community.name}</CardTitle>
                         </div>
-                        {isMember && (
-                          <Badge variant="secondary" className="shrink-0 text-xs">Membre</Badge>
-                        )}
                       </div>
 
                       <div className="flex items-center gap-2 flex-wrap">
