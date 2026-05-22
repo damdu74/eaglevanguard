@@ -238,7 +238,7 @@ function MemberRow({
         <Badge
           variant="outline"
           className="text-xs"
-          style={isCreator ? { color: "#5865F2", borderColor: "#5865F2" } : undefined}
+          style={isCreator ? { backgroundColor: "#5865F2", borderColor: "#5865F2", color: "#fff" } : undefined}
         >
           {isCreator ? "Fondateur" : (ROLE_LABELS[role] ?? role)}
         </Badge>
