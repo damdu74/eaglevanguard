@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { MemberActions } from "@/components/community/member-actions"
 import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, Crown } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -129,6 +129,7 @@ export default async function CommunityMembersPage({ params }: PageProps) {
                     role={role}
                     rank={rank ?? null}
                     isMe={user.id === session?.user?.id}
+                    isCreator={user.id === community.creatorId}
                     canActOnTarget={canManage && user.id !== session?.user?.id && (() => {
                       if (myRole === "OWNER") return role !== "OWNER" || user.id !== community.creatorId
                       if (myRole === "ADMIN") return !["OWNER", "ADMIN"].includes(role)
@@ -196,12 +197,13 @@ export default async function CommunityMembersPage({ params }: PageProps) {
 }
 
 function MemberRow({
-  user, role, rank, isMe, canActOnTarget, communitySlug, ranks, myRole,
+  user, role, rank, isMe, isCreator, canActOnTarget, communitySlug, ranks, myRole,
 }: {
   user: { id: string; steamName: string | null; discordName: string | null; name: string | null; customAvatar: string | null; steamAvatar: string | null; discordAvatar: string | null }
   role: string
   rank: { id: string; name: string } | null
   isMe: boolean
+  isCreator: boolean
   canActOnTarget: boolean
   communitySlug: string
   ranks: { id: string; name: string; abbreviation: string }[]
@@ -223,9 +225,10 @@ function MemberRow({
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0">
-          <p className="text-sm font-medium leading-none truncate">
+          <p className="text-sm font-medium leading-none truncate flex items-center gap-1.5">
             {displayName}
-            {isMe && <span className="ml-2 text-xs text-muted-foreground">(vous)</span>}
+            {isCreator && <Crown className="h-3.5 w-3.5 text-yellow-500 shrink-0" />}
+            {isMe && <span className="text-xs text-muted-foreground">(vous)</span>}
           </p>
           {rank && <p className="text-xs text-muted-foreground mt-0.5">{rank.name}</p>}
         </div>
@@ -233,7 +236,7 @@ function MemberRow({
 
       <div className="flex items-center gap-2 shrink-0">
         <Badge variant="outline" className="text-xs">
-          {ROLE_LABELS[role] ?? role}
+          {isCreator ? "Fondateur" : (ROLE_LABELS[role] ?? role)}
         </Badge>
         {canActOnTarget && (
           <MemberActions
