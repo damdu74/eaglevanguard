@@ -11,7 +11,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { slug: st
   if (!community) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
 
   const character = await prisma.rpCharacter.findUnique({ where: { id: params.charId } })
-  if (!character) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
+  if (!character || character.communityId !== community.id) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { slug: stri
   if (!community) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
 
   const character = await prisma.rpCharacter.findUnique({ where: { id: params.charId } })
-  if (!character) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
+  if (!character || character.communityId !== community.id) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },

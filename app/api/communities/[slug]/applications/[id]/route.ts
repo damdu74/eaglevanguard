@@ -37,6 +37,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   if (action === "accept") {
+    const alreadyMember = await prisma.membership.findUnique({
+      where: { userId_communityId: { userId: application.userId, communityId: community.id } },
+    })
+    if (alreadyMember) {
+      await prisma.application.update({
+        where: { id: application.id },
+        data: { status: "ACCEPTED", response: response ?? null },
+      })
+      return NextResponse.json({ ok: true })
+    }
+
     await prisma.$transaction([
       prisma.application.update({
         where: { id: application.id },

@@ -12,14 +12,26 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
 
   const memberships = await prisma.membership.findMany({
     where: { communityId: community.id },
-    include: { user: { select: { id: true, name: true, image: true } } },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          steamName: true,
+          discordName: true,
+          customAvatar: true,
+          steamAvatar: true,
+          discordAvatar: true,
+        },
+      },
+    },
     orderBy: [{ role: "asc" }, { user: { name: "asc" } }],
   })
 
   const members = memberships.map((m) => ({
     id: m.userId,
-    name: m.user.name ?? "Inconnu",
-    image: m.user.image,
+    name: m.user.steamName ?? m.user.discordName ?? m.user.name ?? "Inconnu",
+    image: m.user.customAvatar ?? m.user.steamAvatar ?? m.user.discordAvatar ?? null,
     role: m.role,
   }))
 

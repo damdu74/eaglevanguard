@@ -30,7 +30,7 @@ interface Props {
   userId: string
   currentRole: string
   currentRankId: string | null
-  ranks: { id: string; name: string; abbreviation: string }[]
+  ranks: { id: string; name: string; abbreviation: string; isPermanent: boolean }[]
   myRole: string
 }
 
@@ -135,16 +135,18 @@ export function MemberActions({
                 {currentRankId === null && " ✓"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              {ranks.map((rank) => (
-                <DropdownMenuItem
-                  key={rank.id}
-                  disabled={rank.id === currentRankId}
-                  onClick={() => patch({ rankId: rank.id })}
-                >
-                  [{rank.abbreviation}] {rank.name}
-                  {rank.id === currentRankId && " ✓"}
-                </DropdownMenuItem>
-              ))}
+              {ranks
+                .filter((rank) => !rank.isPermanent || rank.id === currentRankId)
+                .map((rank) => (
+                  <DropdownMenuItem
+                    key={rank.id}
+                    disabled={rank.id === currentRankId || rank.isPermanent}
+                    onClick={() => !rank.isPermanent && patch({ rankId: rank.id })}
+                  >
+                    [{rank.abbreviation}] {rank.name}
+                    {rank.id === currentRankId && " ✓"}
+                  </DropdownMenuItem>
+                ))}
             </DropdownMenuSubContent>
           </DropdownMenuSub>
         )}

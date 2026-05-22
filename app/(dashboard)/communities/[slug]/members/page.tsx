@@ -74,7 +74,7 @@ export default async function CommunityMembersPage({ params }: PageProps) {
   const ranks = await prisma.rank.findMany({
     where: { communityId: community.id },
     orderBy: { order: "asc" },
-    select: { id: true, name: true, abbreviation: true },
+    select: { id: true, name: true, abbreviation: true, isPermanent: true },
   })
 
   const sorted = [...memberships].sort(
@@ -207,7 +207,7 @@ function MemberRow({
   isCreator: boolean
   canActOnTarget: boolean
   communitySlug: string
-  ranks: { id: string; name: string; abbreviation: string }[]
+  ranks: { id: string; name: string; abbreviation: string; isPermanent: boolean }[]
   myRole: string | null
 }) {
   const displayName = user.steamName ?? user.discordName ?? user.name ?? "Joueur"
