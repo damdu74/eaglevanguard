@@ -312,7 +312,6 @@ model RpGroup {
   rpUnitId    String
   name        String
   order       Int           @default(0)
-  isDefault   Boolean       @default(false)
   createdAt   DateTime      @default(now())
 
   community   Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)

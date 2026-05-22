@@ -1,0 +1,1 @@
+ALTER TABLE "RpGroup" DROP COLUMN IF EXISTS "isDefault";

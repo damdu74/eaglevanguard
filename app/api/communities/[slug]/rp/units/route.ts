@@ -24,9 +24,5 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     data: { communityId: community.id, name: name.trim(), description: description?.trim() || null, era: era?.trim() || null },
   })
 
-  await prisma.rpGroup.create({
-    data: { communityId: community.id, rpUnitId: unit.id, name: "Mobilisé", order: 0, isDefault: true },
-  })
-
   return NextResponse.json(unit, { status: 201 })
 }
