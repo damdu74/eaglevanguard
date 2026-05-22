@@ -102,7 +102,7 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Ajouter un grade</CardTitle>
+          <CardTitle className="text-base">Ajouter un grade communautaire</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-[1fr_auto] gap-3">
@@ -132,7 +132,7 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
       {ranks.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Grades existants</CardTitle>
+            <CardTitle className="text-base">Grades communautaires existants</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">
@@ -205,7 +205,7 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
 
       {ranks.length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-4">
-          Aucun grade défini pour cette communauté.
+          Aucun grade communautaire défini.
         </p>
       )}
     </div>

@@ -115,14 +115,14 @@ export function CommunitySettingsForm({ community, isOwner }: Props) {
       <Card>
         <CardHeader>
           <CardTitle>Gestion avancée</CardTitle>
-          <CardDescription>Grades, candidatures et structure de la communauté.</CardDescription>
+          <CardDescription>Grades communautaires, candidatures et structure de la communauté.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-1 p-0">
           <Link
             href={`/communities/${community.slug}/settings/ranks`}
             className="flex items-center justify-between px-6 py-3 hover:bg-muted/50 transition-colors"
           >
-            <span className="text-sm font-medium">Gérer les grades</span>
+            <span className="text-sm font-medium">Grades communautaires</span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>
           <Separator />

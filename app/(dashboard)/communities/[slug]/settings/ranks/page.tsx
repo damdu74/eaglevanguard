@@ -12,7 +12,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps) {
   const community = await prisma.community.findUnique({ where: { slug: params.slug } })
-  return { title: community ? `Grades — ${community.name}` : "Grades" }
+  return { title: community ? `Grades communautaires — ${community.name}` : "Grades communautaires" }
 }
 
 export default async function RanksPage({ params }: PageProps) {
@@ -49,8 +49,8 @@ export default async function RanksPage({ params }: PageProps) {
           <ChevronLeft className="h-4 w-4" />
           Retour aux paramètres
         </Link>
-        <h1 className="text-2xl font-bold">Grades</h1>
-        <p className="text-sm text-muted-foreground">{community.name}</p>
+        <h1 className="text-2xl font-bold">Grades communautaires</h1>
+        <p className="text-sm text-muted-foreground">{community.name} — grades de la communauté, distincts des grades en jeu définis dans le roster d'unité</p>
       </div>
 
       <RanksManager communitySlug={params.slug} initialRanks={ranks} />
