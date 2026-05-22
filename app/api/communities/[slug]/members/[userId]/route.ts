@@ -58,7 +58,21 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
     hasUpdate = true
   }
-  if ("rankId" in body) hasUpdate = true
+  if ("rankId" in body) {
+    if (body.rankId) {
+      const targetRank = await prisma.rank.findFirst({ where: { id: body.rankId, communityId: result.community.id } })
+      if (targetRank?.isPermanent) {
+        return NextResponse.json({ error: "Le grade Fondateur ne peut pas être attribué manuellement" }, { status: 403 })
+      }
+    }
+    if (target.rankId) {
+      const currentRank = await prisma.rank.findFirst({ where: { id: target.rankId } })
+      if (currentRank?.isPermanent) {
+        return NextResponse.json({ error: "Le grade Fondateur ne peut pas être retiré" }, { status: 403 })
+      }
+    }
+    hasUpdate = true
+  }
 
   if (!hasUpdate) {
     return NextResponse.json({ error: "Aucune modification" }, { status: 400 })

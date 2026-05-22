@@ -6,13 +6,15 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Plus, Trash2, GripVertical } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Loader2, Plus, Trash2, GripVertical, Crown } from "lucide-react"
 
 interface Rank {
   id: string
   name: string
   abbreviation: string
   order: number
+  isPermanent: boolean
 }
 
 interface Props {
@@ -98,6 +100,12 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
     }
   }
 
+  const sortedRanks = [...ranks].sort((a, b) => {
+    if (a.isPermanent && !b.isPermanent) return -1
+    if (!a.isPermanent && b.isPermanent) return 1
+    return a.order - b.order
+  })
+
   return (
     <div className="space-y-6">
       <Card>
@@ -129,18 +137,21 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
         </CardContent>
       </Card>
 
-      {ranks.length > 0 && (
+      {sortedRanks.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Grades communautaires existants</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">
-              {ranks.map((rank) => (
+              {sortedRanks.map((rank) => (
                 <div key={rank.id} className="flex items-center gap-3 px-4 py-3">
-                  <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                  {rank.isPermanent
+                    ? <Crown className="h-4 w-4 text-yellow-500 shrink-0" />
+                    : <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                  }
 
-                  {editingId === rank.id ? (
+                  {!rank.isPermanent && editingId === rank.id ? (
                     <>
                       <Input
                         value={editName}
@@ -154,18 +165,10 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
                         className="w-24 h-8"
                         maxLength={10}
                       />
-                      <Button
-                        size="sm"
-                        onClick={() => saveEdit(rank.id)}
-                        disabled={savingId === rank.id}
-                      >
+                      <Button size="sm" onClick={() => saveEdit(rank.id)} disabled={savingId === rank.id}>
                         {savingId === rank.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "OK"}
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setEditingId(null)}
-                      >
+                      <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
                         Annuler
                       </Button>
                     </>
@@ -175,25 +178,29 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
                       <span className="text-xs text-muted-foreground font-mono w-16 text-center">
                         [{rank.abbreviation}]
                       </span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => startEdit(rank)}
-                      >
-                        Modifier
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                        onClick={() => deleteRank(rank.id)}
-                        disabled={deletingId === rank.id}
-                      >
-                        {deletingId === rank.id
-                          ? <Loader2 className="h-4 w-4 animate-spin" />
-                          : <Trash2 className="h-4 w-4" />
-                        }
-                      </Button>
+                      {rank.isPermanent ? (
+                        <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-400">
+                          Permanent
+                        </Badge>
+                      ) : (
+                        <>
+                          <Button size="sm" variant="ghost" onClick={() => startEdit(rank)}>
+                            Modifier
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => deleteRank(rank.id)}
+                            disabled={deletingId === rank.id}
+                          >
+                            {deletingId === rank.id
+                              ? <Loader2 className="h-4 w-4 animate-spin" />
+                              : <Trash2 className="h-4 w-4" />
+                            }
+                          </Button>
+                        </>
+                      )}
                     </>
                   )}
                 </div>
@@ -203,7 +210,7 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
         </Card>
       )}
 
-      {ranks.length === 0 && (
+      {sortedRanks.length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-4">
           Aucun grade communautaire défini.
         </p>

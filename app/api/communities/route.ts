@@ -66,22 +66,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Cet identifiant est déjà pris" }, { status: 409 })
   }
 
-  const community = await prisma.community.create({
-    data: {
-      name,
-      slug,
-      description,
-      game,
-      language,
-      isPublic,
-      creatorId: session.user.id,
-      memberships: {
-        create: {
-          userId: session.user.id,
-          role: "OWNER",
+  const community = await prisma.$transaction(async (tx) => {
+    const created = await tx.community.create({
+      data: {
+        name,
+        slug,
+        description,
+        game,
+        language,
+        isPublic,
+        creatorId: session.user.id,
+        memberships: {
+          create: { userId: session.user.id, role: "OWNER" },
         },
       },
-    },
+    })
+
+    const fondateur = await tx.rank.create({
+      data: {
+        communityId: created.id,
+        name: "Fondateur",
+        abbreviation: "FDT",
+        order: 0,
+        isPermanent: true,
+      },
+    })
+
+    await tx.membership.update({
+      where: { userId_communityId: { userId: session.user.id as string, communityId: created.id } },
+      data: { rankId: fondateur.id },
+    })
+
+    return created
   })
 
   return NextResponse.json(community, { status: 201 })

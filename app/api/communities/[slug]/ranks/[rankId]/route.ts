@@ -27,6 +27,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     where: { id: params.rankId, communityId: community.id },
   })
   if (!rank) return NextResponse.json({ error: "Grade introuvable" }, { status: 404 })
+  if (rank.isPermanent) return NextResponse.json({ error: "Le grade Fondateur ne peut pas être modifié" }, { status: 403 })
 
   const { name, abbreviation, order } = await req.json()
   const updated = await prisma.rank.update({
@@ -51,6 +52,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     where: { id: params.rankId, communityId: community.id },
   })
   if (!rank) return NextResponse.json({ error: "Grade introuvable" }, { status: 404 })
+  if (rank.isPermanent) return NextResponse.json({ error: "Le grade Fondateur ne peut pas être supprimé" }, { status: 403 })
 
   await prisma.rank.delete({ where: { id: rank.id } })
   return NextResponse.json({ ok: true })

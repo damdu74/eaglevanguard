@@ -36,7 +36,7 @@ export default async function RanksPage({ params }: PageProps) {
 
   const ranks = await prisma.rank.findMany({
     where: { communityId: community.id },
-    orderBy: { order: "asc" },
+    orderBy: [{ isPermanent: "desc" }, { order: "asc" }],
   })
 
   return (
