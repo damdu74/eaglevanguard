@@ -113,9 +113,12 @@ export default async function CommunityMembersPage({ params }: PageProps) {
       {/* Staff */}
       {staff.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Gestion
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide">
+              Staff
+            </h2>
+            <span className="text-xs text-muted-foreground">{staff.length} membre{staff.length > 1 ? "s" : ""}</span>
+          </div>
           <Card>
             <CardContent className="p-0">
               <div className="divide-y">
@@ -145,9 +148,12 @@ export default async function CommunityMembersPage({ params }: PageProps) {
       {/* Membres */}
       {regular.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Membres ({regular.length})
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide">
+              Membres
+            </h2>
+            <span className="text-xs text-muted-foreground">{regular.length} membre{regular.length > 1 ? "s" : ""}</span>
+          </div>
           <Card>
             <CardContent className="p-0">
               <div className="divide-y">
