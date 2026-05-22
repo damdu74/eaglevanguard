@@ -165,6 +165,7 @@ export default async function CommunityMembersPage({ params }: PageProps) {
                     role={role}
                     rank={rank ?? null}
                     isMe={user.id === session?.user?.id}
+                    isCreator={user.id === community.creatorId}
                     canActOnTarget={canManage && user.id !== session?.user?.id && (() => {
                       if (myRole === "OWNER") return true
                       if (myRole === "ADMIN") return true
