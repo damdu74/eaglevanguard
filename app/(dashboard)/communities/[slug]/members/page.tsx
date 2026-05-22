@@ -235,7 +235,11 @@ function MemberRow({
       </Link>
 
       <div className="flex items-center gap-2 shrink-0">
-        <Badge variant="outline" className="text-xs">
+        <Badge
+          variant="outline"
+          className="text-xs"
+          style={isCreator ? { color: "#5865F2", borderColor: "#5865F2" } : undefined}
+        >
           {isCreator ? "Fondateur" : (ROLE_LABELS[role] ?? role)}
         </Badge>
         {canActOnTarget && (
