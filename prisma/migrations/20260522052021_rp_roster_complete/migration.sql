@@ -1,5 +1,5 @@
--- CreateTable
-CREATE TABLE "RpUnit" (
+-- CreateTable (idempotent)
+CREATE TABLE IF NOT EXISTS "RpUnit" (
     "id" TEXT NOT NULL,
     "communityId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE "RpUnit" (
 );
 
 -- CreateTable
-CREATE TABLE "RpGroup" (
+CREATE TABLE IF NOT EXISTS "RpGroup" (
     "id" TEXT NOT NULL,
     "communityId" TEXT NOT NULL,
     "rpUnitId" TEXT NOT NULL,
@@ -23,8 +23,8 @@ CREATE TABLE "RpGroup" (
     CONSTRAINT "RpGroup_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "RpCharacter" (
+-- CreateTable (idempotent)
+CREATE TABLE IF NOT EXISTS "RpCharacter" (
     "id" TEXT NOT NULL,
     "communityId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -40,26 +40,51 @@ CREATE TABLE "RpCharacter" (
     CONSTRAINT "RpCharacter_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "RpCharacter_communityId_userId_key" ON "RpCharacter"("communityId", "userId");
+-- Add rpGroupId column if missing (RpCharacter already exists in prod)
+ALTER TABLE "RpCharacter" ADD COLUMN IF NOT EXISTS "rpGroupId" TEXT;
 
--- AddForeignKey
-ALTER TABLE "RpUnit" ADD CONSTRAINT "RpUnit_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- CreateIndex (idempotent)
+CREATE UNIQUE INDEX IF NOT EXISTS "RpCharacter_communityId_userId_key" ON "RpCharacter"("communityId", "userId");
 
--- AddForeignKey
-ALTER TABLE "RpGroup" ADD CONSTRAINT "RpGroup_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- AddForeignKey (idempotent)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'RpUnit_communityId_fkey') THEN
+    ALTER TABLE "RpUnit" ADD CONSTRAINT "RpUnit_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "RpGroup" ADD CONSTRAINT "RpGroup_rpUnitId_fkey" FOREIGN KEY ("rpUnitId") REFERENCES "RpUnit"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'RpGroup_communityId_fkey') THEN
+    ALTER TABLE "RpGroup" ADD CONSTRAINT "RpGroup_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "RpCharacter" ADD CONSTRAINT "RpCharacter_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'RpGroup_rpUnitId_fkey') THEN
+    ALTER TABLE "RpGroup" ADD CONSTRAINT "RpGroup_rpUnitId_fkey" FOREIGN KEY ("rpUnitId") REFERENCES "RpUnit"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "RpCharacter" ADD CONSTRAINT "RpCharacter_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'RpCharacter_communityId_fkey') THEN
+    ALTER TABLE "RpCharacter" ADD CONSTRAINT "RpCharacter_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "RpCharacter" ADD CONSTRAINT "RpCharacter_rpUnitId_fkey" FOREIGN KEY ("rpUnitId") REFERENCES "RpUnit"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'RpCharacter_userId_fkey') THEN
+    ALTER TABLE "RpCharacter" ADD CONSTRAINT "RpCharacter_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "RpCharacter" ADD CONSTRAINT "RpCharacter_rpGroupId_fkey" FOREIGN KEY ("rpGroupId") REFERENCES "RpGroup"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'RpCharacter_rpUnitId_fkey') THEN
+    ALTER TABLE "RpCharacter" ADD CONSTRAINT "RpCharacter_rpUnitId_fkey" FOREIGN KEY ("rpUnitId") REFERENCES "RpUnit"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'RpCharacter_rpGroupId_fkey') THEN
+    ALTER TABLE "RpCharacter" ADD CONSTRAINT "RpCharacter_rpGroupId_fkey" FOREIGN KEY ("rpGroupId") REFERENCES "RpGroup"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END $$;
