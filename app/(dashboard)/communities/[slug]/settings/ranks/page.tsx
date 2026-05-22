@@ -50,7 +50,7 @@ export default async function RanksPage({ params }: PageProps) {
           Retour aux paramètres
         </Link>
         <h1 className="text-2xl font-bold">Grades communautaires</h1>
-        <p className="text-sm text-muted-foreground">{community.name} — grades de la communauté, distincts des grades en jeu définis dans le roster d'unité</p>
+        <p className="text-sm text-muted-foreground">{community.name} — grades de la communauté, distincts des grades en jeu définis dans le roster</p>
       </div>
 
       <RanksManager communitySlug={params.slug} initialRanks={ranks} />
