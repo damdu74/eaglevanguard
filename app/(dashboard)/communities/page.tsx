@@ -23,13 +23,19 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
   const page = Math.max(1, parseInt(searchParams.page ?? "1", 10))
   const q = searchParams.q?.trim() ?? ""
   const gameFilter = searchParams.game?.trim() ?? ""
+  const userId = session?.user?.id as string | undefined
+
+  const visibilityFilter = userId
+    ? { OR: [{ isPublic: true }, { memberships: { some: { userId } } }] }
+    : { isPublic: true }
 
   const where = {
+    ...visibilityFilter,
     ...(q ? { name: { contains: q, mode: "insensitive" as const } } : {}),
     ...(gameFilter ? { game: gameFilter } : {}),
   }
 
-  const [total, communities, allGames] = await Promise.all([
+  const [total, communities, allGames, memberCommunityIds] = await Promise.all([
     prisma.community.count({ where }),
     prisma.community.findMany({
       where,
@@ -41,20 +47,17 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
       take: PER_PAGE,
     }),
     prisma.community.findMany({
+      where: visibilityFilter,
       select: { game: true },
       distinct: ["game"],
       orderBy: { game: "asc" },
     }).then((rows) => rows.map((r) => r.game)),
+    userId
+      ? prisma.membership
+          .findMany({ where: { userId }, select: { communityId: true } })
+          .then((ms) => new Set(ms.map((m) => m.communityId)))
+      : Promise.resolve(new Set<string>()),
   ])
-
-  const memberCommunityIds = session?.user?.id
-    ? await prisma.membership
-        .findMany({
-          where: { userId: session.user.id as string },
-          select: { communityId: true },
-        })
-        .then((ms) => new Set(ms.map((m) => m.communityId)))
-    : new Set<string>()
 
   return (
     <div className="space-y-6">
@@ -100,7 +103,6 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
             {communities.map((community) => {
               const isMember = memberCommunityIds.has(community.id)
               const isPrivate = !community.isPublic
-              const showDetails = !isPrivate || isMember
 
               return (
                 <Link key={community.id} href={`/communities/${community.slug}`}>
@@ -127,48 +129,35 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
                         )}
                       </div>
 
-                      {showDetails && (
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline" className="text-xs">{community.game}</Badge>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-xs">{community.game}</Badge>
+                      </div>
                     </CardHeader>
-                    {showDetails ? (
-                      <CardContent className="space-y-3">
-                        {community.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {community.description}
-                          </p>
-                        )}
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <div className="flex items-center gap-4">
-                            <span className="flex items-center gap-1">
-                              <Users className="h-3.5 w-3.5" />
-                              {community._count.memberships} membre{community._count.memberships > 1 ? "s" : ""}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3.5 w-3.5" />
-                              {community._count.events} événement{community._count.events > 1 ? "s" : ""}
-                            </span>
-                          </div>
+                    <CardContent className="space-y-3">
+                      {community.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {community.description}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center gap-4">
                           <span className="flex items-center gap-1">
-                            {isPrivate
-                              ? <><Lock className="h-3 w-3" />Privée</>
-                              : <><Globe className="h-3 w-3" />Publique</>
-                            }
+                            <Users className="h-3.5 w-3.5" />
+                            {community._count.memberships} membre{community._count.memberships > 1 ? "s" : ""}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {community._count.events} événement{community._count.events > 1 ? "s" : ""}
                           </span>
                         </div>
-                      </CardContent>
-                    ) : (
-                      <CardContent>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <p className="italic">Informations réservées aux membres.</p>
-                          <span className="flex items-center gap-1 shrink-0">
-                            <Lock className="h-3 w-3" />Privée
-                          </span>
-                        </div>
-                      </CardContent>
-                    )}
+                        <span className="flex items-center gap-1">
+                          {isPrivate
+                            ? <><Lock className="h-3 w-3" />Privée</>
+                            : <><Globe className="h-3 w-3" />Publique</>
+                          }
+                        </span>
+                      </div>
+                    </CardContent>
                   </Card>
                 </Link>
               )
