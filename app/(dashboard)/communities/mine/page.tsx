@@ -83,7 +83,11 @@ export default async function MyCommunitiesPage() {
                       </div>
                       <CardTitle className="text-base leading-tight">{community.name}</CardTitle>
                     </div>
-                    <Badge variant="secondary" className="shrink-0 text-xs">
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 text-xs"
+                      style={role === "OWNER" ? { backgroundColor: "#5865F2", borderColor: "#5865F2", color: "#fff" } : undefined}
+                    >
                       {ROLE_LABELS[role] ?? role}
                     </Badge>
                   </div>
