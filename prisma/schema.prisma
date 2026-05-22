@@ -73,6 +73,7 @@ model User {
   discordId     String?           @unique
   discordName   String?
   discordAvatar String?
+  isNexusTeam   Boolean           @default(false)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 

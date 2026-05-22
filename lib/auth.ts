@@ -50,6 +50,7 @@ export const authOptions: NextAuthOptions = {
           if (dbUser) {
             session.user.name = dbUser.steamName ?? dbUser.discordName ?? dbUser.name ?? session.user.name
             session.user.image = dbUser.customAvatar ?? dbUser.steamAvatar ?? dbUser.discordAvatar ?? dbUser.image ?? session.user.image
+            session.user.isNexusTeam = dbUser.isNexusTeam
           }
         } catch {}
       }

@@ -58,8 +58,8 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
           <h1 className="text-2xl font-bold">Annuaire des communautés</h1>
           <p className="text-sm text-muted-foreground">{total} communauté{total > 1 ? "s" : ""}</p>
         </div>
-        {session && (
-          <Button asChild>
+        {session?.user?.isNexusTeam && (
+          <Button asChild size="lg">
             <Link href="/communities/new">
               <Plus className="mr-2 h-4 w-4" />
               Nouvelle communauté
