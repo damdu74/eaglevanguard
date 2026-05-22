@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -39,7 +39,7 @@ export function CommunitySettingsForm({ community, isOwner }: Props) {
       const res = await fetch(`/api/communities/${community.slug}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), description: description.trim() || null, isPublic }),
+        body: JSON.stringify({ name: name.trim(), description: description || null, isPublic }),
       })
       if (!res.ok) throw new Error()
       toast.success("Paramètres sauvegardés")
@@ -79,16 +79,12 @@ export function CommunitySettingsForm({ community, isOwner }: Props) {
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
+            <Label>Description</Label>
+            <RichTextEditor
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={setDescription}
               placeholder="Décrivez votre communauté..."
-              maxLength={500}
-              rows={3}
             />
-            <p className="text-xs text-muted-foreground text-right">{description.length}/500</p>
           </div>
 
           <div className="flex items-center justify-between rounded-lg border p-4">

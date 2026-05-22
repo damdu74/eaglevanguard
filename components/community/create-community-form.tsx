@@ -8,8 +8,8 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { toast } from "sonner"
 
 const schema = z.object({
@@ -19,7 +19,7 @@ const schema = z.object({
     .min(3)
     .max(30)
     .regex(/^[a-z0-9-]+$/, "Uniquement lettres minuscules, chiffres et tirets"),
-  description: z.string().max(500).optional(),
+  description: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -27,6 +27,7 @@ type FormData = z.infer<typeof schema>
 export function CreateCommunityForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [description, setDescription] = useState("")
 
   const {
     register,
@@ -49,7 +50,7 @@ export function CreateCommunityForm() {
       const res = await fetch("/api/communities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, game: "ArmA 3", language: "fr" }),
+        body: JSON.stringify({ ...data, description: description || undefined, game: "ArmA 3", language: "fr" }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error((json.error as string) ?? "Erreur")
@@ -90,12 +91,11 @@ export function CreateCommunityForm() {
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="description">Description (optionnel)</Label>
-            <Textarea
-              id="description"
-              {...register("description")}
+            <Label>Description (optionnel)</Label>
+            <RichTextEditor
+              value={description}
+              onChange={setDescription}
               placeholder="Décrivez votre communauté..."
-              rows={3}
             />
           </div>
 

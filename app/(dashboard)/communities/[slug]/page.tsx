@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { RichTextContent } from "@/components/ui/rich-text-content"
 import { ImageIcon } from "lucide-react"
 import Link from "next/link"
 import { Users, Calendar, GitBranch, Settings, Sword } from "lucide-react"
@@ -72,7 +73,7 @@ export default async function CommunityPage({ params }: PageProps) {
               {!community.isPublic && <Badge variant="outline">Privée</Badge>}
             </div>
             {community.description && (
-              <p className="text-muted-foreground max-w-2xl">{community.description}</p>
+              <RichTextContent html={community.description} className="max-w-2xl" />
             )}
             {membership && (
               <p className="text-sm text-muted-foreground">
