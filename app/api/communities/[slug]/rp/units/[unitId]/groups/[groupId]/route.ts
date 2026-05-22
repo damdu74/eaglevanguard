@@ -44,6 +44,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { slug: st
 
   const group = await prisma.rpGroup.findUnique({ where: { id: params.groupId } })
   if (!group || group.communityId !== community.id) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
+  if (group.isDefault) return NextResponse.json({ error: "Le groupe Mobilisé ne peut pas être supprimé" }, { status: 403 })
 
   await prisma.rpGroup.delete({ where: { id: params.groupId } })
   return NextResponse.json({ ok: true })

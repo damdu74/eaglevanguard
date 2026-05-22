@@ -23,6 +23,19 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
   const { name, role, description, rpUnitId } = await req.json()
   if (!name?.trim()) return NextResponse.json({ error: "Nom requis" }, { status: 400 })
 
+  let defaultGroupId: string | null = null
+  if (rpUnitId) {
+    let defaultGroup = await prisma.rpGroup.findFirst({
+      where: { rpUnitId, isDefault: true },
+    })
+    if (!defaultGroup) {
+      defaultGroup = await prisma.rpGroup.create({
+        data: { communityId: community.id, rpUnitId, name: "Mobilisé", order: 0, isDefault: true },
+      })
+    }
+    defaultGroupId = defaultGroup.id
+  }
+
   const character = await prisma.rpCharacter.create({
     data: {
       communityId: community.id,
@@ -31,6 +44,7 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
       role: role?.trim() || null,
       description: description?.trim() || null,
       rpUnitId: rpUnitId || null,
+      rpGroupId: defaultGroupId,
     },
     include: { user: { select: { id: true, name: true, image: true, customAvatar: true } }, rpUnit: true },
   })
