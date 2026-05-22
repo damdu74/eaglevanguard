@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic"
 export const metadata = { title: "Mes communautés" }
 
 const ROLE_LABELS: Record<string, string> = {
-  OWNER: "Propriétaire",
+  OWNER: "Fondateur",
   ADMIN: "Administrateur",
   MODERATOR: "Modérateur",
   MEMBER: "Membre",
