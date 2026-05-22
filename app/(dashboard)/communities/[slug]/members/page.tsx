@@ -229,7 +229,6 @@ function MemberRow({
           <p className="text-sm font-medium leading-none truncate flex items-center gap-1.5">
             {displayName}
             {isCreator && <Crown className="h-3.5 w-3.5 text-yellow-500 shrink-0" />}
-            {isMe && <span className="text-xs text-muted-foreground">(vous)</span>}
           </p>
           {rank && <p className="text-xs text-muted-foreground mt-0.5">{rank.name}</p>}
         </div>
