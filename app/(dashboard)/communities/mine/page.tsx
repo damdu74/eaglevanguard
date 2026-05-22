@@ -39,14 +39,12 @@ export default async function MyCommunitiesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Mes communautés</h1>
-        {session.user.isNexusTeam && (
-          <Button asChild size="lg">
-            <Link href="/communities/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Nouvelle communauté
-            </Link>
-          </Button>
-        )}
+        <Button asChild disabled={!session.user.isNexusTeam}>
+          <Link href={session.user.isNexusTeam ? "/communities/new" : "#"}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouvelle communauté
+          </Link>
+        </Button>
       </div>
 
       {memberships.length === 0 ? (
