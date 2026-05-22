@@ -306,7 +306,7 @@ export function RpUnitDetail({
       {sortedGroups.length > 0 && unassigned.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-2 border-b pb-1.5">
-            <span className="font-semibold text-sm text-muted-foreground">Non assignés</span>
+            <span className="font-semibold text-sm text-muted-foreground">Engagés</span>
             <Badge variant="outline" className="text-xs h-5">{unassigned.length}</Badge>
           </div>
           <CharacterTable
