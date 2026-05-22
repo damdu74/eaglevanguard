@@ -1,6 +1,6 @@
 "use client"
 
-import { useEditor, EditorContent } from "@tiptap/react"
+import { useEditor, EditorContent, type Editor } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
 import StarterKit from "@tiptap/starter-kit"
 import Underline from "@tiptap/extension-underline"
@@ -23,6 +23,21 @@ interface Props {
   placeholder?: string
 }
 
+async function uploadImage(file: File): Promise<string | null> {
+  const formData = new FormData()
+  formData.append("file", file)
+  const res = await fetch("/api/upload/image", { method: "POST", body: formData })
+  if (!res.ok) return null
+  const { url } = await res.json() as { url: string }
+  return url
+}
+
+async function insertImageFile(editor: Editor, file: File) {
+  if (!file.type.startsWith("image/")) return
+  const url = await uploadImage(file)
+  if (url) editor.chain().focus().setImage({ src: url }).run()
+}
+
 function BubbleButton({
   onClick, active, title, children,
 }: {
@@ -38,9 +53,7 @@ function BubbleButton({
       title={title}
       className={cn(
         "p-1.5 rounded transition-colors text-sm",
-        active
-          ? "bg-white/20 text-white"
-          : "text-white/80 hover:text-white hover:bg-white/10"
+        active ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
       )}
     >
       {children}
@@ -49,24 +62,21 @@ function BubbleButton({
 }
 
 function ToolbarButton({
-  onClick, active, title, children, disabled,
+  onClick, active, title, children,
 }: {
   onClick: () => void
   active?: boolean
   title: string
   children: React.ReactNode
-  disabled?: boolean
 }) {
   return (
     <button
       type="button"
-      onMouseDown={(e) => { e.preventDefault(); if (!disabled) onClick() }}
+      onMouseDown={(e) => { e.preventDefault(); onClick() }}
       title={title}
-      disabled={disabled}
       className={cn(
         "p-2 rounded transition-colors",
-        active ? "text-[hsl(var(--primary))] bg-muted" : "text-muted-foreground hover:text-foreground hover:bg-muted",
-        disabled && "opacity-40 cursor-not-allowed"
+        active ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground hover:bg-muted",
       )}
     >
       {children}
@@ -77,7 +87,7 @@ function ToolbarButton({
 export function RichTextEditor({ value, onChange, placeholder }: Props) {
   const { resolvedTheme } = useTheme()
   const [showEmoji, setShowEmoji] = useState(false)
-  const [uploading, setUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const editor = useEditor({
@@ -98,23 +108,6 @@ export function RichTextEditor({ value, onChange, placeholder }: Props) {
   const insertEmoji = useCallback((emoji: { native: string }) => {
     editor?.chain().focus().insertContent(emoji.native).run()
     setShowEmoji(false)
-  }, [editor])
-
-  const handleImageUpload = useCallback(async (file: File) => {
-    if (!editor) return
-    setUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append("file", file)
-      const res = await fetch("/api/upload/image", { method: "POST", body: formData })
-      if (!res.ok) throw new Error()
-      const { url } = await res.json() as { url: string }
-      editor.chain().focus().setImage({ src: url }).run()
-    } catch {
-      // silently ignore upload errors
-    } finally {
-      setUploading(false)
-    }
   }, [editor])
 
   if (!editor) return null
@@ -158,14 +151,45 @@ export function RichTextEditor({ value, onChange, placeholder }: Props) {
         </BubbleButton>
       </BubbleMenu>
 
-      {/* Zone d'édition */}
-      <div className="border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 bg-background">
+      {/* Zone d'édition avec support paste et drag & drop */}
+      <div
+        className={cn(
+          "border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 bg-background transition-colors",
+          isDragging && "border-primary bg-primary/5"
+        )}
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={(e) => {
+          setIsDragging(false)
+          const files = e.dataTransfer?.files
+          if (!files?.length) return
+          for (const file of Array.from(files)) {
+            if (file.type.startsWith("image/")) {
+              e.preventDefault()
+              insertImageFile(editor, file)
+              return
+            }
+          }
+        }}
+        onPaste={(e) => {
+          const items = e.clipboardData?.items
+          if (!items) return
+          for (const item of Array.from(items)) {
+            if (item.type.startsWith("image/")) {
+              e.preventDefault()
+              const file = item.getAsFile()
+              if (file) insertImageFile(editor, file)
+              return
+            }
+          }
+        }}
+      >
         <EditorContent
           editor={editor}
           className="prose prose-sm dark:prose-invert max-w-none px-4 pt-3 pb-2 min-h-[120px] [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[100px] [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-muted-foreground [&_.ProseMirror_p.is-editor-empty:first-child::before]:pointer-events-none [&_.ProseMirror_p.is-editor-empty:first-child::before]:float-left [&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0 [&_.ProseMirror_img]:rounded [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:my-2"
         />
 
-        {/* Toolbar bas style Discord */}
+        {/* Toolbar bas */}
         <div className="flex items-center gap-0.5 border-t px-2 py-1.5 bg-muted/20">
           {/* Emoji */}
           <div className="relative">
@@ -185,12 +209,11 @@ export function RichTextEditor({ value, onChange, placeholder }: Props) {
             )}
           </div>
 
-          {/* Upload image */}
+          {/* Insérer image dans le texte */}
           <ToolbarButton
             onClick={() => fileInputRef.current?.click()}
             active={false}
-            title="Ajouter une image"
-            disabled={uploading}
+            title="Insérer une image dans le texte"
           >
             <ImageIcon className="h-5 w-5" />
           </ToolbarButton>
@@ -201,19 +224,17 @@ export function RichTextEditor({ value, onChange, placeholder }: Props) {
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]
-              if (file) handleImageUpload(file)
+              if (file) insertImageFile(editor, file)
               e.target.value = ""
             }}
           />
 
-          {/* Hint raccourcis */}
           <span className="ml-auto text-xs text-muted-foreground hidden sm:block">
-            Sélectionne du texte pour le mettre en forme
+            Glisse une image · Colle avec Ctrl+V · Sélectionne pour mettre en forme
           </span>
         </div>
       </div>
 
-      {/* Overlay fermer emoji en cliquant ailleurs */}
       {showEmoji && (
         <div className="fixed inset-0 z-40" onClick={() => setShowEmoji(false)} />
       )}
