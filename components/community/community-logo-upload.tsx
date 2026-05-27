@@ -125,7 +125,7 @@ export function CommunityLogoUpload({ slug, currentLogoUrl }: Props) {
               type="button"
               size="sm"
               className="h-8 shrink-0"
-              disabled={saving || urlInput === (currentLogoUrl ?? "")}
+              disabled={saving || !urlInput.trim() || urlInput === (currentLogoUrl ?? "")}
               onClick={saveUrl}
             >
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "OK"}
