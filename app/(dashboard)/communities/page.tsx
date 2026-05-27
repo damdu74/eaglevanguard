@@ -124,7 +124,7 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
                     <CardContent className="space-y-3">
                       {community.description && (
                         <p className="text-sm text-muted-foreground line-clamp-2">
-                          {community.description}
+                          {community.description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}
                         </p>
                       )}
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
