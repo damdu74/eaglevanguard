@@ -19,7 +19,7 @@ export function CommunityLogoUpload({ slug, currentLogoUrl }: Props) {
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [preview, setPreview] = useState<string>(currentLogoUrl ?? "")
-  const [urlInput, setUrlInput] = useState<string>(currentLogoUrl ?? "")
+  const [urlInput, setUrlInput] = useState<string>("")
 
   async function uploadFile(file: File) {
     setUploading(true)
@@ -125,7 +125,7 @@ export function CommunityLogoUpload({ slug, currentLogoUrl }: Props) {
               type="button"
               size="sm"
               className="h-8 shrink-0"
-              disabled={saving || !urlInput.trim() || urlInput === (currentLogoUrl ?? "")}
+              disabled={saving || !urlInput.trim()}
               onClick={saveUrl}
             >
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "OK"}
