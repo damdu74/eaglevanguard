@@ -3,11 +3,13 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ParticipateButton } from "@/components/events/participate-button"
 import { EventStatusActions } from "@/components/events/event-status-actions"
+import { RichTextContent } from "@/components/ui/rich-text-content"
 import Link from "next/link"
-import { ChevronLeft, Calendar, Clock, Users, Info } from "lucide-react"
+import { ChevronLeft, Calendar, Clock, Users, Info, Pencil } from "lucide-react"
 import Image from "next/image"
 
 interface PageProps {
@@ -105,11 +107,19 @@ export default async function EventDetailPage({ params }: PageProps) {
 
           <div className="flex items-center gap-2 flex-wrap">
             {isStaff && (
-              <EventStatusActions
-                communitySlug={params.slug}
-                eventId={event.id}
-                currentStatus={event.status as "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED"}
-              />
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/communities/${params.slug}/events/${event.id}/edit`}>
+                    <Pencil className="h-4 w-4 mr-1" />
+                    Modifier
+                  </Link>
+                </Button>
+                <EventStatusActions
+                  communitySlug={params.slug}
+                  eventId={event.id}
+                  currentStatus={event.status as "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED"}
+                />
+              </>
             )}
             {canParticipate && (
               <ParticipateButton
@@ -149,9 +159,9 @@ export default async function EventDetailPage({ params }: PageProps) {
             </span>
           </div>
           {event.description && (
-            <div className="flex items-start gap-2 text-sm pt-2 border-t">
+            <div className="flex items-start gap-2 pt-2 border-t">
               <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-              <p className="whitespace-pre-wrap">{event.description}</p>
+              <RichTextContent html={event.description} />
             </div>
           )}
         </CardContent>

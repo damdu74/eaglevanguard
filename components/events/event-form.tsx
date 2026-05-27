@@ -8,18 +8,27 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { toast } from "sonner"
 
 const EVENT_TYPES = ["Opération", "Entraînement", "Réunion", "Autre"]
 
+const ALL_STATUSES = ["DRAFT", "PUBLISHED", "ONGOING", "COMPLETED", "CANCELLED"] as const
+
+const STATUS_LABELS: Record<string, string> = {
+  DRAFT: "Brouillon",
+  PUBLISHED: "Publié",
+  ONGOING: "En cours",
+  COMPLETED: "Terminé",
+  CANCELLED: "Annulé",
+}
+
 const schema = z.object({
   title: z.string().min(3, "Minimum 3 caractères").max(100),
-  description: z.string().max(2000).optional(),
   type: z.string().min(1, "Sélectionnez un type"),
-  status: z.enum(["DRAFT", "PUBLISHED"]),
+  status: z.enum(ALL_STATUSES),
   startDate: z.string().min(1, "Date de début requise"),
   startTime: z.string().min(1, "Heure de début requise"),
   endDate: z.string().optional(),
@@ -29,13 +38,35 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-interface EventFormProps {
-  communitySlug: string
+export interface EventData {
+  id: string
+  title: string
+  description: string | null
+  type: string
+  status: string
+  startDate: string
+  endDate: string | null
+  maxSlots: number | null
 }
 
-export function EventForm({ communitySlug }: EventFormProps) {
+interface EventFormProps {
+  communitySlug: string
+  event?: EventData
+}
+
+function toDateInput(iso: string): string {
+  return iso.substring(0, 10)
+}
+
+function toTimeInput(iso: string): string {
+  return iso.substring(11, 16)
+}
+
+export function EventForm({ communitySlug, event }: EventFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [description, setDescription] = useState(event?.description ?? "")
+  const isEdit = !!event
 
   const {
     register,
@@ -44,7 +75,18 @@ export function EventForm({ communitySlug }: EventFormProps) {
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { status: "DRAFT" },
+    defaultValues: isEdit
+      ? {
+          title: event.title,
+          type: event.type,
+          status: event.status as typeof ALL_STATUSES[number],
+          startDate: toDateInput(event.startDate),
+          startTime: toTimeInput(event.startDate),
+          endDate: event.endDate ? toDateInput(event.endDate) : "",
+          endTime: event.endDate ? toTimeInput(event.endDate) : "",
+          maxSlots: event.maxSlots != null ? String(event.maxSlots) : "",
+        }
+      : { status: "DRAFT" },
   })
 
   const onSubmit = async (data: FormData) => {
@@ -54,25 +96,32 @@ export function EventForm({ communitySlug }: EventFormProps) {
       const endDate =
         data.endDate && data.endTime ? new Date(`${data.endDate}T${data.endTime}`) : undefined
 
-      const res = await fetch(`/api/communities/${communitySlug}/events`, {
-        method: "POST",
+      const payload = {
+        title: data.title,
+        description: description || null,
+        type: data.type,
+        status: data.status,
+        startDate: startDate.toISOString(),
+        endDate: endDate?.toISOString() ?? null,
+        maxSlots: data.maxSlots ? parseInt(data.maxSlots, 10) : null,
+      }
+
+      const url = isEdit
+        ? `/api/communities/${communitySlug}/events/${event.id}`
+        : `/api/communities/${communitySlug}/events`
+
+      const res = await fetch(url, {
+        method: isEdit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: data.title,
-          description: data.description || null,
-          type: data.type,
-          status: data.status,
-          startDate: startDate.toISOString(),
-          endDate: endDate?.toISOString() ?? null,
-          maxSlots: data.maxSlots ? parseInt(data.maxSlots, 10) : null,
-        }),
+        body: JSON.stringify(payload),
       })
 
       const json = await res.json()
       if (!res.ok) throw new Error((json.error as string) ?? "Erreur")
 
-      toast.success("Événement créé !")
-      router.push(`/communities/${communitySlug}/events/${(json as { id: string }).id}`)
+      toast.success(isEdit ? "Événement mis à jour !" : "Événement créé !")
+      const eventId = isEdit ? event.id : (json as { id: string }).id
+      router.push(`/communities/${communitySlug}/events/${eventId}`)
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erreur inconnue")
@@ -94,7 +143,7 @@ export function EventForm({ communitySlug }: EventFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label>Type</Label>
-              <Select onValueChange={(v) => setValue("type", v)}>
+              <Select defaultValue={event?.type} onValueChange={(v) => setValue("type", v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez un type" />
                 </SelectTrigger>
@@ -110,15 +159,16 @@ export function EventForm({ communitySlug }: EventFormProps) {
             <div className="space-y-1">
               <Label>Statut</Label>
               <Select
-                defaultValue="DRAFT"
-                onValueChange={(v) => setValue("status", v as "DRAFT" | "PUBLISHED")}
+                defaultValue={event?.status ?? "DRAFT"}
+                onValueChange={(v) => setValue("status", v as typeof ALL_STATUSES[number])}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="DRAFT">Brouillon</SelectItem>
-                  <SelectItem value="PUBLISHED">Publier maintenant</SelectItem>
+                  {(isEdit ? ALL_STATUSES : (["DRAFT", "PUBLISHED"] as const)).map((s) => (
+                    <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -160,24 +210,22 @@ export function EventForm({ communitySlug }: EventFormProps) {
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="description">Description (optionnel)</Label>
-            <Textarea
-              id="description"
-              {...register("description")}
+            <Label>Description (optionnel)</Label>
+            <RichTextEditor
+              value={description}
+              onChange={setDescription}
               placeholder="Briefing de l'opération, objectifs, consignes..."
-              rows={4}
             />
           </div>
 
           <div className="flex gap-3">
             <Button type="submit" disabled={loading}>
-              {loading ? "Création..." : "Créer l'événement"}
+              {loading
+                ? isEdit ? "Sauvegarde..." : "Création..."
+                : isEdit ? "Sauvegarder les modifications" : "Créer l'événement"
+              }
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-            >
+            <Button type="button" variant="outline" onClick={() => router.back()}>
               Annuler
             </Button>
           </div>
