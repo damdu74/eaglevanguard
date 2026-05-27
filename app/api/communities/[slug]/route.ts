@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { rateLimit } from "@/lib/rate-limit"
+import { z } from "zod"
+
+const patchSchema = z.object({
+  name: z.string().min(1).max(50).optional(),
+  description: z.string().max(10000).nullable().optional(),
+  logoUrl: z.string().url().max(500).nullable().optional(),
+  bannerUrl: z.string().url().max(500).nullable().optional(),
+  isPublic: z.boolean().optional(),
+})
 
 type Params = { params: { slug: string } }
 
@@ -41,7 +51,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 
-  const body = await req.json()
+  const { success } = rateLimit(`community-patch:${session.user.id}`, 20, 60_000)
+  if (!success) return NextResponse.json({ error: "Trop de requêtes" }, { status: 429 })
+
+  const parsed = patchSchema.safeParse(await req.json())
+  if (!parsed.success) return NextResponse.json({ error: "Données invalides" }, { status: 400 })
+  const body = parsed.data
+
   const community = await prisma.community.update({
     where: { slug: params.slug },
     data: {

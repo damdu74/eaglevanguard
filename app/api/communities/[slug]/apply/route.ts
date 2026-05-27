@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { rateLimit } from "@/lib/rate-limit"
+import { z } from "zod"
+
+const applySchema = z.object({
+  message: z.string().max(1000).optional().nullable(),
+})
 
 interface Params {
   params: { slug: string }
@@ -11,6 +17,9 @@ export async function POST(req: NextRequest, { params }: Params) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
 
+  const { success } = rateLimit(`apply:${session.user.id}`, 5, 60_000)
+  if (!success) return NextResponse.json({ error: "Trop de requêtes, réessayez dans une minute" }, { status: 429 })
+
   const community = await prisma.community.findUnique({ where: { slug: params.slug } })
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
@@ -19,7 +28,10 @@ export async function POST(req: NextRequest, { params }: Params) {
   })
   if (existing) return NextResponse.json({ error: "Vous êtes déjà membre" }, { status: 400 })
 
-  const { message } = await req.json()
+  const body = await req.json()
+  const parsed = applySchema.safeParse(body)
+  if (!parsed.success) return NextResponse.json({ error: "Données invalides" }, { status: 400 })
+  const { message } = parsed.data
 
   const application = await prisma.application.upsert({
     where: { communityId_userId: { communityId: community.id, userId: session.user.id as string } },
