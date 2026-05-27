@@ -29,18 +29,6 @@ export function Navbar({ user, pendingFriendsCount = 0, pendingApplicationsCount
       </Link>
 
       <nav className="hidden md:flex items-center gap-2 ml-4">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm font-medium hover:bg-muted transition-colors"
-        >
-          Tableau de bord
-        </Link>
-        <Link
-          href="/communities"
-          className="inline-flex items-center rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm font-medium hover:bg-muted transition-colors"
-        >
-          Communautés
-        </Link>
         {user?.isNexusTeam && (
           <Link
             href="/nexus/team"
