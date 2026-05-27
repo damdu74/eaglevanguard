@@ -55,6 +55,7 @@ export default async function PlayersPage({ searchParams }: PageProps) {
         customAvatar: true,
         steamAvatar: true,
         discordAvatar: true,
+        isNexusTeam: true,
         bio: true,
         memberships: {
           select: {
@@ -114,7 +115,14 @@ export default async function PlayersPage({ searchParams }: PageProps) {
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm leading-tight truncate">{displayName}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-medium text-sm leading-tight truncate">{displayName}</p>
+                          {user.isNexusTeam && (
+                            <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-400 leading-none">
+                              NEXUS Team
+                            </span>
+                          )}
+                        </div>
                         {user.bio && (
                           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                             {user.bio}
