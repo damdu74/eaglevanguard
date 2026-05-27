@@ -16,7 +16,7 @@ export default async function NexusRanksPage() {
   const ranks = await prisma.nexusRank.findMany({ orderBy: { order: "asc" } })
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
       <div>
         <Link
           href="/nexus/team"
