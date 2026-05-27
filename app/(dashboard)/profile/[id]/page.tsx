@@ -109,6 +109,11 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-xl font-semibold">{displayName}</p>
+                {target.isNexusTeam && (
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-400">
+                    NEXUS Team
+                  </span>
+                )}
                 {target.nexusRank && (
                   <span
                     className="text-xs font-mono px-2 py-0.5 rounded font-bold text-white"
