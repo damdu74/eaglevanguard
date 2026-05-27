@@ -124,9 +124,6 @@ export default async function MembersPage() {
                           <div>
                             <p className="text-sm font-medium leading-none">
                               {displayName}
-                              {isMe && (
-                                <span className="ml-2 text-xs text-muted-foreground">(vous)</span>
-                              )}
                             </p>
                             {rank && (
                               <p className="text-xs text-muted-foreground mt-0.5">{rank.name}</p>
