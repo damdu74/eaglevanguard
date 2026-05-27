@@ -116,11 +116,9 @@ export default async function HomePage() {
           </div>
 
           <div className="relative z-10 flex flex-wrap gap-4 justify-center">
-            <Button size="lg" className="bg-violet-600 hover:bg-violet-700 gap-2 px-8" asChild>
-              <Link href={session ? "/communities/new" : "/auth/signin"}>
-                {session ? "Créer ma communauté" : "Créer ma communauté"}
-                <ChevronRight className="h-4 w-4" />
-              </Link>
+            <Button size="lg" className="gap-2 px-8" disabled title="La création de communauté est temporairement désactivée">
+              Créer ma communauté
+              <ChevronRight className="h-4 w-4" />
             </Button>
             <Button
               size="lg"
