@@ -234,9 +234,9 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Aucun grade</SelectItem>
-                        {ranks.filter(r => !r.isProtected).map(r => (
-                          <SelectItem key={r.id} value={r.id}>
-                            <span className="flex items-center gap-2">
+                        {ranks.map(r => (
+                          <SelectItem key={r.id} value={r.id} disabled={r.isProtected}>
+                            <span className={`flex items-center gap-2 ${r.isProtected ? "opacity-40" : ""}`}>
                               <span className="text-xs font-mono px-1 rounded text-white" style={{ backgroundColor: r.color }}>{r.abbreviation}</span>
                               {r.name}
                             </span>
