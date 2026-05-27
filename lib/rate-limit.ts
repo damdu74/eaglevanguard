@@ -8,9 +8,9 @@ const store = new Map<string, RateLimitEntry>()
 // Cleanup old entries every 5 minutes to avoid memory leak
 setInterval(() => {
   const now = Date.now()
-  for (const [key, entry] of store.entries()) {
+  store.forEach((entry, key) => {
     if (now > entry.resetAt) store.delete(key)
-  }
+  })
 }, 5 * 60 * 1000)
 
 export function rateLimit(
