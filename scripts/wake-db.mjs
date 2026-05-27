@@ -4,9 +4,13 @@
  */
 import { PrismaClient } from "@prisma/client"
 
-const prisma = new PrismaClient()
+// Doit pinger via la connexion directe (DATABASE_URL_UNPOOLED) car c'est
+// celle qu'utilise prisma migrate deploy pour acquérir l'advisory lock.
+const prisma = new PrismaClient({
+  datasources: { db: { url: process.env.DATABASE_URL_UNPOOLED } },
+})
 
-console.log("[wake-db] Pinging Neon via pooler...")
+console.log("[wake-db] Pinging Neon via direct connection...")
 
 let ok = false
 for (let i = 1; i <= 6; i++) {
