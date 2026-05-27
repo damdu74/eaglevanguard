@@ -14,7 +14,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps) {
   const community = await prisma.community.findUnique({ where: { slug: params.slug } })
-  return { title: `Roster RP — ${community?.name ?? "Communauté"}` }
+  return { title: `Registre des effectifs — ${community?.name ?? "Communauté"}` }
 }
 
 export default async function RpPage({ params }: PageProps) {
@@ -46,7 +46,7 @@ export default async function RpPage({ params }: PageProps) {
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold">Roster RP</h1>
+          <h1 className="text-2xl font-bold">Registre des effectifs</h1>
           <p className="text-sm text-muted-foreground">{community.name}</p>
         </div>
       </div>
