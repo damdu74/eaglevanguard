@@ -55,11 +55,18 @@ interface EventFormProps {
 }
 
 function toDateInput(iso: string): string {
-  return iso.substring(0, 10)
+  const d = new Date(iso)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
 }
 
 function toTimeInput(iso: string): string {
-  return iso.substring(11, 16)
+  const d = new Date(iso)
+  const h = String(d.getHours()).padStart(2, "0")
+  const min = String(d.getMinutes()).padStart(2, "0")
+  return `${h}:${min}`
 }
 
 export function EventForm({ communitySlug, event }: EventFormProps) {
