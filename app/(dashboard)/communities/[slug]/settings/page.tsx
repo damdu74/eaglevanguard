@@ -69,18 +69,17 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
       <CommunitySettingsForm
         community={community}
         isOwner={isOwner}
+        transferForm={isOwner ? (
+          <TransferOwnershipForm
+            slug={params.slug}
+            members={otherMembers.map((m) => ({
+              id: m.user.id,
+              name: m.user.steamName ?? m.user.discordName ?? m.user.name ?? "Inconnu",
+              image: m.user.customAvatar ?? m.user.steamAvatar ?? m.user.discordAvatar ?? null,
+            }))}
+          />
+        ) : undefined}
       />
-
-      {isOwner && (
-        <TransferOwnershipForm
-          slug={params.slug}
-          members={otherMembers.map((m) => ({
-            id: m.user.id,
-            name: m.user.steamName ?? m.user.discordName ?? m.user.name ?? "Inconnu",
-            image: m.user.customAvatar ?? m.user.steamAvatar ?? m.user.discordAvatar ?? null,
-          }))}
-        />
-      )}
     </div>
   )
 }

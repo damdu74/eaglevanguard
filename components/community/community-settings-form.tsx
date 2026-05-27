@@ -22,9 +22,10 @@ interface Props {
     game: string
   }
   isOwner: boolean
+  transferForm?: React.ReactNode
 }
 
-export function CommunitySettingsForm({ community, isOwner }: Props) {
+export function CommunitySettingsForm({ community, isOwner, transferForm }: Props) {
   const router = useRouter()
   const [name, setName] = useState(community.name)
   const [description, setDescription] = useState(community.description ?? "")
@@ -131,6 +132,8 @@ export function CommunitySettingsForm({ community, isOwner }: Props) {
           </Link>
         </CardContent>
       </Card>
+
+      {transferForm}
 
       {isOwner && (
         <Card className="border-destructive/40">
