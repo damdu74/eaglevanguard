@@ -279,7 +279,7 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
                           {roles.filter(r => !r.isProtected).map(r => (
                             <SelectItem key={r.id} value={r.id}>
                               <span className="flex items-center gap-2">
-                                <span className="text-xs font-mono px-1 rounded text-white" style={{ backgroundColor: r.color }}>{r.abbreviation}</span>
+                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
                                 {r.name}
                               </span>
                             </SelectItem>
@@ -302,7 +302,7 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
                           style={{ borderColor: f.color, color: f.color }}
                           onClick={() => !assigningFuncId && toggleFunction(member, f.id)}
                         >
-                          <span className="font-mono">{f.abbreviation}</span>
+                          {f.name}
                           <X className="h-2.5 w-2.5" />
                         </Badge>
                       ))}
@@ -325,7 +325,7 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
                               .map(f => (
                                 <SelectItem key={f.id} value={f.id}>
                                   <span className="flex items-center gap-2">
-                                    <span className="text-xs font-mono px-1 rounded text-white" style={{ backgroundColor: f.color }}>{f.abbreviation}</span>
+                                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: f.color }} />
                                     {f.name}
                                   </span>
                                 </SelectItem>
