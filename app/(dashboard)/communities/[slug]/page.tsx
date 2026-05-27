@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RichTextContent } from "@/components/ui/rich-text-content"
-import { ImageIcon } from "lucide-react"
+import { CommunityLogo } from "@/components/community/community-logo"
 import Link from "next/link"
 import { Users, Calendar, GitBranch, Settings, Sword } from "lucide-react"
 
@@ -54,18 +54,7 @@ export default async function CommunityPage({ params }: PageProps) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4">
           {/* Logo */}
-          <div className="w-16 h-16 rounded-lg border border-border bg-muted/30 flex items-center justify-center shrink-0 overflow-hidden">
-            {community.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={community.logoUrl}
-                alt={community.name}
-                style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
-              />
-            ) : (
-              <ImageIcon className="h-7 w-7 text-muted-foreground/40" />
-            )}
-          </div>
+          <CommunityLogo url={community.logoUrl} name={community.name} size="lg" />
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">{community.name}</h1>

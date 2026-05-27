@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
-import { Users, Calendar, Shield, Plus, ClipboardList, ChevronRight, ImageIcon } from "lucide-react"
+import { Users, Calendar, Shield, Plus, ClipboardList, ChevronRight } from "lucide-react"
+import { CommunityLogo } from "@/components/community/community-logo"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 
@@ -161,18 +162,7 @@ export default async function DashboardPage() {
                   <Card className="transition-colors hover:bg-muted/50">
                     <CardContent className="flex items-center justify-between py-3 px-4">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-8 h-8 rounded border border-border bg-muted/30 flex items-center justify-center shrink-0 overflow-hidden">
-                          {m.community.logoUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={m.community.logoUrl}
-                              alt={m.community.name}
-                              style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
-                            />
-                          ) : (
-                            <ImageIcon className="h-3.5 w-3.5 text-muted-foreground/40" />
-                          )}
-                        </div>
+                        <CommunityLogo url={m.community.logoUrl} name={m.community.name} size="sm" />
                         <div className="min-w-0">
                           <p className="font-medium text-sm truncate">{m.community.name}</p>
                           <p className="text-xs text-muted-foreground">

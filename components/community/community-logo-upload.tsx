@@ -45,6 +45,10 @@ export function CommunityLogoUpload({ slug, currentLogoUrl }: Props) {
   }
 
   async function saveUrl() {
+    if (urlInput && !/^https?:\/\/.+/.test(urlInput)) {
+      toast.error("L'URL doit commencer par http:// ou https://")
+      return
+    }
     setSaving(true)
     try {
       const res = await fetch(`/api/communities/${slug}`, {

@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { PaginationBar } from "@/components/ui/pagination-bar"
 import { CommunitySearch } from "@/components/community/community-search"
 import Link from "next/link"
-import { Users, Calendar, Plus, Shield, Lock, Globe, ImageIcon } from "lucide-react"
+import { Users, Calendar, Plus, Shield, Lock, Globe } from "lucide-react"
+import { CommunityLogo } from "@/components/community/community-logo"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Annuaire des communautés" }
@@ -101,18 +102,7 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded border border-border bg-muted/30 flex items-center justify-center shrink-0 overflow-hidden">
-                            {community.logoUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={community.logoUrl}
-                                alt={community.name}
-                                style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
-                              />
-                            ) : (
-                              <ImageIcon className="h-4 w-4 text-muted-foreground/40" />
-                            )}
-                          </div>
+                          <CommunityLogo url={community.logoUrl} name={community.name} size="md" />
                           <CardTitle className="text-base leading-tight">{community.name}</CardTitle>
                         </div>
                       </div>
