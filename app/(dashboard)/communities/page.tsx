@@ -60,9 +60,22 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
           <p className="text-sm text-muted-foreground">{total} communauté{total > 1 ? "s" : ""}</p>
         </div>
         {session && (
-          <Button disabled title="La création de communauté est temporairement désactivée">
-            <Plus className="mr-2 h-4 w-4" />
-            Nouvelle communauté
+          <Button
+            asChild={!!session.user?.isNexusTeam}
+            disabled={!session.user?.isNexusTeam}
+            title={!session.user?.isNexusTeam ? "La création de communauté est temporairement désactivée" : undefined}
+          >
+            {session.user?.isNexusTeam ? (
+              <Link href="/communities/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Nouvelle communauté
+              </Link>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                Nouvelle communauté
+              </>
+            )}
           </Button>
         )}
       </div>
@@ -83,8 +96,16 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
             )}
           </div>
           {session && !q && !gameFilter && (
-            <Button disabled title="La création de communauté est temporairement désactivée">
-              Créer une communauté
+            <Button
+              asChild={!!session.user?.isNexusTeam}
+              disabled={!session.user?.isNexusTeam}
+              title={!session.user?.isNexusTeam ? "La création de communauté est temporairement désactivée" : undefined}
+            >
+              {session.user?.isNexusTeam ? (
+                <Link href="/communities/new">Créer une communauté</Link>
+              ) : (
+                <>Créer une communauté</>
+              )}
             </Button>
           )}
         </div>
