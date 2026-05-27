@@ -32,7 +32,7 @@ export function CommunityLogoUpload({ slug, currentLogoUrl }: Props) {
       })
       if (!res.ok) throw new Error()
       const { url } = await res.json()
-      setPreview(url)
+      setPreview(url + "?t=" + Date.now())
       toast.success("Logo mis à jour")
       router.refresh()
     } catch {
