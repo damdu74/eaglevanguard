@@ -30,9 +30,8 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
   if (!file) return NextResponse.json({ error: "Fichier manquant" }, { status: 400 })
 
   const ext = file.name.split(".").pop() ?? "png"
-  const blob = await put(`community-logos/${community.id}.${ext}`, file, {
+  const blob = await put(`community-logos/${community.id}-${Date.now()}.${ext}`, file, {
     access: "public",
-    allowOverwrite: true,
   })
 
   await prisma.community.update({
