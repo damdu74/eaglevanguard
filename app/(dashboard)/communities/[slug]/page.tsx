@@ -100,14 +100,16 @@ export default async function CommunityPage({ params }: PageProps) {
             ].map(({ href, label, icon: Icon, count }) => (
               <Link key={href} href={`/communities/${params.slug}/${href}`} className="h-full">
                 <Card className="h-full transition-colors hover:bg-muted/50">
-                  <CardContent className="flex h-full items-center justify-center gap-3 py-4">
+                  <CardContent className="flex h-full items-center justify-center gap-2 py-4">
                     <Icon className="h-5 w-5 text-primary" />
-                    <div>
+                    {count !== null ? (
+                      <>
+                        <p className="text-lg font-bold">{count}</p>
+                        <p className="font-medium">{label}</p>
+                      </>
+                    ) : (
                       <p className="font-medium">{label}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {count !== null ? count : ""}
-                      </p>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
               </Link>
