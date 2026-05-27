@@ -95,7 +95,7 @@ export default async function CommunityPage({ params }: PageProps) {
             {[
               { href: "members", label: "Membres", icon: Users, count: community._count.memberships },
               { href: "events", label: "Événements", icon: Calendar, count: community._count.events },
-              { href: "orbat", label: "ORBAT", icon: GitBranch, count: null },
+              ...(session?.user?.isNexusTeam ? [{ href: "orbat", label: "ORBAT", icon: GitBranch, count: null }] : []),
               { href: "rp", label: "Roster RP", icon: Sword, count: null },
             ].map(({ href, label, icon: Icon, count }) => (
               <Link key={href} href={`/communities/${params.slug}/${href}`}>
