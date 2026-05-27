@@ -129,8 +129,8 @@ export default function HomePage() {
         <footer className="border-t border-zinc-800 bg-zinc-950 py-4 px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-500">
             <div className="flex items-center gap-1.5">
-              <Shield className="h-3.5 w-3.5" />
-              <span>© {new Date().getFullYear()} NEXUS — Plateforme MILSIM</span>
+              <Image src="/icon.png" alt="NEXUS" width={16} height={16} />
+              <span>© {new Date().getFullYear()} NEXUS — Plateforme communautaire</span>
             </div>
             <nav className="flex items-center gap-4">
               <Link href="/legal/mentions-legales" className="hover:text-zinc-300 transition-colors">
