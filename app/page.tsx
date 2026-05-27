@@ -200,7 +200,7 @@ export default function HomePage() {
             </p>
             <Button size="lg" className="bg-violet-600 hover:bg-violet-700 gap-2 px-8" asChild>
               <Link href="/auth/signin">
-                Commencer gratuitement
+                Commencer maintenant
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>
