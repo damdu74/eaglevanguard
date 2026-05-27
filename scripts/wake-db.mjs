@@ -1,13 +1,18 @@
 /**
- * Envoie une requête simple via le pooler pour réveiller le compute Neon
+ * Envoie une requête simple via la connexion directe pour réveiller le compute Neon
  * avant que prisma migrate deploy tente d'acquérir un advisory lock.
  */
 import { PrismaClient } from "@prisma/client"
 
-// Doit pinger via la connexion directe (DATABASE_URL_UNPOOLED) car c'est
-// celle qu'utilise prisma migrate deploy pour acquérir l'advisory lock.
+const dbUrl = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL
+
+if (!dbUrl) {
+  console.log("[wake-db] No DATABASE_URL defined, skipping.")
+  process.exit(0)
+}
+
 const prisma = new PrismaClient({
-  datasources: { db: { url: process.env.DATABASE_URL_UNPOOLED } },
+  datasources: { db: { url: dbUrl } },
 })
 
 console.log("[wake-db] Pinging Neon via direct connection...")

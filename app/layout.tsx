@@ -8,6 +8,8 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: {
     default: "NEXUS",
