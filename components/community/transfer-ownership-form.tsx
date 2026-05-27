@@ -118,7 +118,7 @@ export function TransferOwnershipForm({ slug, members }: Props) {
         <div className="flex justify-end">
           <Button
             variant="outline"
-            className="bg-orange-500 text-white border-orange-500 hover:bg-orange-600 hover:border-orange-600 hover:text-white"
+            className="bg-orange-500 text-black border-orange-500 hover:bg-orange-600 hover:border-orange-600 hover:text-black"
             onClick={handleTransfer}
             disabled={!isReady || loading}
           >
