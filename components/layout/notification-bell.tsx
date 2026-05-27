@@ -46,6 +46,13 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useEffect(() => {
+    if (open && unreadCount > 0) {
+      markAllRead()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
   async function fetchAll() {
     try {
       const res = await fetch("/api/notifications")
