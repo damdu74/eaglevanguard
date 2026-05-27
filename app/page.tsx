@@ -16,7 +16,7 @@ const features = [
     color: "text-blue-400",
     bg: "bg-blue-500/10 border-blue-500/20",
     title: "Grades & Hiérarchie",
-    desc: "Créez votre propre système de grades avec couleurs personnalisées. Les recrues sont promus automatiquement après 7 jours.",
+    desc: "Créez votre propre système de grades avec couleurs personnalisées. Les nouveaux sont automatiquement promus membres après 7 jours.",
   },
   {
     icon: Calendar,
