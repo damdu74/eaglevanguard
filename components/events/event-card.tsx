@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Calendar, Clock, Users } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { LocalDate, LocalTime } from "@/components/ui/local-date-time"
 
 const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
   DRAFT: { label: "Brouillon", variant: "outline" },
@@ -33,8 +34,10 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, slug }: EventCardProps) {
-  const startDate = new Date(event.startDate)
-  const endDate = event.endDate ? new Date(event.endDate) : null
+  const startIso = typeof event.startDate === "string" ? event.startDate : event.startDate.toISOString()
+  const endIso = event.endDate
+    ? typeof event.endDate === "string" ? event.endDate : event.endDate.toISOString()
+    : null
   const statusInfo = STATUS_LABELS[event.status] ?? { label: event.status, variant: "outline" as const }
 
   return (
@@ -55,14 +58,12 @@ export function EventCard({ event, slug }: EventCardProps) {
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
-                {startDate.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                <LocalDate iso={startIso} options={{ day: "numeric", month: "short", year: "numeric" }} />
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5" />
-                {startDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                {endDate && (
-                  <> – {endDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</>
-                )}
+                <LocalTime iso={startIso} />
+                {endIso && <> – <LocalTime iso={endIso} /></>}
               </span>
               <span className="flex items-center gap-1">
                 <Users className="h-3.5 w-3.5" />

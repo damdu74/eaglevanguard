@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ParticipateButton } from "@/components/events/participate-button"
 import { EventStatusActions } from "@/components/events/event-status-actions"
 import { RichTextContent } from "@/components/ui/rich-text-content"
+import { LocalDate, LocalTime } from "@/components/ui/local-date-time"
 import Link from "next/link"
 import { ChevronLeft, Calendar, Clock, Users, Info, Pencil } from "lucide-react"
 import Image from "next/image"
@@ -74,8 +75,8 @@ export default async function EventDetailPage({ params }: PageProps) {
     ? event.participants.find((p) => p.userId === session.user.id) ?? null
     : null
 
-  const startDate = new Date(event.startDate)
-  const endDate = event.endDate ? new Date(event.endDate) : null
+  const startIso = event.startDate.toISOString()
+  const endIso = event.endDate?.toISOString() ?? null
   const statusInfo = STATUS_LABELS[event.status] ?? { label: event.status, variant: "outline" as const }
 
   const confirmed = event.participants.filter((p) => p.status === "CONFIRMED")
@@ -138,18 +139,12 @@ export default async function EventDetailPage({ params }: PageProps) {
         <CardContent className="pt-6 space-y-3">
           <div className="flex items-center gap-2 text-sm">
             <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span>
-              {startDate.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-            </span>
+            <LocalDate iso={startIso} options={{ weekday: "long", day: "numeric", month: "long", year: "numeric" }} />
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span>
-              {startDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-              {endDate && (
-                <> – {endDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</>
-              )}
-            </span>
+            <LocalTime iso={startIso} />
+            {endIso && <> – <LocalTime iso={endIso} /></>}
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Users className="h-4 w-4 text-muted-foreground shrink-0" />
