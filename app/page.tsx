@@ -1,5 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Shield, Users, Calendar, ChevronRight, Crosshair, Clock } from "lucide-react"
 
@@ -54,7 +56,9 @@ const games = [
   },
 ]
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await getServerSession(authOptions)
+
   return (
     <div className="flex h-screen flex-col bg-zinc-950 text-white">
 
@@ -64,9 +68,15 @@ export default function HomePage() {
           <Image src="/icon.png" alt="NEXUS" width={36} height={36} priority />
         </Link>
         <div className="flex items-center gap-3">
-          <Button className="bg-violet-600 hover:bg-violet-700" asChild>
-            <Link href="/auth/signin">Connexion</Link>
-          </Button>
+          {session ? (
+            <Button className="bg-violet-600 hover:bg-violet-700" asChild>
+              <Link href="/dashboard">Tableau de bord</Link>
+            </Button>
+          ) : (
+            <Button className="bg-violet-600 hover:bg-violet-700" asChild>
+              <Link href="/auth/signin">Connexion</Link>
+            </Button>
+          )}
         </div>
       </header>
 
@@ -107,8 +117,8 @@ export default function HomePage() {
 
           <div className="relative z-10 flex flex-wrap gap-4 justify-center">
             <Button size="lg" className="bg-violet-600 hover:bg-violet-700 gap-2 px-8" asChild>
-              <Link href="/auth/signin">
-                Créer ma communauté
+              <Link href={session ? "/communities/new" : "/auth/signin"}>
+                {session ? "Créer ma communauté" : "Créer ma communauté"}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -196,7 +206,7 @@ export default function HomePage() {
               Rejoignez NEXUS et donnez à votre communauté une base solide pour recruter, s&apos;organiser et progresser.
             </p>
             <Button size="lg" className="bg-violet-600 hover:bg-violet-700 gap-2 px-8" asChild>
-              <Link href="/auth/signin">
+              <Link href={session ? "/dashboard" : "/auth/signin"}>
                 Commencer maintenant
                 <ChevronRight className="h-4 w-4" />
               </Link>
