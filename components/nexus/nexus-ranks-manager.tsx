@@ -89,7 +89,7 @@ export function NexusRanksManager({ initialRanks }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Grades NEXUS</CardTitle>
+        <CardTitle>NEXUS Rôles et Fonctions</CardTitle>
         <CardDescription>Définissez la hiérarchie interne de l&apos;équipe.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

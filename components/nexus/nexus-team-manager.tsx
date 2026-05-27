@@ -327,7 +327,7 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
             href="/nexus/team/ranks"
             className="flex items-center justify-between px-6 py-3 hover:bg-muted/50 transition-colors"
           >
-            <span className="text-sm font-medium">Grades NEXUS</span>
+            <span className="text-sm font-medium">NEXUS Rôles et Fonctions</span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>
         </CardContent>

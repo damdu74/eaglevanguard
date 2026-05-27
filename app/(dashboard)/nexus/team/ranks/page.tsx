@@ -7,7 +7,7 @@ import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 
 export const dynamic = "force-dynamic"
-export const metadata = { title: "Grades NEXUS" }
+export const metadata = { title: "NEXUS Rôles et Fonctions" }
 
 export default async function NexusRanksPage() {
   const session = await getServerSession(authOptions)
@@ -25,7 +25,7 @@ export default async function NexusRanksPage() {
           <ChevronLeft className="h-4 w-4" />
           Retour à la NEXUS Team
         </Link>
-        <h1 className="text-2xl font-bold">Grades NEXUS</h1>
+        <h1 className="text-2xl font-bold">NEXUS Rôles et Fonctions</h1>
         <p className="text-sm text-muted-foreground">Hiérarchie interne du staff de la plateforme.</p>
       </div>
 
