@@ -49,7 +49,7 @@ export function Navbar({ user, pendingFriendsCount = 0, pendingApplicationsCount
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.image ?? ""} alt={user?.name ?? ""} />
+                <AvatarImage src={user?.image ?? undefined} alt={user?.name ?? ""} />
                 <AvatarFallback>{user?.name?.[0]?.toUpperCase()}</AvatarFallback>
               </Avatar>
             </button>
