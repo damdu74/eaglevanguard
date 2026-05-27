@@ -91,7 +91,7 @@ export default async function CommunityPage({ params }: PageProps) {
       {/* Contenu réservé aux membres */}
       {membership && (
         <>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className={`grid gap-4 ${session?.user?.isNexusTeam ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"}`}>
             {[
               { href: "members", label: "Membres", icon: Users, count: community._count.memberships },
               { href: "events", label: "Événements", icon: Calendar, count: community._count.events },
