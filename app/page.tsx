@@ -44,7 +44,7 @@ export default function HomePage() {
               La plateforme des
               <br />
               <span className="bg-gradient-to-r from-violet-400 via-purple-300 to-violet-400 bg-clip-text text-transparent">
-                unités MILSIM
+                communautés
               </span>
             </h1>
             <p className="text-lg text-zinc-400 max-w-xl mx-auto leading-relaxed">
