@@ -13,7 +13,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!rank) return NextResponse.json({ error: "Grade introuvable" }, { status: 404 })
   if (rank.isProtected) return NextResponse.json({ error: "Ce grade est protégé" }, { status: 403 })
 
-  const { name, abbreviation, order, color } = await req.json()
+  const { name, abbreviation, order, color, category } = await req.json()
 
   const updated = await prisma.nexusRank.update({
     where: { id: params.id },
@@ -22,6 +22,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(abbreviation !== undefined && { abbreviation: abbreviation.trim().toUpperCase() }),
       ...(order !== undefined && { order }),
       ...(color !== undefined && { color }),
+      ...(category !== undefined && { category: category === "FUNCTION" ? "FUNCTION" : "ROLE" }),
     },
   })
 

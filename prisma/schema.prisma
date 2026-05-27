@@ -102,6 +102,7 @@ model NexusRank {
   order        Int
   color        String   @default("#6366f1")
   isProtected  Boolean  @default(false)
+  category     String   @default("ROLE")
   createdAt    DateTime @default(now())
 
   users User[]

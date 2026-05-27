@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isNexusTeam) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
-  const { name, abbreviation, order, color } = await req.json()
+  const { name, abbreviation, order, color, category } = await req.json()
   if (!name?.trim() || !abbreviation?.trim()) {
     return NextResponse.json({ error: "Champs requis manquants" }, { status: 400 })
   }
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
       abbreviation: abbreviation.trim().toUpperCase(),
       order: order ?? 0,
       color: color ?? "#6366f1",
+      category: category === "FUNCTION" ? "FUNCTION" : "ROLE",
     },
   })
 
