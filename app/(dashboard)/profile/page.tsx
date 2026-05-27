@@ -22,6 +22,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
     where: { id: session.user.id },
     include: {
       memberships: { include: { community: true }, take: 5 },
+      nexusRank: true,
     },
   })
 
@@ -63,6 +64,11 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
                   {user.isNexusTeam && (
                     <span className="text-xs font-semibold px-2 py-0.5 rounded text-white" style={{ backgroundColor: "#5865F2" }}>
                       NEXUS Team
+                    </span>
+                  )}
+                  {user.nexusRank && (
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded text-white" style={{ backgroundColor: user.nexusRank.color }}>
+                      {user.nexusRank.abbreviation} — {user.nexusRank.name}
                     </span>
                   )}
                 </div>

@@ -116,10 +116,10 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                 )}
                 {target.nexusRank && (
                   <span
-                    className="text-xs font-mono px-2 py-0.5 rounded font-bold text-white"
+                    className="text-xs font-mono font-bold px-2 py-0.5 rounded text-white"
                     style={{ backgroundColor: target.nexusRank.color }}
                   >
-                    {target.nexusRank.abbreviation}
+                    {target.nexusRank.abbreviation} — {target.nexusRank.name}
                   </span>
                 )}
               </div>
