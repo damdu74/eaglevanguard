@@ -19,6 +19,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 function ErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error") ?? "Default"
+  const detail = searchParams.get("detail")
   const message = ERROR_MESSAGES[error] ?? ERROR_MESSAGES.Default
 
   return (
@@ -34,9 +35,16 @@ function ErrorContent() {
         <Button asChild>
           <Link href="/auth/signin">Retour à la connexion</Link>
         </Button>
-        <p className="text-center text-xs text-muted-foreground">
-          Code : <span className="font-mono">{error}</span>
-        </p>
+        <div className="space-y-1">
+          <p className="text-center text-xs text-muted-foreground">
+            Code : <span className="font-mono">{error}</span>
+          </p>
+          {detail && (
+            <p className="text-center text-xs text-muted-foreground font-mono break-all">
+              {detail}
+            </p>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

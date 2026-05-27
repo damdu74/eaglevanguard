@@ -54,8 +54,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL(`/auth/steam/complete?code=${code}`, process.env.NEXTAUTH_URL))
   } catch (error) {
     console.error("[Steam Auth] Callback error:", error)
+    const detail = error instanceof Error ? error.message : String(error)
+    const base = process.env.NEXTAUTH_URL ?? req.url
     return NextResponse.redirect(
-      new URL(`/auth/error?error=SteamAuthFailed`, process.env.NEXTAUTH_URL ?? req.url)
+      new URL(`/auth/error?error=SteamAuthFailed&detail=${encodeURIComponent(detail)}`, base)
     )
   }
 }
