@@ -132,6 +132,9 @@ export function CommunityLogoUpload({ slug, currentLogoUrl }: Props) {
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "OK"}
             </Button>
           </div>
+          <p className="text-[10px] text-muted-foreground">
+            Évite les liens Discord — ils expirent. Préfère l&apos;upload ou un hébergeur permanent (Imgur, GitHub…).
+          </p>
         </div>
       </div>
     </div>
