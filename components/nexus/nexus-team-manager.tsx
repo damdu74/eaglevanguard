@@ -14,7 +14,7 @@ import Link from "next/link"
 import {
   Loader2,
   Users, Building2, FileText, Shield,
-  UserPlus, UserMinus, Search, ChevronRight,
+  UserPlus, UserMinus, Search, ChevronRight, Lock,
 } from "lucide-react"
 
 interface Stats {
@@ -30,6 +30,7 @@ interface NexusRank {
   abbreviation: string
   order: number
   color: string
+  isProtected: boolean
 }
 
 interface Member {
@@ -220,33 +221,40 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {assigningId === member.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
-                  <Select
-                    value={member.nexusRankId ?? "none"}
-                    onValueChange={val => assignRank(member.id, val === "none" ? null : val)}
-                    disabled={assigningId === member.id}
-                  >
-                    <SelectTrigger className="w-40 h-8 text-xs">
-                      <SelectValue placeholder="Aucun grade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Aucun grade</SelectItem>
-                      {ranks.map(r => (
-                        <SelectItem key={r.id} value={r.id}>
-                          <span className="flex items-center gap-2">
-                            <span className="text-xs font-mono px-1 rounded text-white" style={{ backgroundColor: r.color }}>{r.abbreviation}</span>
-                            {r.name}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {member.nexusRank?.isProtected ? (
+                    <div className="flex items-center gap-1.5 w-40 h-8 px-2 rounded-md border border-border bg-muted/30 opacity-60">
+                      <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <span className="text-xs text-muted-foreground truncate">Grade protégé</span>
+                    </div>
+                  ) : (
+                    <Select
+                      value={member.nexusRankId ?? "none"}
+                      onValueChange={val => assignRank(member.id, val === "none" ? null : val)}
+                      disabled={assigningId === member.id}
+                    >
+                      <SelectTrigger className="w-40 h-8 text-xs">
+                        <SelectValue placeholder="Aucun grade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Aucun grade</SelectItem>
+                        {ranks.filter(r => !r.isProtected).map(r => (
+                          <SelectItem key={r.id} value={r.id}>
+                            <span className="flex items-center gap-2">
+                              <span className="text-xs font-mono px-1 rounded text-white" style={{ backgroundColor: r.color }}>{r.abbreviation}</span>
+                              {r.name}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"
                     className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                     onClick={() => removeMember(member.id)}
-                    disabled={removingId === member.id || isSelf}
-                    title={isSelf ? "Impossible de vous retirer vous-même" : "Retirer de la NEXUS Team"}
+                    disabled={removingId === member.id || isSelf || !!member.nexusRank?.isProtected}
+                    title={isSelf ? "Impossible de vous retirer vous-même" : member.nexusRank?.isProtected ? "Membre protégé" : "Retirer de la NEXUS Team"}
                   >
                     {removingId === member.id
                       ? <Loader2 className="h-3.5 w-3.5 animate-spin" />

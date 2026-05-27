@@ -96,11 +96,12 @@ model User {
 // ─── NEXUS TEAM ───────────────────────────────────────────────────────────────
 
 model NexusRank {
-  id           String  @id @default(cuid())
+  id           String   @id @default(cuid())
   name         String
   abbreviation String
   order        Int
-  color        String  @default("#6366f1")
+  color        String   @default("#6366f1")
+  isProtected  Boolean  @default(false)
   createdAt    DateTime @default(now())
 
   users User[]

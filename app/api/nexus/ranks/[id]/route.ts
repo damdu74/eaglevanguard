@@ -9,9 +9,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isNexusTeam) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
+  const rank = await prisma.nexusRank.findUnique({ where: { id: params.id } })
+  if (!rank) return NextResponse.json({ error: "Grade introuvable" }, { status: 404 })
+  if (rank.isProtected) return NextResponse.json({ error: "Ce grade est protégé" }, { status: 403 })
+
   const { name, abbreviation, order, color } = await req.json()
 
-  const rank = await prisma.nexusRank.update({
+  const updated = await prisma.nexusRank.update({
     where: { id: params.id },
     data: {
       ...(name !== undefined && { name: name.trim() }),
@@ -21,12 +25,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     },
   })
 
-  return NextResponse.json(rank)
+  return NextResponse.json(updated)
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isNexusTeam) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
+  const rank = await prisma.nexusRank.findUnique({ where: { id: params.id } })
+  if (!rank) return NextResponse.json({ error: "Grade introuvable" }, { status: 404 })
+  if (rank.isProtected) return NextResponse.json({ error: "Ce grade est protégé" }, { status: 403 })
 
   await prisma.nexusRank.delete({ where: { id: params.id } })
   return new NextResponse(null, { status: 204 })

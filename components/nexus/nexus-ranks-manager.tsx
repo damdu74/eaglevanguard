@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Plus, Trash2, Pencil, Check, X } from "lucide-react"
+import { Loader2, Plus, Trash2, Pencil, Check, X, Lock } from "lucide-react"
 
 interface NexusRank {
   id: string
@@ -15,6 +15,7 @@ interface NexusRank {
   abbreviation: string
   order: number
   color: string
+  isProtected: boolean
 }
 
 interface Props {
@@ -98,7 +99,19 @@ export function NexusRanksManager({ initialRanks }: Props) {
 
         {ranks.map(rank => (
           <div key={rank.id}>
-            {editingId === rank.id ? (
+            {rank.isProtected ? (
+              // Grade protégé — affiché mais non modifiable
+              <div className="flex items-center justify-between opacity-50">
+                <div className="flex items-center gap-3">
+                  <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="text-xs font-mono px-2 py-0.5 rounded font-bold text-white" style={{ backgroundColor: rank.color }}>
+                    {rank.abbreviation}
+                  </span>
+                  <span className="text-sm font-medium">{rank.name}</span>
+                </div>
+                <span className="text-xs border border-border rounded px-2 py-0.5 text-muted-foreground">Protégé</span>
+              </div>
+            ) : editingId === rank.id ? (
               <div className="flex items-center gap-2 flex-wrap">
                 <Input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Nom" className="w-40 h-8 text-sm" />
                 <Input value={editAbbr} onChange={e => setEditAbbr(e.target.value)} placeholder="Abrév." className="w-20 h-8 text-sm" />
