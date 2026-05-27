@@ -25,6 +25,15 @@ for (let i = 1; i <= 6; i++) {
   }
 }
 
+// Libérer le verrou Prisma Migrate s'il est encore tenu par une session zombie
+// (le numéro 72707369 est la clé hardcodée par Prisma pour pg_advisory_lock)
+try {
+  await prisma.$executeRaw`SELECT pg_advisory_unlock(72707369)`
+  console.log("[wake-db] Advisory lock released (or was not held)")
+} catch (e) {
+  console.log("[wake-db] Could not release lock:", e.message)
+}
+
 await prisma.$disconnect()
 
 if (!ok) {
