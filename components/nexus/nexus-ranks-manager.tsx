@@ -100,7 +100,7 @@ function RankSection({ title, description, category, ranks, setRanks }: {
   }
 
   return (
-    <Card className="flex-1">
+    <Card>
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
         <CardDescription className="text-xs">{description}</CardDescription>
@@ -180,7 +180,7 @@ export function NexusRanksManager({ initialRanks }: Props) {
   const [ranks, setRanks] = useState<NexusRank[]>(initialRanks)
 
   return (
-    <div className="flex gap-4 items-start">
+    <div className="grid grid-cols-2 gap-4">
       <RankSection
         title="Rôles"
         description="Positions hiérarchiques au sein de la NEXUS Team."
