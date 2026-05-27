@@ -75,6 +75,7 @@ model User {
   discordName   String?
   discordAvatar String?
   isNexusTeam   Boolean           @default(false)
+  nexusRankId   String?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
@@ -89,6 +90,20 @@ model User {
   receivedFriendRequests Friendship[]  @relation("ReceivedRequests")
   notifications      Notification[]
   rpCharacters       RpCharacter[]
+  nexusRank          NexusRank?        @relation(fields: [nexusRankId], references: [id], onDelete: SetNull)
+}
+
+// ─── NEXUS TEAM ───────────────────────────────────────────────────────────────
+
+model NexusRank {
+  id           String  @id @default(cuid())
+  name         String
+  abbreviation String
+  order        Int
+  color        String  @default("#6366f1")
+  createdAt    DateTime @default(now())
+
+  users User[]
 }
 
 model Notification {

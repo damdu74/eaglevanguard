@@ -41,6 +41,14 @@ export function Navbar({ user, pendingFriendsCount = 0, pendingApplicationsCount
         >
           Communautés
         </Link>
+        {user?.isNexusTeam && (
+          <Link
+            href="/nexus/team"
+            className="rounded-md px-3 py-1.5 text-sm hover:bg-muted transition-colors text-indigo-400"
+          >
+            NEXUS Team
+          </Link>
+        )}
       </nav>
 
       <div className="ml-auto flex items-center gap-2">

@@ -1,0 +1,33 @@
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+
+type Params = { params: { id: string } }
+
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.isNexusTeam) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
+  const { name, abbreviation, order, color } = await req.json()
+
+  const rank = await prisma.nexusRank.update({
+    where: { id: params.id },
+    data: {
+      ...(name !== undefined && { name: name.trim() }),
+      ...(abbreviation !== undefined && { abbreviation: abbreviation.trim().toUpperCase() }),
+      ...(order !== undefined && { order }),
+      ...(color !== undefined && { color }),
+    },
+  })
+
+  return NextResponse.json(rank)
+}
+
+export async function DELETE(_req: NextRequest, { params }: Params) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.isNexusTeam) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
+  await prisma.nexusRank.delete({ where: { id: params.id } })
+  return new NextResponse(null, { status: 204 })
+}

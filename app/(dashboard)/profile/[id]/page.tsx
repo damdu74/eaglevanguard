@@ -28,6 +28,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     where: { id: params.id },
     include: {
       memberships: { include: { community: true }, take: 5 },
+      nexusRank: true,
     },
   })
 
@@ -106,7 +107,17 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
               <AvatarFallback className="text-2xl">{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="space-y-1">
-              <p className="text-xl font-semibold">{displayName}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-xl font-semibold">{displayName}</p>
+                {target.nexusRank && (
+                  <span
+                    className="text-xs font-mono px-2 py-0.5 rounded font-bold text-white"
+                    style={{ backgroundColor: target.nexusRank.color }}
+                  >
+                    {target.nexusRank.abbreviation}
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground">
                 Membre depuis le {new Date(target.createdAt).toLocaleDateString("fr-FR")}
               </p>
