@@ -71,7 +71,7 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
         isOwner={isOwner}
       />
 
-      {isOwner && otherMembers.length > 0 && (
+      {isOwner && (
         <TransferOwnershipForm
           slug={params.slug}
           members={otherMembers.map((m) => ({

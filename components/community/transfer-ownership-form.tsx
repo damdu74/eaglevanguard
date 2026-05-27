@@ -67,32 +67,38 @@ export function TransferOwnershipForm({ slug, members }: Props) {
       <CardContent className="space-y-4">
         <Separator />
 
-        <div className="space-y-1">
-          <Label>Nouveau fondateur</Label>
-          <Select onValueChange={(v) => { setSelectedId(v); setConfirmName("") }}>
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionnez un membre" />
-            </SelectTrigger>
-            <SelectContent>
-              {members.map((m) => (
-                <SelectItem key={m.id} value={m.id}>
-                  <div className="flex items-center gap-2">
-                    {m.image ? (
-                      <Image src={m.image} alt={m.name} width={20} height={20} className="rounded-full object-cover" />
-                    ) : (
-                      <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-xs">
-                        {m.name[0]?.toUpperCase()}
-                      </div>
-                    )}
-                    {m.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {members.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Aucun membre dans la communauté. Acceptez des candidatures ou invitez des joueurs avant de pouvoir transférer la propriété.
+          </p>
+        ) : (
+          <div className="space-y-1">
+            <Label>Nouveau fondateur</Label>
+            <Select onValueChange={(v) => { setSelectedId(v); setConfirmName("") }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez un membre" />
+              </SelectTrigger>
+              <SelectContent>
+                {members.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>
+                    <div className="flex items-center gap-2">
+                      {m.image ? (
+                        <Image src={m.image} alt={m.name} width={20} height={20} className="rounded-full object-cover" />
+                      ) : (
+                        <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-xs">
+                          {m.name[0]?.toUpperCase()}
+                        </div>
+                      )}
+                      {m.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
-        {selectedMember && (
+        {members.length > 0 && selectedMember && (
           <div className="space-y-2">
             <Label htmlFor="confirm-transfer">
               Tapez{" "}
@@ -108,6 +114,7 @@ export function TransferOwnershipForm({ slug, members }: Props) {
           </div>
         )}
 
+        {members.length > 0 && (
         <div className="flex justify-end">
           <Button
             variant="outline"
@@ -122,6 +129,7 @@ export function TransferOwnershipForm({ slug, members }: Props) {
             )}
           </Button>
         </div>
+        )}
       </CardContent>
     </Card>
   )
