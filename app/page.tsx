@@ -1,7 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Shield, Users, Calendar, GitBranch, ChevronRight, Crosshair, Clock } from "lucide-react"
+import { Shield, Users, Calendar, ChevronRight, Crosshair, Clock } from "lucide-react"
 
 const features = [
   {
@@ -17,13 +17,6 @@ const features = [
     bg: "bg-blue-500/10 border-blue-500/20",
     title: "Grades & Hiérarchie",
     desc: "Créez votre propre système de grades avec couleurs personnalisées. Les recrues sont promus automatiquement après 7 jours.",
-  },
-  {
-    icon: GitBranch,
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10 border-emerald-500/20",
-    title: "ORBAT Interactif",
-    desc: "Construisez votre ordre de bataille avec un éditeur visuel drag & drop. Assignez vos membres à chaque poste.",
   },
   {
     icon: Calendar,
