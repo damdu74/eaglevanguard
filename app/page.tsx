@@ -48,8 +48,7 @@ export default function HomePage() {
               </span>
             </h1>
             <p className="text-lg text-zinc-400 max-w-xl mx-auto leading-relaxed">
-              Recrutez, organisez et commandez votre unité ARMA 3.
-              Grades, ORBAT, opérations et gestion des membres — tout en un.
+              Recrutez, organisez et gérez votre communauté.
             </p>
           </div>
 
