@@ -25,6 +25,7 @@ export default async function NexusTeamPage() {
         discordAvatar: true,
         nexusRankId: true,
         nexusRank: true,
+        nexusFunctions: true,
       },
       orderBy: { createdAt: "asc" },
     }),

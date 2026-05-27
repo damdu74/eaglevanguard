@@ -90,7 +90,8 @@ model User {
   receivedFriendRequests Friendship[]  @relation("ReceivedRequests")
   notifications      Notification[]
   rpCharacters       RpCharacter[]
-  nexusRank          NexusRank?        @relation(fields: [nexusRankId], references: [id], onDelete: SetNull)
+  nexusRank          NexusRank?        @relation("UserRole", fields: [nexusRankId], references: [id], onDelete: SetNull)
+  nexusFunctions     NexusRank[]       @relation("UserFunctions")
 }
 
 // ─── NEXUS TEAM ───────────────────────────────────────────────────────────────
@@ -105,7 +106,8 @@ model NexusRank {
   category     String   @default("ROLE")
   createdAt    DateTime @default(now())
 
-  users User[]
+  users          User[]  @relation("UserRole")
+  functionUsers  User[]  @relation("UserFunctions")
 }
 
 model Notification {

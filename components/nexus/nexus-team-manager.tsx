@@ -9,12 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
 
 import Link from "next/link"
 import {
   Loader2,
   Users, Building2, FileText, Shield,
-  UserPlus, UserMinus, Search, ChevronRight, Lock,
+  UserPlus, UserMinus, Search, ChevronRight, Lock, X,
 } from "lucide-react"
 
 interface Stats {
@@ -31,6 +32,7 @@ interface NexusRank {
   order: number
   color: string
   isProtected: boolean
+  category: string
 }
 
 interface Member {
@@ -43,6 +45,7 @@ interface Member {
   discordAvatar: string | null
   nexusRankId: string | null
   nexusRank: NexusRank | null
+  nexusFunctions: NexusRank[]
 }
 
 interface SearchUser {
@@ -67,8 +70,11 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
   const [ranks] = useState<NexusRank[]>(initialRanks)
   const [members, setMembers] = useState<Member[]>(initialMembers)
 
-  // Membres
-  const [assigningId, setAssigningId] = useState<string | null>(null)
+  const roles = ranks.filter(r => r.category === "ROLE")
+  const functions = ranks.filter(r => r.category === "FUNCTION")
+
+  const [assigningRoleId, setAssigningRoleId] = useState<string | null>(null)
+  const [assigningFuncId, setAssigningFuncId] = useState<string | null>(null)
   const [removingId, setRemovingId] = useState<string | null>(null)
 
   // Recherche / Promotion
@@ -93,10 +99,8 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
     return () => clearTimeout(searchTimer.current)
   }, [searchQ])
 
-  // ——— Membres ———
-
-  async function assignRank(memberId: string, nexusRankId: string | null) {
-    setAssigningId(memberId)
+  async function assignRole(memberId: string, nexusRankId: string | null) {
+    setAssigningRoleId(memberId)
     try {
       const res = await fetch(`/api/nexus/members/${memberId}/rank`, {
         method: "PATCH",
@@ -104,11 +108,31 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
         body: JSON.stringify({ nexusRankId }),
       })
       if (!res.ok) throw new Error()
-      const rank = nexusRankId ? ranks.find(r => r.id === nexusRankId) ?? null : null
+      const rank = nexusRankId ? roles.find(r => r.id === nexusRankId) ?? null : null
       setMembers(prev => prev.map(m => m.id === memberId ? { ...m, nexusRankId, nexusRank: rank } : m))
-      toast.success("Grade assigné")
-    } catch { toast.error("Erreur lors de l'assignation") }
-    finally { setAssigningId(null) }
+      toast.success("Rôle assigné")
+    } catch { toast.error("Erreur lors de l'assignation du rôle") }
+    finally { setAssigningRoleId(null) }
+  }
+
+  async function toggleFunction(member: Member, funcId: string) {
+    setAssigningFuncId(member.id)
+    const currentIds = member.nexusFunctions.map(f => f.id)
+    const newIds = currentIds.includes(funcId)
+      ? currentIds.filter(id => id !== funcId)
+      : [...currentIds, funcId]
+
+    try {
+      const res = await fetch(`/api/nexus/members/${member.id}/functions`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ functionIds: newIds }),
+      })
+      if (!res.ok) throw new Error()
+      const newFunctions = functions.filter(f => newIds.includes(f.id))
+      setMembers(prev => prev.map(m => m.id === member.id ? { ...m, nexusFunctions: newFunctions } : m))
+    } catch { toast.error("Erreur lors de la mise à jour des fonctions") }
+    finally { setAssigningFuncId(null) }
   }
 
   async function removeMember(memberId: string) {
@@ -149,6 +173,7 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
         discordAvatar: user.discordAvatar,
         nexusRankId: null,
         nexusRank: null,
+        nexusFunctions: [],
       }
       setMembers(prev => [...prev, newMember])
       setSearchResults(prev => prev.filter(u => u.id !== user.id))
@@ -158,8 +183,6 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
     } catch { toast.error("Erreur lors de la promotion") }
     finally { setPromotingId(null) }
   }
-
-  // ——— Stats ———
 
   const statItems = [
     { label: "Membres NEXUS", value: members.length, icon: Shield, color: "text-indigo-400" },
@@ -190,9 +213,9 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
       <Card>
         <CardHeader>
           <CardTitle>Membres NEXUS Team</CardTitle>
-          <CardDescription>Gérez les membres et leurs grades. Ajoutez ou retirez des utilisateurs.</CardDescription>
+          <CardDescription>Gérez les membres, leurs rôles et fonctions.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {members.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-4">Aucun membre NEXUS Team.</p>
           )}
@@ -200,64 +223,123 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
             const displayName = member.steamName ?? member.discordName ?? member.name ?? "Membre"
             const avatar = member.customAvatar ?? member.steamAvatar ?? member.discordAvatar
             const isSelf = member.id === currentUserId
+            const isProtected = !!member.nexusRank?.isProtected
+
             return (
-              <div key={member.id} className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarImage src={avatar ?? undefined} />
-                    <AvatarFallback className="text-xs">{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
+              <div key={member.id} className="space-y-2 pb-3 border-b border-border last:border-0 last:pb-0">
+                {/* Ligne identité + bouton retrait */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarImage src={avatar ?? undefined} />
+                      <AvatarFallback className="text-xs">{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
                     <p className="text-sm font-medium truncate">{displayName}</p>
-                    {member.nexusRank && (
-                      <span className="text-xs font-mono px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: member.nexusRank.color }}>
-                        {member.nexusRank.abbreviation}
-                      </span>
-                    )}
                   </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {assigningId === member.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
-                  {member.nexusRank?.isProtected ? (
-                    <div className="flex items-center gap-1.5 w-40 h-8 px-2 rounded-md border border-border bg-muted/30 opacity-60">
-                      <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
-                      <span className="text-xs text-muted-foreground truncate">Grade protégé</span>
-                    </div>
-                  ) : (
-                    <Select
-                      value={member.nexusRankId ?? "none"}
-                      onValueChange={val => assignRank(member.id, val === "none" ? null : val)}
-                      disabled={assigningId === member.id}
-                    >
-                      <SelectTrigger className="w-40 h-8 text-xs">
-                        <SelectValue placeholder="Aucun grade" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Aucun grade</SelectItem>
-                        {ranks.map(r => (
-                          <SelectItem key={r.id} value={r.id} disabled={r.isProtected}>
-                            <span className={`flex items-center gap-2 ${r.isProtected ? "opacity-40" : ""}`}>
-                              <span className="text-xs font-mono px-1 rounded text-white" style={{ backgroundColor: r.color }}>{r.abbreviation}</span>
-                              {r.name}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive shrink-0"
                     onClick={() => removeMember(member.id)}
-                    disabled={removingId === member.id || isSelf || !!member.nexusRank?.isProtected}
-                    title={isSelf ? "Impossible de vous retirer vous-même" : member.nexusRank?.isProtected ? "Membre protégé" : "Retirer de la NEXUS Team"}
+                    disabled={removingId === member.id || isSelf || isProtected}
+                    title={isSelf ? "Impossible de vous retirer vous-même" : isProtected ? "Membre protégé" : "Retirer de la NEXUS Team"}
                   >
                     {removingId === member.id
                       ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       : <UserMinus className="h-3.5 w-3.5" />
                     }
                   </Button>
+                </div>
+
+                {/* Ligne Rôle + Fonctions */}
+                <div className="flex flex-wrap items-start gap-3 pl-11">
+
+                  {/* Rôle — select unique */}
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <span className="text-xs text-muted-foreground">Rôle</span>
+                    {isProtected ? (
+                      <div className="flex items-center gap-1.5 h-8 px-2 rounded-md border border-border bg-muted/30 opacity-60 w-40">
+                        <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
+                        <span className="text-xs text-muted-foreground truncate">Protégé</span>
+                      </div>
+                    ) : (
+                      <Select
+                        value={member.nexusRankId ?? "none"}
+                        onValueChange={val => assignRole(member.id, val === "none" ? null : val)}
+                        disabled={assigningRoleId === member.id}
+                      >
+                        <SelectTrigger className="w-40 h-8 text-xs">
+                          {assigningRoleId === member.id
+                            ? <Loader2 className="h-3 w-3 animate-spin" />
+                            : <SelectValue placeholder="Aucun rôle" />
+                          }
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Aucun rôle</SelectItem>
+                          {roles.filter(r => !r.isProtected).map(r => (
+                            <SelectItem key={r.id} value={r.id}>
+                              <span className="flex items-center gap-2">
+                                <span className="text-xs font-mono px-1 rounded text-white" style={{ backgroundColor: r.color }}>{r.abbreviation}</span>
+                                {r.name}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  {/* Fonctions — multi-select */}
+                  <div className="flex flex-col gap-1 flex-1 min-w-0">
+                    <span className="text-xs text-muted-foreground">Fonctions</span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {/* Badges des fonctions assignées */}
+                      {member.nexusFunctions.map(f => (
+                        <Badge
+                          key={f.id}
+                          variant="outline"
+                          className="flex items-center gap-1 px-1.5 py-0.5 text-xs font-normal h-6 cursor-pointer hover:bg-destructive/10"
+                          style={{ borderColor: f.color, color: f.color }}
+                          onClick={() => !assigningFuncId && toggleFunction(member, f.id)}
+                        >
+                          <span className="font-mono">{f.abbreviation}</span>
+                          <X className="h-2.5 w-2.5" />
+                        </Badge>
+                      ))}
+                      {/* Dropdown pour ajouter une fonction */}
+                      {functions.filter(f => !member.nexusFunctions.some(mf => mf.id === f.id)).length > 0 && (
+                        <Select
+                          value=""
+                          onValueChange={val => toggleFunction(member, val)}
+                          disabled={!!assigningFuncId}
+                        >
+                          <SelectTrigger className="h-6 w-auto px-2 text-xs border-dashed gap-1">
+                            {assigningFuncId === member.id
+                              ? <Loader2 className="h-3 w-3 animate-spin" />
+                              : <span>+ Ajouter</span>
+                            }
+                          </SelectTrigger>
+                          <SelectContent>
+                            {functions
+                              .filter(f => !member.nexusFunctions.some(mf => mf.id === f.id))
+                              .map(f => (
+                                <SelectItem key={f.id} value={f.id}>
+                                  <span className="flex items-center gap-2">
+                                    <span className="text-xs font-mono px-1 rounded text-white" style={{ backgroundColor: f.color }}>{f.abbreviation}</span>
+                                    {f.name}
+                                  </span>
+                                </SelectItem>
+                              ))
+                            }
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {member.nexusFunctions.length === 0 && functions.length === 0 && (
+                        <span className="text-xs text-muted-foreground italic">Aucune fonction disponible</span>
+                      )}
+                    </div>
+                  </div>
+
                 </div>
               </div>
             )
