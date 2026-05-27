@@ -208,10 +208,7 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
                     <AvatarFallback className="text-xs">{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-sm font-medium truncate">{displayName}</p>
-                      {isSelf && <span className="text-xs text-muted-foreground">(vous)</span>}
-                    </div>
+                    <p className="text-sm font-medium truncate">{displayName}</p>
                     {member.nexusRank && (
                       <span className="text-xs font-mono px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: member.nexusRank.color }}>
                         {member.nexusRank.abbreviation}
