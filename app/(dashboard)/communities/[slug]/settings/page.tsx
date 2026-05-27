@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { CommunitySettingsForm } from "@/components/community/community-settings-form"
 import { CommunityLogoUpload } from "@/components/community/community-logo-upload"
+import { TransferOwnershipForm } from "@/components/community/transfer-ownership-form"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 
@@ -35,6 +36,20 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
   })
   if (!membership) redirect(`/communities/${params.slug}`)
 
+  const isOwner = membership.role === "OWNER"
+
+  const otherMembers = isOwner
+    ? await prisma.membership.findMany({
+        where: { communityId: community.id, userId: { not: session.user.id as string } },
+        include: {
+          user: {
+            select: { id: true, steamName: true, discordName: true, name: true, customAvatar: true, steamAvatar: true, discordAvatar: true },
+          },
+        },
+        orderBy: { user: { name: "asc" } },
+      })
+    : []
+
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -53,8 +68,19 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
 
       <CommunitySettingsForm
         community={community}
-        isOwner={community.creatorId === session.user.id}
+        isOwner={isOwner}
       />
+
+      {isOwner && otherMembers.length > 0 && (
+        <TransferOwnershipForm
+          slug={params.slug}
+          members={otherMembers.map((m) => ({
+            id: m.user.id,
+            name: m.user.steamName ?? m.user.discordName ?? m.user.name ?? "Inconnu",
+            image: m.user.customAvatar ?? m.user.steamAvatar ?? m.user.discordAvatar ?? null,
+          }))}
+        />
+      )}
     </div>
   )
 }
