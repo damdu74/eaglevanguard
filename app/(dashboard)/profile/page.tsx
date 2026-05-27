@@ -68,7 +68,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
                   )}
                   {user.nexusRank && (
                     <span className="text-xs font-mono font-bold px-2 py-0.5 rounded text-white" style={{ backgroundColor: user.nexusRank.color }}>
-                      {user.nexusRank.abbreviation} — {user.nexusRank.name}
+                      {user.nexusRank.name}
                     </span>
                   )}
                 </div>

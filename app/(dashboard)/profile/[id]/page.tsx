@@ -119,7 +119,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                     className="text-xs font-mono font-bold px-2 py-0.5 rounded text-white"
                     style={{ backgroundColor: target.nexusRank.color }}
                   >
-                    {target.nexusRank.abbreviation} — {target.nexusRank.name}
+                    {target.nexusRank.name}
                   </span>
                 )}
               </div>
