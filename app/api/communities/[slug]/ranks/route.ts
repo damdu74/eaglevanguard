@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   })
   if (!adminMembership) return NextResponse.json({ error: "Permissions insuffisantes" }, { status: 403 })
 
-  const { name, abbreviation, order } = await req.json()
+  const { name, abbreviation, order, color } = await req.json()
   if (!name?.trim() || !abbreviation?.trim()) {
     return NextResponse.json({ error: "Nom et abréviation requis" }, { status: 400 })
   }
@@ -50,6 +50,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       name: name.trim(),
       abbreviation: abbreviation.trim(),
       order: order ?? (maxOrder._max.order ?? 0) + 1,
+      color: color ?? "#6366f1",
     },
   })
 

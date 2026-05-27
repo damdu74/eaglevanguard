@@ -209,6 +209,7 @@ model Rank {
   name         String
   abbreviation String
   order        Int
+  color        String  @default("#6366f1")
   iconUrl      String?
   isPermanent  Boolean @default(false)
 
