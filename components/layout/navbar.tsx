@@ -24,7 +24,7 @@ interface NavbarProps {
 export function Navbar({ user, pendingFriendsCount = 0, pendingApplicationsCount = 0 }: NavbarProps) {
   return (
     <header className="flex shrink-0 items-center gap-4 border-b bg-background/95 backdrop-blur px-6 py-2 z-50">
-      <Link href="/dashboard" className="flex items-center">
+      <Link href="/" className="flex items-center">
         <Image src="/icon.png" alt="NEXUS" width={36} height={36} priority />
       </Link>
 
