@@ -126,7 +126,7 @@ export default async function MembersPage() {
                             <div className="flex items-center gap-1.5">
                               <p className="text-sm font-medium leading-none">{displayName}</p>
                               {user.isNexusTeam && (
-                                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-400 leading-none">
+                                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded leading-none text-white" style={{ backgroundColor: "#5865F2", borderColor: "#5865F2" }}>
                                   NEXUS Team
                                 </span>
                               )}

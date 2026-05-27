@@ -110,7 +110,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-xl font-semibold">{displayName}</p>
                 {target.isNexusTeam && (
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-400">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded text-white" style={{ backgroundColor: "#5865F2" }}>
                     NEXUS Team
                   </span>
                 )}

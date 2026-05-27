@@ -118,7 +118,7 @@ export default async function PlayersPage({ searchParams }: PageProps) {
                         <div className="flex items-center gap-1.5">
                           <p className="font-medium text-sm leading-tight truncate">{displayName}</p>
                           {user.isNexusTeam && (
-                            <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-400 leading-none">
+                            <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded leading-none text-white" style={{ backgroundColor: "#5865F2", borderColor: "#5865F2" }}>
                               NEXUS Team
                             </span>
                           )}
