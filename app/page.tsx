@@ -64,9 +64,6 @@ export default function HomePage() {
           <Image src="/icon.png" alt="NEXUS" width={36} height={36} priority />
         </Link>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" className="text-zinc-400 hover:text-white" asChild>
-            <Link href="/communities">Communautés</Link>
-          </Button>
           <Button className="bg-violet-600 hover:bg-violet-700" asChild>
             <Link href="/auth/signin">Connexion</Link>
           </Button>
