@@ -14,24 +14,29 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.code) return null
 
-        const authCode = await prisma.steamAuthCode.findUnique({
-          where: { code: credentials.code },
-          include: { user: true },
-        })
+        try {
+          const authCode = await prisma.steamAuthCode.findUnique({
+            where: { code: credentials.code },
+            include: { user: true },
+          })
 
-        if (!authCode || authCode.expiresAt < new Date()) {
-          if (authCode) await prisma.steamAuthCode.delete({ where: { code: credentials.code } }).catch(() => {})
+          if (!authCode || authCode.expiresAt < new Date()) {
+            if (authCode) await prisma.steamAuthCode.delete({ where: { code: credentials.code } }).catch(() => {})
+            return null
+          }
+
+          await prisma.steamAuthCode.delete({ where: { code: credentials.code } }).catch(() => {})
+
+          const u = authCode.user
+          return {
+            id: u.id,
+            name: u.steamName ?? u.name,
+            email: u.email ?? null,
+            image: u.steamAvatar ?? u.image ?? null,
+          }
+        } catch (error) {
+          console.error("[Steam Auth] Authorize error:", error)
           return null
-        }
-
-        await prisma.steamAuthCode.delete({ where: { code: credentials.code } }).catch(() => {})
-
-        const u = authCode.user
-        return {
-          id: u.id,
-          name: u.steamName ?? u.name,
-          email: u.email,
-          image: u.steamAvatar ?? u.image,
         }
       },
     }),
