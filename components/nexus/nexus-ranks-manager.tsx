@@ -126,7 +126,7 @@ function RankSection({ title, description, category, ranks, setRanks }: {
             ) : editingId === rank.id ? (
               <div className="flex items-center gap-1.5 flex-wrap">
                 <Input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Nom" className="w-32 h-7 text-xs" />
-                <Input value={editAbbr} onChange={e => setEditAbbr(e.target.value)} placeholder="Abrév." className="w-16 h-7 text-xs" />
+                <Input value={editAbbr} onChange={e => setEditAbbr(e.target.value)} placeholder="Abrév." className="w-32 h-7 text-xs" maxLength={20} />
                 <Input type="number" value={editOrder} onChange={e => setEditOrder(Number(e.target.value))} placeholder="Ordre" className="w-14 h-7 text-xs" />
                 <input type="color" value={editColor} onChange={e => setEditColor(e.target.value)} className="h-7 w-8 cursor-pointer rounded border border-border" />
                 <Button size="sm" className="h-7 px-2" onClick={() => saveEdit(rank.id)} disabled={saving}>
@@ -164,7 +164,7 @@ function RankSection({ title, description, category, ranks, setRanks }: {
           <Label className="text-xs text-muted-foreground">Ajouter</Label>
           <div className="flex items-center gap-1.5 flex-wrap">
             <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nom" className="w-32 h-7 text-xs" />
-            <Input value={newAbbr} onChange={e => setNewAbbr(e.target.value)} placeholder="Abrév." className="w-16 h-7 text-xs" maxLength={6} />
+            <Input value={newAbbr} onChange={e => setNewAbbr(e.target.value)} placeholder="Abrév." className="w-32 h-7 text-xs" maxLength={20} />
             <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="h-7 w-8 cursor-pointer rounded border border-border" />
             <Button size="sm" className="h-7 px-2" onClick={createRank} disabled={creating || !newName.trim() || !newAbbr.trim()}>
               {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
