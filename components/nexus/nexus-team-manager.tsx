@@ -135,7 +135,7 @@ export function NexusTeamManager({ initialRanks, initialMembers }: Props) {
       <Card>
         <CardHeader>
           <CardTitle>Grades NEXUS</CardTitle>
-          <CardDescription>Définissez la hiérarchie interne de l'équipe.</CardDescription>
+          <CardDescription>Définissez la hiérarchie interne de l&apos;équipe.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {ranks.length === 0 && (
