@@ -15,8 +15,8 @@ const navSections = [
   {
     label: "Communautés",
     items: [
-      { href: "/communities/mine", label: "Communautés", icon: Shield, exact: true },
       { href: "/communities", label: "Annuaire", icon: BookOpen, exact: true },
+      { href: "/communities/mine", label: "Communautés", icon: Shield, exact: true },
       { href: "/members", label: "Mes membres", icon: Users, exact: true },
     ],
   },
