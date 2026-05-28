@@ -42,23 +42,37 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Statut invalide" }, { status: 400 })
   }
 
-  // Check max slots (only for CONFIRMED/TENTATIVE)
-  if (event.maxSlots && ["CONFIRMED", "TENTATIVE"].includes(status)) {
-    const existing = await prisma.eventParticipant.findFirst({
-      where: { eventId: event.id, userId: session.user.id },
-    })
-    if (!existing || existing.status === "DECLINED") {
-      if (event._count.participants >= event.maxSlots) {
-        return NextResponse.json({ error: "Le nombre maximum de participants est atteint" }, { status: 400 })
+  const participation = await prisma.$transaction(async (tx) => {
+    if (event.maxSlots && ["CONFIRMED", "TENTATIVE"].includes(status)) {
+      const existing = await tx.eventParticipant.findFirst({
+        where: { eventId: event.id, userId: session.user.id },
+      })
+      if (!existing || existing.status === "DECLINED") {
+        const count = await tx.eventParticipant.count({
+          where: {
+            eventId: event.id,
+            status: { in: ["CONFIRMED", "TENTATIVE"] },
+          },
+        })
+        if (count >= event.maxSlots) {
+          throw new Error("FULL")
+        }
       }
     }
-  }
 
-  const participation = await prisma.eventParticipant.upsert({
-    where: { eventId_userId: { eventId: event.id, userId: session.user.id } },
-    create: { eventId: event.id, userId: session.user.id, status: status as "CONFIRMED" | "TENTATIVE" | "DECLINED" },
-    update: { status: status as "CONFIRMED" | "TENTATIVE" | "DECLINED" },
+    return tx.eventParticipant.upsert({
+      where: { eventId_userId: { eventId: event.id, userId: session.user.id } },
+      create: { eventId: event.id, userId: session.user.id, status: status as "CONFIRMED" | "TENTATIVE" | "DECLINED" },
+      update: { status: status as "CONFIRMED" | "TENTATIVE" | "DECLINED" },
+    })
+  }).catch((e: Error) => {
+    if (e.message === "FULL") return null
+    throw e
   })
+
+  if (!participation) {
+    return NextResponse.json({ error: "Le nombre maximum de participants est atteint" }, { status: 400 })
+  }
 
   return NextResponse.json(participation)
 }

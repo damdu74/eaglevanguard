@@ -221,6 +221,8 @@ model Rank {
 
   community   Community    @relation(fields: [communityId], references: [id], onDelete: Cascade)
   memberships Membership[]
+
+  @@index([communityId])
 }
 
 // ─── UNITS (ORBAT) ────────────────────────────────────────────────────────────
@@ -295,6 +297,8 @@ model Event {
 
   community    Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
   participants EventParticipant[]
+
+  @@index([communityId, status, startDate])
 }
 
 enum ParticipantStatus {
@@ -330,6 +334,8 @@ model RpUnit {
   community   Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
   characters  RpCharacter[]
   rpGroups    RpGroup[]
+
+  @@index([communityId])
 }
 
 model RpGroup {
@@ -364,6 +370,7 @@ model RpCharacter {
   rpGroup   RpGroup?   @relation(fields: [rpGroupId], references: [id], onDelete: SetNull)
 
   @@unique([rpUnitId, userId])
+  @@index([communityId, userId])
 }
 
 // ─── COMMUNITY POSTS ──────────────────────────────────────────────────────────
@@ -407,4 +414,5 @@ model Application {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([communityId, userId])
+  @@index([communityId, status])
 }

@@ -17,6 +17,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Seules les images sont acceptées" }, { status: 400 })
   }
 
+  if (file.size > 5 * 1024 * 1024) {
+    return NextResponse.json({ error: "Fichier trop volumineux (max 5 Mo)" }, { status: 400 })
+  }
+
   const ext = file.name.split(".").pop() ?? "png"
   const filename = `uploads/${session.user.id}/${Date.now()}.${ext}`
 

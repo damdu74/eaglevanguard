@@ -4,6 +4,15 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import type { EventStatus } from "@prisma/client"
 
+const VALID_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
+  DRAFT:      ["PUBLISHED", "CANCELLED"],
+  PUBLISHED:  ["DRAFT", "ONGOING", "CANCELLED"],
+  ONGOING:    ["COMPLETED", "CANCELLED"],
+  COMPLETED:  ["ARCHIVED"],
+  CANCELLED:  [],
+  ARCHIVED:   [],
+}
+
 export const dynamic = "force-dynamic"
 
 type Params = { params: { slug: string; id: string } }
@@ -79,6 +88,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const body = await req.json()
   const { title, description, type, status, startDate, endDate, maxSlots } = body
+
+  if (status !== undefined) {
+    const current = event.status as EventStatus
+    const next = status as EventStatus
+    if (current !== next && !VALID_TRANSITIONS[current]?.includes(next)) {
+      return NextResponse.json(
+        { error: `Transition invalide : ${current} → ${next}` },
+        { status: 400 }
+      )
+    }
+  }
 
   const start = startDate ? new Date(startDate as string) : event.startDate
   const end = endDate !== undefined ? (endDate ? new Date(endDate as string) : null) : event.endDate

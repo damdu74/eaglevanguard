@@ -20,6 +20,13 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File | null
     if (!file) return NextResponse.json({ error: "Fichier manquant" }, { status: 400 })
 
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: "Fichier trop volumineux (max 5 Mo)" }, { status: 400 })
+    }
+    if (!file.type.startsWith("image/")) {
+      return NextResponse.json({ error: "Seules les images sont acceptées" }, { status: 400 })
+    }
+
     const ext = file.name.split(".").pop()
     const blob = await put(`avatars/${session.user.id}.${ext}`, file, {
       access: "public",
