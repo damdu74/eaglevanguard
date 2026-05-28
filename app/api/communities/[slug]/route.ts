@@ -7,6 +7,7 @@ import { z } from "zod"
 
 const patchSchema = z.object({
   name: z.string().min(1).max(50).optional(),
+  slug: z.string().min(3).max(30).regex(/^[a-z0-9-]+$/).optional(),
   description: z.string().max(10000).nullable().optional(),
   logoUrl: z.string().url().max(500).nullable().optional(),
   bannerUrl: z.string().url().max(500).nullable().optional(),
@@ -58,10 +59,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!parsed.success) return NextResponse.json({ error: "Données invalides" }, { status: 400 })
   const body = parsed.data
 
+  if (body.slug && body.slug !== params.slug) {
+    const taken = await prisma.community.findUnique({ where: { slug: body.slug } })
+    if (taken) return NextResponse.json({ error: "Cet identifiant est déjà utilisé" }, { status: 409 })
+  }
+
   const community = await prisma.community.update({
     where: { slug: params.slug },
     data: {
       ...(body.name && { name: body.name }),
+      ...(body.slug && { slug: body.slug }),
       ...(body.description !== undefined && { description: body.description }),
       ...(body.logoUrl !== undefined && { logoUrl: body.logoUrl }),
       ...(body.bannerUrl !== undefined && { bannerUrl: body.bannerUrl }),

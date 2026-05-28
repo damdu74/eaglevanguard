@@ -10,7 +10,7 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Trash2, ChevronRight } from "lucide-react"
+import { Loader2, Trash2, ChevronRight, Info } from "lucide-react"
 import Link from "next/link"
 
 interface Props {
@@ -28,23 +28,37 @@ interface Props {
 export function CommunitySettingsForm({ community, isOwner, transferForm }: Props) {
   const router = useRouter()
   const [name, setName] = useState(community.name)
+  const [slug, setSlug] = useState(community.slug)
   const [description, setDescription] = useState(community.description ?? "")
   const [isPublic, setIsPublic] = useState(community.isPublic)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState("")
 
+  const slugError = slug.length > 0 && !/^[a-z0-9-]{3,30}$/.test(slug)
+    ? "3 à 30 caractères, lettres minuscules, chiffres et tirets uniquement"
+    : null
+
   async function save() {
+    if (slugError) return
     setSaving(true)
     try {
       const res = await fetch(`/api/communities/${community.slug}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), description: description || null, isPublic }),
+        body: JSON.stringify({ name: name.trim(), slug: slug.trim(), description: description || null, isPublic }),
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        toast.error(data.error ?? "Erreur lors de la sauvegarde")
+        return
+      }
       toast.success("Paramètres sauvegardés")
-      router.refresh()
+      if (slug !== community.slug) {
+        router.push(`/communities/${slug}/settings`)
+      } else {
+        router.refresh()
+      }
     } catch {
       toast.error("Erreur lors de la sauvegarde")
     } finally {
@@ -78,6 +92,27 @@ export function CommunitySettingsForm({ community, isOwner, transferForm }: Prop
             <Label htmlFor="name">Nom</Label>
             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={50} />
           </div>
+
+          {isOwner && (
+            <div className="space-y-1">
+              <Label htmlFor="slug">Identifiant (URL)</Label>
+              <Input
+                id="slug"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+                maxLength={30}
+                className={slugError ? "border-destructive" : ""}
+              />
+              {slugError ? (
+                <p className="text-xs text-destructive">{slugError}</p>
+              ) : (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Info className="h-3 w-3 shrink-0" />
+                  Modifier l&apos;identifiant changera l&apos;URL de la communauté.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="space-y-1">
             <Label>Description</Label>
