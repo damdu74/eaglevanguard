@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/promote-members",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/update-events",
+      "schedule": "0 * * * *"
     }
   ]
 }

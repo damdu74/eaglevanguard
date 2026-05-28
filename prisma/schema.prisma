@@ -276,6 +276,7 @@ enum EventStatus {
   ONGOING
   COMPLETED
   CANCELLED
+  ARCHIVED
 }
 
 model Event {

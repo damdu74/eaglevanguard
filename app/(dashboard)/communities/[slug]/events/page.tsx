@@ -41,7 +41,9 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
   const events = await prisma.event.findMany({
     where: {
       communityId: community.id,
-      ...(!isStaff ? { status: { in: ["PUBLISHED", "ONGOING", "COMPLETED"] } } : {}),
+      status: isStaff
+        ? { not: "ARCHIVED" }
+        : { in: ["PUBLISHED", "ONGOING", "COMPLETED"] },
     },
     include: { _count: { select: { participants: true } } },
     orderBy: { startDate: "asc" },
@@ -56,10 +58,9 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
   const participationMap = Object.fromEntries(participations.map((p) => [p.eventId, p.status]))
 
   const now = new Date()
-  const upcoming = events.filter(
-    (e) => new Date(e.startDate) >= now && ["DRAFT", "PUBLISHED", "ONGOING"].includes(e.status)
-  )
-  const past = events.filter((e) => e.status === "COMPLETED" || (new Date(e.startDate) < now && e.status !== "DRAFT"))
+  const ongoing = events.filter((e) => e.status === "ONGOING")
+  const upcoming = events.filter((e) => ["DRAFT", "PUBLISHED"].includes(e.status) && new Date(e.startDate) >= now)
+  const past = events.filter((e) => e.status === "COMPLETED")
 
   const calendarEvents = events.map((e) => ({
     id: e.id,
@@ -119,6 +120,19 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
             </div>
           )}
 
+          {ongoing.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-green-600 dark:text-green-500">En cours</h2>
+              {ongoing.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={{ ...event, myStatus: participationMap[event.id] ?? null }}
+                  slug={params.slug}
+                />
+              ))}
+            </section>
+          )}
+
           {upcoming.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">À venir</h2>
@@ -134,7 +148,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
 
           {past.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Passés</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Terminés</h2>
               {past.map((event) => (
                 <EventCard
                   key={event.id}

@@ -10,6 +10,7 @@ const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secon
   ONGOING: { label: "En cours", variant: "default" },
   COMPLETED: { label: "Terminé", variant: "outline" },
   CANCELLED: { label: "Annulé", variant: "destructive" },
+  ARCHIVED: { label: "Archivé", variant: "outline" },
 }
 
 const PARTICIPATION_LABELS: Record<string, string> = {

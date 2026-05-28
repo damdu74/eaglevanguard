@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown, Send, Play, CheckCircle, XCircle, RotateCcw } from "lucide-react"
 
-type Status = "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED"
+type Status = "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED" | "ARCHIVED"
 
 const TRANSITIONS: Record<Status, { status: Status; label: string; icon: React.ElementType; variant?: "destructive" }[]> = {
   DRAFT: [
@@ -34,6 +34,7 @@ const TRANSITIONS: Record<Status, { status: Status; label: string; icon: React.E
   CANCELLED: [
     { status: "DRAFT", label: "Rouvrir en brouillon", icon: RotateCcw },
   ],
+  ARCHIVED: [],
 }
 
 const STATUS_LABELS: Record<Status, string> = {
@@ -42,6 +43,7 @@ const STATUS_LABELS: Record<Status, string> = {
   ONGOING: "En cours",
   COMPLETED: "Terminé",
   CANCELLED: "Annulé",
+  ARCHIVED: "Archivé",
 }
 
 interface Props {

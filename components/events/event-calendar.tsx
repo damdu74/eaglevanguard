@@ -34,6 +34,7 @@ const STATUS_LABELS: Record<string, string> = {
   ONGOING: "En cours",
   COMPLETED: "Terminé",
   CANCELLED: "Annulé",
+  ARCHIVED: "Archivé",
 }
 
 const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
