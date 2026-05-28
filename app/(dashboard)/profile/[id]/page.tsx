@@ -210,7 +210,10 @@ export default async function PublicProfilePage({ params, searchParams }: { para
           </CardHeader>
           <CardContent className="space-y-2">
             {sharedCommunities.map((m) => {
-              const profileUrl = `/profile/${params.id}${searchParams?.from ? `?from=${searchParams.from}` : ""}`
+              const profileUrl = `/profile/${params.id}${
+                searchParams?.back ? `?back=${encodeURIComponent(searchParams.back)}` :
+                searchParams?.from ? `?from=${searchParams.from}` : ""
+              }`
               return (
               <Link key={m.communityId} href={`/communities/${m.community.slug}?back=${encodeURIComponent(profileUrl)}`} className="flex items-center justify-between rounded-md px-1 py-0.5 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
