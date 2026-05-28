@@ -50,15 +50,18 @@ export default async function RpUnitPage({ params }: PageProps) {
   ])
 
   let hasCharacterElsewhere = false
+  let existingCharUnit: { id: string; name: string } | null = null
   if (session?.user?.id) {
     const existingChar = await prisma.rpCharacter.findFirst({
       where: { communityId: community.id, userId: session.user.id as string },
+      include: { rpUnit: { select: { id: true, name: true } } },
     })
     if (existingChar && !existingChar.rpUnitId) {
       // Personnage orphelin (son unité a été supprimée) — on le nettoie
       await prisma.rpCharacter.delete({ where: { id: existingChar.id } })
-    } else {
-      hasCharacterElsewhere = !!existingChar
+    } else if (existingChar) {
+      hasCharacterElsewhere = true
+      existingCharUnit = existingChar.rpUnit ?? null
     }
   }
 
@@ -86,6 +89,7 @@ export default async function RpUnitPage({ params }: PageProps) {
         isStaff={isStaff}
         currentUserId={session?.user?.id ?? null}
         hasCharacterElsewhere={hasCharacterElsewhere}
+        existingCharUnit={existingCharUnit}
       />
     </div>
   )

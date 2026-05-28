@@ -45,13 +45,14 @@ interface Props {
   isStaff: boolean
   currentUserId: string | null
   hasCharacterElsewhere: boolean
+  existingCharUnit: { id: string; name: string } | null
 }
 
 type DialogType = "create" | "edit" | "role" | "group-create" | "group-rename" | null
 
 export function RpUnitDetail({
   communitySlug, unitId, characters, groups: initialGroups,
-  isStaff, currentUserId, hasCharacterElsewhere,
+  isStaff, currentUserId, hasCharacterElsewhere, existingCharUnit,
 }: Props) {
   const router = useRouter()
 
@@ -241,7 +242,19 @@ export function RpUnitDetail({
           </Button>
         )}
         {hasCharacterElsewhere && !myCharacter && (
-          <p className="text-xs text-muted-foreground">Vous avez déjà un personnage dans une autre unité.</p>
+          <p className="text-xs text-muted-foreground">
+            Vous avez déjà un personnage dans{" "}
+            {existingCharUnit ? (
+              <a
+                href={`/communities/${communitySlug}/rp/${existingCharUnit.id}`}
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                l&apos;unité « {existingCharUnit.name} »
+              </a>
+            ) : (
+              "une autre unité"
+            )}.
+          </p>
         )}
       </div>
 
