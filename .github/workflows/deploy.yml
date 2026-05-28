@@ -15,7 +15,9 @@ jobs:
         run: npm install -g vercel
 
       - name: Deploy to Vercel Production
-        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        run: |
+          TOKEN=$(echo "${{ secrets.VERCEL_TOKEN }}" | tr -d '\xef\xbb\xbf' | tr -d '\r\n')
+          vercel --prod --token="$TOKEN" --yes
         env:
           VERCEL_ORG_ID: team_JWq542kltY1brzPvSLqF5jEA
           VERCEL_PROJECT_ID: prj_gGh0bVjKyTPvJN2q8iSb07BkAXLK
