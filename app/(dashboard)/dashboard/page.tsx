@@ -49,7 +49,6 @@ export default async function DashboardPage() {
       where: {
         status: { in: ["PUBLISHED", "ONGOING"] },
         community: { memberships: { some: { userId } } },
-        startDate: { gte: new Date() },
       },
       include: {
         community: { select: { name: true, slug: true } },
