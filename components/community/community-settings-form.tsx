@@ -10,7 +10,7 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Trash2, ChevronRight, Info } from "lucide-react"
+import { Loader2, Trash2, ChevronRight, Info, Copy, Check } from "lucide-react"
 import Link from "next/link"
 
 interface Props {
@@ -34,6 +34,13 @@ export function CommunitySettingsForm({ community, isOwner, transferForm }: Prop
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState("")
+  const [copied, setCopied] = useState(false)
+
+  function copySlug() {
+    navigator.clipboard.writeText(slug)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const autoSlug = (value: string) =>
     value
@@ -105,11 +112,24 @@ export function CommunitySettingsForm({ community, isOwner, transferForm }: Prop
           {isOwner && (
             <div className="space-y-1">
               <Label>Identifiant (URL)</Label>
-              <Input
-                value={slug}
-                readOnly
-                className="bg-muted text-muted-foreground cursor-default select-all"
-              />
+              <div className="relative">
+                <Input
+                  value={slug}
+                  readOnly
+                  className="bg-muted text-muted-foreground cursor-default pr-9"
+                />
+                <button
+                  type="button"
+                  onClick={copySlug}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  title="Copier l'identifiant"
+                >
+                  {copied
+                    ? <Check className="h-4 w-4 text-green-500" />
+                    : <Copy className="h-4 w-4" />
+                  }
+                </button>
+              </div>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <Info className="h-3 w-3 shrink-0" />
                 Mis à jour automatiquement depuis le nom.
