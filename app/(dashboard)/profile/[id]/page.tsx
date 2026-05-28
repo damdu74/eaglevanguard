@@ -200,13 +200,13 @@ export default async function PublicProfilePage({ params, searchParams }: { para
           </CardHeader>
           <CardContent className="space-y-2">
             {sharedCommunities.map((m) => (
-              <div key={m.communityId} className="flex items-center justify-between">
+              <Link key={m.communityId} href={`/communities/${m.community.slug}`} className="flex items-center justify-between rounded-md px-1 py-0.5 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   <CommunityLogo url={m.community.logoUrl} name={m.community.name} size="sm" />
                   <p className="font-medium text-sm truncate">{m.community.name}</p>
                 </div>
                 <Badge variant="outline">{ROLE_LABELS[m.role] ?? m.role}</Badge>
-              </div>
+              </Link>
             ))}
           </CardContent>
         </Card>
