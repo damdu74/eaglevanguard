@@ -9,7 +9,7 @@ import { RichTextContent } from "@/components/ui/rich-text-content"
 import { CommunityLogo } from "@/components/community/community-logo"
 import Image from "next/image"
 import Link from "next/link"
-import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList } from "lucide-react"
+import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList, ChevronLeft } from "lucide-react"
 
 interface PageProps {
   params: { slug: string }
@@ -55,6 +55,14 @@ export default async function CommunityPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
+      {/* Bouton retour */}
+      {membership && (
+        <Link href="/communities/mine" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <ChevronLeft className="h-4 w-4" />
+          Mes communautés
+        </Link>
+      )}
+
       {/* Bannière */}
       {community.bannerUrl && (
         <div className="w-full h-48 sm:h-64 rounded-xl overflow-hidden relative">
