@@ -357,10 +357,10 @@ model RpCharacter {
 
   community Community  @relation(fields: [communityId], references: [id], onDelete: Cascade)
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rpUnit    RpUnit?    @relation(fields: [rpUnitId], references: [id], onDelete: SetNull)
+  rpUnit    RpUnit?    @relation(fields: [rpUnitId], references: [id], onDelete: Cascade)
   rpGroup   RpGroup?   @relation(fields: [rpGroupId], references: [id], onDelete: SetNull)
 
-  @@unique([communityId, userId])
+  @@unique([rpUnitId, userId])
 }
 
 // ─── APPLICATIONS ─────────────────────────────────────────────────────────────

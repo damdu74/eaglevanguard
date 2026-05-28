@@ -31,10 +31,9 @@ interface Props {
   units: RpUnit[]
   isStaff: boolean
   canCreate: boolean
-  existingCharUnit: { id: string; name: string } | null
 }
 
-export function RpRoster({ communitySlug, units, isStaff, canCreate, existingCharUnit }: Props) {
+export function RpRoster({ communitySlug, units, isStaff, canCreate }: Props) {
   const router = useRouter()
 
   // Unit creation
@@ -113,17 +112,6 @@ export function RpRoster({ communitySlug, units, isStaff, canCreate, existingCha
             <UserCircle2 className="h-4 w-4 mr-1" />
             Créer mon personnage
           </Button>
-        )}
-        {!canCreate && existingCharUnit && (
-          <p className="text-sm text-muted-foreground">
-            Votre personnage est dans{" "}
-            <Link
-              href={`/communities/${communitySlug}/rp/${existingCharUnit.id}`}
-              className="underline underline-offset-2 hover:text-foreground font-medium"
-            >
-              {existingCharUnit.name}
-            </Link>
-          </p>
         )}
         {isStaff && (
           <Button size="sm" variant="outline" onClick={() => setUnitDialog(true)}>

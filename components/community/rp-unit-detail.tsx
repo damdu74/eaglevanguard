@@ -44,20 +44,19 @@ interface Props {
   groups: RpGroup[]
   isStaff: boolean
   currentUserId: string | null
-  hasCharacterElsewhere: boolean
-  existingCharUnit: { id: string; name: string } | null
+  canCreate: boolean
 }
 
 type DialogType = "create" | "edit" | "role" | "group-create" | "group-rename" | null
 
 export function RpUnitDetail({
   communitySlug, unitId, characters, groups: initialGroups,
-  isStaff, currentUserId, hasCharacterElsewhere, existingCharUnit,
+  isStaff, currentUserId, canCreate: canCreateProp,
 }: Props) {
   const router = useRouter()
 
   const myCharacter = characters.find((c) => c.user.id === currentUserId) ?? null
-  const canCreate = !!currentUserId && !myCharacter && !hasCharacterElsewhere
+  const canCreate = canCreateProp && !myCharacter
 
   const [dialog, setDialog] = useState<DialogType>(null)
   const [charName, setCharName] = useState("")
@@ -240,21 +239,6 @@ export function RpUnitDetail({
             <FolderPlus className="h-4 w-4 mr-1" />
             Nouveau groupe
           </Button>
-        )}
-        {hasCharacterElsewhere && !myCharacter && (
-          <p className="text-xs text-muted-foreground">
-            Vous avez déjà un personnage dans{" "}
-            {existingCharUnit ? (
-              <a
-                href={`/communities/${communitySlug}/rp/${existingCharUnit.id}`}
-                className="underline underline-offset-2 hover:text-foreground"
-              >
-                l&apos;unité « {existingCharUnit.name} »
-              </a>
-            ) : (
-              "une autre unité"
-            )}.
-          </p>
         )}
       </div>
 

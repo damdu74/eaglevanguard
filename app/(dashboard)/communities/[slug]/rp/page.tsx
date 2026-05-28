@@ -39,22 +39,7 @@ export default async function RpPage({ params }: PageProps) {
     orderBy: { createdAt: "asc" },
   })
 
-  let canCreate = false
-  let existingCharUnit: { id: string; name: string } | null = null
-  if (session?.user?.id && membership) {
-    const existingChar = await prisma.rpCharacter.findFirst({
-      where: { communityId: community.id, userId: session.user.id as string },
-      include: { rpUnit: { select: { id: true, name: true } } },
-    })
-    if (existingChar && !existingChar.rpUnitId) {
-      await prisma.rpCharacter.delete({ where: { id: existingChar.id } })
-      canCreate = true
-    } else if (existingChar) {
-      existingCharUnit = existingChar.rpUnit ?? null
-    } else {
-      canCreate = true
-    }
-  }
+  const canCreate = !!(session?.user?.id && membership)
 
   return (
     <div className="space-y-6">
@@ -72,7 +57,6 @@ export default async function RpPage({ params }: PageProps) {
         units={units}
         isStaff={isStaff}
         canCreate={canCreate}
-        existingCharUnit={existingCharUnit}
       />
     </div>
   )

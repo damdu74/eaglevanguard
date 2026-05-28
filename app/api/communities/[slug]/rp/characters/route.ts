@@ -15,13 +15,17 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
   })
   if (!membership) return NextResponse.json({ error: "Vous n'êtes pas membre" }, { status: 403 })
 
-  const existing = await prisma.rpCharacter.findUnique({
-    where: { communityId_userId: { communityId: community.id, userId: session.user.id as string } },
-  })
-  if (existing) return NextResponse.json({ error: "Vous avez déjà un personnage dans cette communauté" }, { status: 409 })
-
   const { name, role, description, rpUnitId } = await req.json()
   if (!name?.trim()) return NextResponse.json({ error: "Nom requis" }, { status: 400 })
+  if (!rpUnitId) return NextResponse.json({ error: "Unité requise" }, { status: 400 })
+
+  const unit = await prisma.rpUnit.findUnique({ where: { id: rpUnitId } })
+  if (!unit || unit.communityId !== community.id) return NextResponse.json({ error: "Unité introuvable" }, { status: 404 })
+
+  const existing = await prisma.rpCharacter.findUnique({
+    where: { rpUnitId_userId: { rpUnitId, userId: session.user.id as string } },
+  })
+  if (existing) return NextResponse.json({ error: "Vous avez déjà un personnage dans cette unité" }, { status: 409 })
 
   const character = await prisma.rpCharacter.create({
     data: {
@@ -30,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
       name: name.trim(),
       role: role?.trim() || null,
       description: description?.trim() || null,
-      rpUnitId: rpUnitId || null,
+      rpUnitId,
     },
     include: { user: { select: { id: true, name: true, image: true, customAvatar: true } }, rpUnit: true },
   })
