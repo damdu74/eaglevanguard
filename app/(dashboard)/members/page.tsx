@@ -113,7 +113,7 @@ export default async function MembersPage() {
                     return (
                       <div key={user.id} className="flex items-center justify-between px-4 py-3">
                         <Link
-                          href={isMe ? "/profile" : `/profile/${user.id}`}
+                          href={isMe ? "/profile" : `/profile/${user.id}?from=members`}
                           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                         >
                           <Avatar className="h-8 w-8">

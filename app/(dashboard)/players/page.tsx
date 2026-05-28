@@ -105,7 +105,7 @@ export default async function PlayersPage({ searchParams }: PageProps) {
                 .filter((c) => c.isPublic || myMemberCommunityIds.has(c.id))
 
               return (
-                <Link key={user.id} href={`/profile/${user.id}`}>
+                <Link key={user.id} href={`/profile/${user.id}?from=players`}>
                   <Card className="h-full transition-colors hover:bg-muted/50">
                     <CardContent className="flex items-start gap-3 p-4">
                       <Avatar className="h-10 w-10 shrink-0 mt-0.5">

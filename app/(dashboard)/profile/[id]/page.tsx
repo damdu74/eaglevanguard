@@ -22,7 +22,7 @@ const ROLE_LABELS: Record<string, string> = {
   RECRUIT: "Nouveau",
 }
 
-export default async function PublicProfilePage({ params }: { params: { id: string } }) {
+export default async function PublicProfilePage({ params, searchParams }: { params: { id: string }, searchParams?: { from?: string } }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) redirect("/auth/signin")
 
@@ -137,9 +137,12 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <Link href="/players" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
+        <Link
+          href={searchParams?.from === "members" ? "/members" : "/players"}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1"
+        >
           <ChevronLeft className="h-4 w-4" />
-          Annuaire des joueurs
+          {searchParams?.from === "members" ? "Mes membres" : "Annuaire des joueurs"}
         </Link>
       </div>
       <div className="flex items-center justify-between">
