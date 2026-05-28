@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic"
 
 interface PageProps {
   params: { slug: string }
+  searchParams?: { back?: string }
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -36,7 +37,7 @@ const ROLE_ORDER: Record<string, number> = {
   RECRUIT: 4,
 }
 
-export default async function CommunityMembersPage({ params }: PageProps) {
+export default async function CommunityMembersPage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
 
   const community = await prisma.community.findUnique({
@@ -89,15 +90,17 @@ export default async function CommunityMembersPage({ params }: PageProps) {
   const isModerator = myRole === "MODERATOR"
   const canManage = isAdmin || isModerator
 
+  const membersUrl = `/communities/${params.slug}/members${searchParams?.back ? `?back=${encodeURIComponent(searchParams.back)}` : ""}`
+
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
         <Link
-          href="/members"
+          href={searchParams?.back ?? `/communities/${params.slug}`}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
-          Mes membres
+          {community.name}
         </Link>
         <div className="flex items-center justify-between">
           <div>
@@ -138,6 +141,7 @@ export default async function CommunityMembersPage({ params }: PageProps) {
                     communitySlug={params.slug}
                     ranks={ranks}
                     myRole={myRole}
+                    membersUrl={membersUrl}
                   />
                 ))}
               </div>
@@ -175,6 +179,7 @@ export default async function CommunityMembersPage({ params }: PageProps) {
                     communitySlug={params.slug}
                     ranks={ranks}
                     myRole={myRole}
+                    membersUrl={membersUrl}
                   />
                 ))}
               </div>
@@ -198,7 +203,7 @@ export default async function CommunityMembersPage({ params }: PageProps) {
 }
 
 function MemberRow({
-  user, role, rank, isMe, isCreator, canActOnTarget, communitySlug, ranks, myRole,
+  user, role, rank, isMe, isCreator, canActOnTarget, communitySlug, ranks, myRole, membersUrl,
 }: {
   user: { id: string; steamName: string | null; discordName: string | null; name: string | null; customAvatar: string | null; steamAvatar: string | null; discordAvatar: string | null }
   role: string
@@ -209,6 +214,7 @@ function MemberRow({
   communitySlug: string
   ranks: { id: string; name: string; abbreviation: string; isPermanent: boolean }[]
   myRole: string | null
+  membersUrl: string
 }) {
   const displayName = user.steamName ?? user.discordName ?? user.name ?? "Joueur"
   const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar
@@ -216,7 +222,7 @@ function MemberRow({
   return (
     <div className="flex items-center justify-between px-4 py-3 gap-3">
       <Link
-        href={isMe ? "/profile" : `/profile/${user.id}?back=${encodeURIComponent(`/communities/${communitySlug}/members`)}`}
+        href={isMe ? "/profile" : `/profile/${user.id}?back=${encodeURIComponent(membersUrl)}`}
         className="flex items-center gap-3 hover:opacity-80 transition-opacity min-w-0"
       >
         <Avatar className="h-9 w-9 shrink-0">

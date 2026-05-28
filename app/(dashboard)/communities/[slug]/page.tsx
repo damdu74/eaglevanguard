@@ -124,13 +124,17 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
         <>
           <div className={`grid gap-4 sm:grid-cols-2 ${isAdmin && session?.user?.isNexusTeam ? "lg:grid-cols-5" : isAdmin ? "lg:grid-cols-4" : session?.user?.isNexusTeam ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
             {[
-              { href: "members", label: "Membres", icon: Users, count: community._count.memberships, adminOnly: false },
-              { href: "events", label: "Événements", icon: Calendar, count: community._count.events, adminOnly: false },
-              ...(isAdmin ? [{ href: "applications", label: "Candidatures", icon: ClipboardList, count: pendingApplicationsCount, adminOnly: true, highlight: pendingApplicationsCount > 0 }] : []),
-              ...(session?.user?.isNexusTeam ? [{ href: "orbat", label: "ORBAT", icon: GitBranch, count: null, adminOnly: false }] : []),
-              { href: "rp", label: "Registre des effectifs", icon: Sword, count: null, adminOnly: false },
-            ].map(({ href, label, icon: Icon, count, highlight }) => (
-              <Link key={href} href={`/communities/${params.slug}/${href}`} className="h-full">
+              {
+                href: "members",
+                fullHref: `/communities/${params.slug}/members${searchParams?.back ? `?back=${encodeURIComponent(`/communities/${params.slug}?back=${encodeURIComponent(searchParams.back)}`)}` : ""}`,
+                label: "Membres", icon: Users, count: community._count.memberships, highlight: false,
+              },
+              { href: "events", fullHref: null, label: "Événements", icon: Calendar, count: community._count.events, highlight: false },
+              ...(isAdmin ? [{ href: "applications", fullHref: null, label: "Candidatures", icon: ClipboardList, count: pendingApplicationsCount, highlight: pendingApplicationsCount > 0 }] : []),
+              ...(session?.user?.isNexusTeam ? [{ href: "orbat", fullHref: null, label: "ORBAT", icon: GitBranch, count: null, highlight: false }] : []),
+              { href: "rp", fullHref: null, label: "Registre des effectifs", icon: Sword, count: null, highlight: false },
+            ].map(({ href, fullHref, label, icon: Icon, count, highlight }) => (
+              <Link key={href} href={fullHref ?? `/communities/${params.slug}/${href}`} className="h-full">
                 <Card className="h-full transition-colors hover:bg-muted/50">
                   <CardContent className="flex h-full items-center justify-center gap-2 py-4">
                     <Icon className={`h-5 w-5 ${highlight ? "text-orange-500" : "text-primary"}`} />
