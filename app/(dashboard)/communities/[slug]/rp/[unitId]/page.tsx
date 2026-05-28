@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { RpUnitDetail } from "@/components/community/rp-unit-detail"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ChevronLeft } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 export const dynamic = "force-dynamic"
@@ -57,19 +57,18 @@ export default async function RpUnitPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href={`/communities/${params.slug}/rp`} className="text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="h-4 w-4" />
+      <div>
+        <Link href={`/communities/${params.slug}/rp`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
+          <ChevronLeft className="h-4 w-4" />
+          Retour au registre
         </Link>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl font-bold">{unit.name}</h1>
-            {unit.era && <Badge variant="outline">{unit.era}</Badge>}
-          </div>
-          {unit.description && (
-            <p className="text-sm text-muted-foreground mt-0.5">{unit.description}</p>
-          )}
+        <div className="flex items-center gap-2 flex-wrap">
+          <h1 className="text-2xl font-bold">{unit.name}</h1>
+          {unit.era && <Badge variant="outline">{unit.era}</Badge>}
         </div>
+        {unit.description && (
+          <p className="text-sm text-muted-foreground mt-0.5">{unit.description}</p>
+        )}
       </div>
 
       <RpUnitDetail

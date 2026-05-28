@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { RpRoster } from "@/components/community/rp-roster"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ChevronLeft } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -41,14 +41,13 @@ export default async function RpPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href={`/communities/${params.slug}`} className="text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="h-4 w-4" />
+      <div>
+        <Link href={`/communities/${params.slug}`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
+          <ChevronLeft className="h-4 w-4" />
+          Retour à la communauté
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold">Registre des effectifs</h1>
-          <p className="text-sm text-muted-foreground">{community.name}</p>
-        </div>
+        <h1 className="text-2xl font-bold">Registre des effectifs</h1>
+        <p className="text-sm text-muted-foreground">{community.name}</p>
       </div>
 
       <RpRoster
