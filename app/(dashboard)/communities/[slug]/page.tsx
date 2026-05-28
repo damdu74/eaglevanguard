@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RichTextContent } from "@/components/ui/rich-text-content"
 import { CommunityLogo } from "@/components/community/community-logo"
+import Image from "next/image"
 import Link from "next/link"
 import { Users, Calendar, GitBranch, Settings, Sword } from "lucide-react"
 
@@ -52,11 +53,12 @@ export default async function CommunityPage({ params }: PageProps) {
     <div className="space-y-6">
       {/* Bannière */}
       {community.bannerUrl && (
-        <div className="w-full h-48 sm:h-64 rounded-xl overflow-hidden">
-          <img
+        <div className="w-full h-48 sm:h-64 rounded-xl overflow-hidden relative">
+          <Image
             src={community.bannerUrl}
             alt={`Bannière de ${community.name}`}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
           />
         </div>
       )}
