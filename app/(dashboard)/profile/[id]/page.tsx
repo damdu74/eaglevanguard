@@ -138,11 +138,19 @@ export default async function PublicProfilePage({ params, searchParams }: { para
     <div className="space-y-6 max-w-2xl">
       <div>
         <Link
-          href={searchParams?.from === "members" ? "/members" : "/players"}
+          href={
+            searchParams?.from === "members" ? "/members" :
+            searchParams?.from === "friends" ? "/players/friends" :
+            "/players"
+          }
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1"
         >
           <ChevronLeft className="h-4 w-4" />
-          {searchParams?.from === "members" ? "Mes membres" : "Annuaire des joueurs"}
+          {
+            searchParams?.from === "members" ? "Mes membres" :
+            searchParams?.from === "friends" ? "Mes amis" :
+            "Annuaire des joueurs"
+          }
         </Link>
       </div>
       <div className="flex items-center justify-between">
@@ -199,15 +207,18 @@ export default async function PublicProfilePage({ params, searchParams }: { para
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {sharedCommunities.map((m) => (
-              <Link key={m.communityId} href={`/communities/${m.community.slug}`} className="flex items-center justify-between rounded-md px-1 py-0.5 hover:bg-muted/50 transition-colors">
+            {sharedCommunities.map((m) => {
+              const profileUrl = `/profile/${params.id}${searchParams?.from ? `?from=${searchParams.from}` : ""}`
+              return (
+              <Link key={m.communityId} href={`/communities/${m.community.slug}?back=${encodeURIComponent(profileUrl)}`} className="flex items-center justify-between rounded-md px-1 py-0.5 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   <CommunityLogo url={m.community.logoUrl} name={m.community.name} size="sm" />
                   <p className="font-medium text-sm truncate">{m.community.name}</p>
                 </div>
                 <Badge variant="outline">{ROLE_LABELS[m.role] ?? m.role}</Badge>
               </Link>
-            ))}
+              )
+            })}
           </CardContent>
         </Card>
       )}

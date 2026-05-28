@@ -117,7 +117,7 @@ export function FriendsManager({ initialFriends, initialReceived }: Props) {
               {friends.map((f) => (
                 <div key={f.friendshipId} className="flex items-center justify-between rounded-lg border px-3 py-2">
                   <Link
-                    href={`/profile/${f.user.id}`}
+                    href={`/profile/${f.user.id}?from=friends`}
                     className="flex items-center gap-3 hover:opacity-80 transition-opacity min-w-0"
                   >
                     <Avatar className="h-8 w-8 shrink-0">
@@ -167,7 +167,7 @@ export function FriendsManager({ initialFriends, initialReceived }: Props) {
                 {received.map((r) => (
                   <div key={r.id} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2 bg-muted/30">
                     <Link
-                      href={`/profile/${r.requester.id}`}
+                      href={`/profile/${r.requester.id}?from=friends`}
                       className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0"
                     >
                       <Avatar className="h-8 w-8 shrink-0">

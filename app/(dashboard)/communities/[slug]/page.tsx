@@ -11,8 +11,11 @@ import Image from "next/image"
 import Link from "next/link"
 import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList, ChevronLeft } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 interface PageProps {
   params: { slug: string }
+  searchParams?: { back?: string }
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -20,7 +23,7 @@ export async function generateMetadata({ params }: PageProps) {
   return { title: community?.name ?? "Communauté" }
 }
 
-export default async function CommunityPage({ params }: PageProps) {
+export default async function CommunityPage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
 
   const community = await prisma.community.findUnique({
@@ -56,10 +59,13 @@ export default async function CommunityPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       {/* Bouton retour */}
-      {membership && (
-        <Link href="/communities/mine" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      {(membership || searchParams?.back) && (
+        <Link
+          href={searchParams?.back ?? "/communities/mine"}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ChevronLeft className="h-4 w-4" />
-          Mes communautés
+          {searchParams?.back ? "Profil du joueur" : "Mes communautés"}
         </Link>
       )}
 
