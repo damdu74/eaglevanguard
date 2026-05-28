@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
 import { EventCard } from "@/components/events/event-card"
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { Plus, ChevronLeft } from "lucide-react"
 
 interface PageProps {
   params: { slug: string }
@@ -63,6 +63,10 @@ export default async function CommunityEventsPage({ params }: PageProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
+          <Link href={`/communities/${params.slug}`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
+            <ChevronLeft className="h-4 w-4" />
+            Retour à la communauté
+          </Link>
           <h1 className="text-2xl font-bold">Événements</h1>
           <p className="text-sm text-muted-foreground">{community.name}</p>
         </div>

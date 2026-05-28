@@ -78,11 +78,11 @@ export default async function ApplicationsPage({ params }: PageProps) {
     <div className="space-y-6 max-w-2xl">
       <div>
         <Link
-          href={`/communities/${params.slug}/members`}
+          href={`/communities/${params.slug}`}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
-          Retour aux membres
+          Retour à la communauté
         </Link>
         <div className="flex items-center justify-between">
           <div>

@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { FriendButton } from "@/components/friends/friend-button"
 import { CommunityLogo } from "@/components/community/community-logo"
-import { Lock, Users, Globe, Calendar } from "lucide-react"
+import Link from "next/link"
+import { Lock, Users, Globe, Calendar, ChevronLeft } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 
@@ -135,6 +136,12 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
 
   return (
     <div className="space-y-6 max-w-2xl">
+      <div>
+        <Link href="/players" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
+          <ChevronLeft className="h-4 w-4" />
+          Retour aux joueurs
+        </Link>
+      </div>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{displayName}</h1>
         <FriendButton targetId={params.id} initialStatus={friendStatus} />
