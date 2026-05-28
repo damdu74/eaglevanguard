@@ -49,12 +49,7 @@ export function CommunitySettingsForm({ community, isOwner, transferForm }: Prop
     setSlug(autoSlug(value))
   }
 
-  const slugError = slug.length > 0 && !/^[a-z0-9-]{3,30}$/.test(slug)
-    ? "3 à 30 caractères, lettres minuscules, chiffres et tirets uniquement"
-    : null
-
   async function save() {
-    if (slugError) return
     setSaving(true)
     try {
       const res = await fetch(`/api/communities/${community.slug}`, {
@@ -109,22 +104,16 @@ export function CommunitySettingsForm({ community, isOwner, transferForm }: Prop
 
           {isOwner && (
             <div className="space-y-1">
-              <Label htmlFor="slug">Identifiant (URL)</Label>
+              <Label>Identifiant (URL)</Label>
               <Input
-                id="slug"
                 value={slug}
-                onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
-                maxLength={30}
-                className={slugError ? "border-destructive" : ""}
+                readOnly
+                className="bg-muted text-muted-foreground cursor-default select-all"
               />
-              {slugError ? (
-                <p className="text-xs text-destructive">{slugError}</p>
-              ) : (
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Info className="h-3 w-3 shrink-0" />
-                  Modifier l&apos;identifiant changera l&apos;URL de la communauté.
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Info className="h-3 w-3 shrink-0" />
+                Mis à jour automatiquement depuis le nom.
+              </p>
             </div>
           )}
 
