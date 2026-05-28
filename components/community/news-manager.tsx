@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -50,7 +49,6 @@ function authorName(a: Author) {
 }
 
 export function NewsManager({ communitySlug, initialPosts, isStaff, currentUserId }: Props) {
-  const router = useRouter()
   const [posts, setPosts] = useState<Post[]>(initialPosts)
   const [showCreate, setShowCreate] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
