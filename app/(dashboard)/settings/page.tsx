@@ -24,7 +24,7 @@ export default async function SettingsPage() {
       <div>
         <Link href="/dashboard" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
           <ChevronLeft className="h-4 w-4" />
-          Retour au tableau de bord
+          Tableau de bord
         </Link>
         <h1 className="text-2xl font-bold">Paramètres</h1>
       </div>

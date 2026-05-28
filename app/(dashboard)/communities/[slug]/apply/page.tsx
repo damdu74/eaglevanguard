@@ -45,7 +45,7 @@ export default async function ApplyPage({ params }: PageProps) {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
-          Retour à la communauté
+          {community.name}
         </Link>
         <h1 className="text-2xl font-bold">Candidater</h1>
         <p className="text-sm text-muted-foreground">{community.name}</p>

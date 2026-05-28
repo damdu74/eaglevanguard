@@ -56,7 +56,7 @@ export default async function OrbatPage({ params }: PageProps) {
       <div>
         <Link href={`/communities/${params.slug}`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
           <ChevronLeft className="h-4 w-4" />
-          Retour à la communauté
+          {community.name}
         </Link>
         <h1 className="text-2xl font-bold">ORBAT — {community.name}</h1>
         <p className="text-sm text-muted-foreground">Ordre de bataille interactif</p>

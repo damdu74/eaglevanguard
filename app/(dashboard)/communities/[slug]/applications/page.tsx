@@ -82,7 +82,7 @@ export default async function ApplicationsPage({ params }: PageProps) {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
-          Retour à la communauté
+          {community.name}
         </Link>
         <div className="flex items-center justify-between">
           <div>

@@ -23,7 +23,7 @@ export default async function NexusRanksPage() {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
-          Retour à la NEXUS Team
+          NEXUS Team
         </Link>
         <h1 className="text-2xl font-bold">NEXUS Rôles et Fonctions</h1>
         <p className="text-sm text-muted-foreground">Hiérarchie interne du staff de la plateforme.</p>

@@ -47,7 +47,7 @@ export default async function RanksPage({ params }: PageProps) {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
-          Retour aux paramètres
+          Paramètres
         </Link>
         <h1 className="text-2xl font-bold">Grades communautaires</h1>
         <p className="text-sm text-muted-foreground">{community.name} — grades de la communauté, distincts des grades en jeu définis dans le roster</p>

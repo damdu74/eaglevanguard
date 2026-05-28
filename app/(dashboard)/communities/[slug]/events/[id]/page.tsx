@@ -93,7 +93,7 @@ export default async function EventDetailPage({ params }: PageProps) {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
-          Retour aux événements
+          Événements
         </Link>
 
         <div className="flex items-start justify-between gap-4 flex-wrap">

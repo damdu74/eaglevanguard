@@ -61,7 +61,7 @@ export default async function FriendsPage() {
       <div>
         <Link href="/players" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
           <ChevronLeft className="h-4 w-4" />
-          Retour aux joueurs
+          Annuaire des joueurs
         </Link>
         <h1 className="text-2xl font-bold">Amis</h1>
       </div>

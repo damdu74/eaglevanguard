@@ -49,7 +49,7 @@ export default async function EditEventPage({ params }: PageProps) {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
-          Retour à l&apos;événement
+          {event.title}
         </Link>
         <h1 className="text-2xl font-bold">Modifier l&apos;événement</h1>
         <p className="text-sm text-muted-foreground">{event.title}</p>

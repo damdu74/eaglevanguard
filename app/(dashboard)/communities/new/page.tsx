@@ -16,7 +16,7 @@ export default async function NewCommunityPage() {
       <div>
         <Link href="/communities" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
           <ChevronLeft className="h-4 w-4" />
-          Retour à l&apos;annuaire
+          Communautés
         </Link>
         <h1 className="text-2xl font-bold">Créer une communauté</h1>
         <p className="text-muted-foreground">Créez votre communauté MILSIM et invitez vos membres.</p>
