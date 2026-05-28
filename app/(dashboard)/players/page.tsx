@@ -55,6 +55,7 @@ export default async function PlayersPage({ searchParams }: PageProps) {
         customAvatar: true,
         steamAvatar: true,
         discordAvatar: true,
+        image: true,
         isNexusTeam: true,
         bio: true,
         memberships: {
@@ -98,7 +99,7 @@ export default async function PlayersPage({ searchParams }: PageProps) {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {users.map((user) => {
               const displayName = user.steamName ?? user.discordName ?? user.name ?? "Joueur"
-              const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar
+              const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar ?? user.image
 
               const visibleCommunities = user.memberships
                 .map((m) => m.community)
