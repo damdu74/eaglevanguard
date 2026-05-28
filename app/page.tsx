@@ -111,7 +111,7 @@ export default async function HomePage() {
               votre communauté
             </h1>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-              NEXUS centralise le recrutement, la hiérarchie, l&apos;ORBAT et les événements de votre communauté dans une seule plateforme pensée pour les joueurs sérieux.
+              NEXUS regroupe au même endroit le recrutement, l&apos;organisation hiérarchique et la gestion des événements de votre communauté, dans une plateforme conçue pour les joueurs.
             </p>
           </div>
 
