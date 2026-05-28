@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
 import { EventCard } from "@/components/events/event-card"
 import { EventCalendar } from "@/components/events/event-calendar"
+import { EventsViewToggle } from "@/components/events/events-view-toggle"
 import Link from "next/link"
-import { Plus, ChevronLeft, List, CalendarDays } from "lucide-react"
+import { Plus, ChevronLeft } from "lucide-react"
 
 interface PageProps {
   params: { slug: string }
@@ -87,23 +88,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
           <p className="text-sm text-muted-foreground">{community.name}</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Toggle vue */}
-          <div className="flex items-center rounded-md border">
-            <Link
-              href={`/communities/${params.slug}/events`}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-l-md transition-colors ${view === "list" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              <List className="h-3.5 w-3.5" />
-              Liste
-            </Link>
-            <Link
-              href={`/communities/${params.slug}/events?view=calendar`}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-r-md transition-colors ${view === "calendar" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              <CalendarDays className="h-3.5 w-3.5" />
-              Calendrier
-            </Link>
-          </div>
+          <EventsViewToggle currentView={view} />
           {isStaff && (
             <Button asChild>
               <Link href={`/communities/${params.slug}/events/new`}>
