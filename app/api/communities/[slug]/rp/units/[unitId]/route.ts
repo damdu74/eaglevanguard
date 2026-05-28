@@ -20,6 +20,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { slug: st
   const unit = await prisma.rpUnit.findUnique({ where: { id: params.unitId } })
   if (!unit || unit.communityId !== community.id) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
 
+  await prisma.rpCharacter.deleteMany({ where: { rpUnitId: params.unitId } })
   await prisma.rpUnit.delete({ where: { id: params.unitId } })
   return NextResponse.json({ ok: true })
 }

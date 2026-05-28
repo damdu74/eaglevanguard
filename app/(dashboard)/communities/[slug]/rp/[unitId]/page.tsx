@@ -49,11 +49,18 @@ export default async function RpUnitPage({ params }: PageProps) {
     }),
   ])
 
-  const hasCharacterElsewhere = session?.user?.id
-    ? !!(await prisma.rpCharacter.findFirst({
-        where: { communityId: community.id, userId: session.user.id as string },
-      }))
-    : false
+  let hasCharacterElsewhere = false
+  if (session?.user?.id) {
+    const existingChar = await prisma.rpCharacter.findFirst({
+      where: { communityId: community.id, userId: session.user.id as string },
+    })
+    if (existingChar && !existingChar.rpUnitId) {
+      // Personnage orphelin (son unité a été supprimée) — on le nettoie
+      await prisma.rpCharacter.delete({ where: { id: existingChar.id } })
+    } else {
+      hasCharacterElsewhere = !!existingChar
+    }
+  }
 
   return (
     <div className="space-y-6">
