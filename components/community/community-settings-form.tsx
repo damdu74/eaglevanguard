@@ -35,6 +35,20 @@ export function CommunitySettingsForm({ community, isOwner, transferForm }: Prop
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState("")
 
+  const autoSlug = (value: string) =>
+    value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 30)
+
+  function handleNameChange(value: string) {
+    setName(value)
+    setSlug(autoSlug(value))
+  }
+
   const slugError = slug.length > 0 && !/^[a-z0-9-]{3,30}$/.test(slug)
     ? "3 à 30 caractères, lettres minuscules, chiffres et tirets uniquement"
     : null
@@ -90,7 +104,7 @@ export function CommunitySettingsForm({ community, isOwner, transferForm }: Prop
         <CardContent className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="name">Nom</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={50} />
+            <Input id="name" value={name} onChange={(e) => handleNameChange(e.target.value)} maxLength={50} />
           </div>
 
           {isOwner && (
