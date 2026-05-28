@@ -39,8 +39,6 @@ export default async function RpPage({ params }: PageProps) {
     orderBy: { createdAt: "asc" },
   })
 
-  const canCreate = !!(session?.user?.id && membership)
-
   return (
     <div className="space-y-6">
       <div>
@@ -56,7 +54,6 @@ export default async function RpPage({ params }: PageProps) {
         communitySlug={params.slug}
         units={units}
         isStaff={isStaff}
-        canCreate={canCreate}
       />
     </div>
   )

@@ -12,10 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select"
-import { Loader2, Plus, Trash2, Sword, Users, ChevronRight, UserCircle2 } from "lucide-react"
+import { Loader2, Plus, Trash2, Sword, Users, ChevronRight } from "lucide-react"
 import Link from "next/link"
 
 interface RpUnit {
@@ -30,39 +27,29 @@ interface Props {
   communitySlug: string
   units: RpUnit[]
   isStaff: boolean
-  canCreate: boolean
 }
 
-export function RpRoster({ communitySlug, units, isStaff, canCreate }: Props) {
+export function RpRoster({ communitySlug, units, isStaff }: Props) {
   const router = useRouter()
-
-  // Unit creation
-  const [unitDialog, setUnitDialog] = useState(false)
-  const [unitName, setUnitName] = useState("")
-  const [unitDesc, setUnitDesc] = useState("")
-  const [unitEra, setUnitEra] = useState("")
-
-  // Character creation
-  const [charDialog, setCharDialog] = useState(false)
-  const [charName, setCharName] = useState("")
-  const [charDesc, setCharDesc] = useState("")
-  const [charUnit, setCharUnit] = useState("")
-
+  const [dialog, setDialog] = useState(false)
+  const [name, setName] = useState("")
+  const [desc, setDesc] = useState("")
+  const [era, setEra] = useState("")
   const [saving, setSaving] = useState(false)
 
   async function createUnit() {
-    if (!unitName.trim()) return
+    if (!name.trim()) return
     setSaving(true)
     try {
       const res = await fetch(`/api/communities/${communitySlug}/rp/units`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: unitName.trim(), description: unitDesc.trim() || null, era: unitEra.trim() || null }),
+        body: JSON.stringify({ name: name.trim(), description: desc.trim() || null, era: era.trim() || null }),
       })
       if (!res.ok) throw new Error()
       toast.success("Unité créée")
-      setUnitDialog(false)
-      setUnitName(""); setUnitDesc(""); setUnitEra("")
+      setDialog(false)
+      setName(""); setDesc(""); setEra("")
       router.refresh()
     } catch {
       toast.error("Erreur lors de la création")
@@ -82,44 +69,16 @@ export function RpRoster({ communitySlug, units, isStaff, canCreate }: Props) {
     }
   }
 
-  async function createCharacter() {
-    if (!charName.trim() || !charUnit) return
-    setSaving(true)
-    try {
-      const res = await fetch(`/api/communities/${communitySlug}/rp/characters`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: charName.trim(), description: charDesc.trim() || null, rpUnitId: charUnit }),
-      })
-      const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? "Erreur"); return }
-      toast.success("Personnage créé")
-      setCharDialog(false)
-      setCharName(""); setCharDesc(""); setCharUnit("")
-      router.push(`/communities/${communitySlug}/rp/${charUnit}`)
-    } catch {
-      toast.error("Erreur lors de la création")
-    } finally {
-      setSaving(false)
-    }
-  }
-
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 flex-wrap">
-        {canCreate && units.length > 0 && (
-          <Button size="sm" onClick={() => { setCharUnit(units[0].id); setCharDialog(true) }}>
-            <UserCircle2 className="h-4 w-4 mr-1" />
-            Créer mon personnage
-          </Button>
-        )}
-        {isStaff && (
-          <Button size="sm" variant="outline" onClick={() => setUnitDialog(true)}>
+      {isStaff && (
+        <div>
+          <Button size="sm" variant="outline" onClick={() => setDialog(true)}>
             <Plus className="h-4 w-4 mr-1" />
             Nouvelle unité
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {units.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground text-center">
@@ -166,65 +125,27 @@ export function RpRoster({ communitySlug, units, isStaff, canCreate }: Props) {
         </div>
       )}
 
-      {/* Dialog — créer un personnage */}
-      <Dialog open={charDialog} onOpenChange={(o) => !o && setCharDialog(false)}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Créer mon personnage</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <Label>Unité</Label>
-              <Select value={charUnit} onValueChange={setCharUnit}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choisir une unité…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {units.map((u) => (
-                    <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label>Nom du personnage</Label>
-              <Input value={charName} onChange={(e) => setCharName(e.target.value)} placeholder="Ex: John Coffee" />
-            </div>
-            <div className="space-y-1">
-              <Label>Backstory <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-              <Textarea value={charDesc} onChange={(e) => setCharDesc(e.target.value)} rows={3}
-                placeholder="Origine, histoire, motivation du personnage…" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCharDialog(false)}>Annuler</Button>
-            <Button onClick={createCharacter} disabled={saving || !charName.trim() || !charUnit}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Créer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog — créer une unité */}
-      <Dialog open={unitDialog} onOpenChange={setUnitDialog}>
+      <Dialog open={dialog} onOpenChange={setDialog}>
         <DialogContent>
           <DialogHeader><DialogTitle>Nouvelle unité RP</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
               <Label>Nom de l&apos;unité</Label>
-              <Input value={unitName} onChange={(e) => setUnitName(e.target.value)} placeholder="Ex: 101st Airborne Division" />
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: 101st Airborne Division" />
             </div>
             <div className="space-y-1">
               <Label>Période / Ère <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-              <Input value={unitEra} onChange={(e) => setUnitEra(e.target.value)} placeholder="Ex: WW2, Guerre Froide, Moderne…" />
+              <Input value={era} onChange={(e) => setEra(e.target.value)} placeholder="Ex: WW2, Guerre Froide, Moderne…" />
             </div>
             <div className="space-y-1">
               <Label>Description <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-              <Textarea value={unitDesc} onChange={(e) => setUnitDesc(e.target.value)} rows={2}
+              <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={2}
                 placeholder="Contexte, histoire de l'unité…" />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUnitDialog(false)}>Annuler</Button>
-            <Button onClick={createUnit} disabled={saving || !unitName.trim()}>
+            <Button variant="outline" onClick={() => setDialog(false)}>Annuler</Button>
+            <Button onClick={createUnit} disabled={saving || !name.trim()}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Créer
             </Button>
