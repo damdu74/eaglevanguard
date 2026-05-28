@@ -9,7 +9,7 @@ import { RichTextContent } from "@/components/ui/rich-text-content"
 import { CommunityLogo } from "@/components/community/community-logo"
 import Image from "next/image"
 import Link from "next/link"
-import { Users, Calendar, GitBranch, Settings, Sword } from "lucide-react"
+import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList } from "lucide-react"
 
 interface PageProps {
   params: { slug: string }
@@ -40,6 +40,10 @@ export default async function CommunityPage({ params }: PageProps) {
       })
     : null
   const isAdmin = membership && ["OWNER", "ADMIN"].includes(membership.role)
+
+  const pendingApplicationsCount = isAdmin
+    ? await prisma.application.count({ where: { communityId: community.id, status: "PENDING" } })
+    : 0
 
   const ROLE_LABELS: Record<string, string> = {
     OWNER: "Propriétaire",
@@ -104,20 +108,21 @@ export default async function CommunityPage({ params }: PageProps) {
       {/* Contenu réservé aux membres */}
       {membership && (
         <>
-          <div className={`grid gap-4 ${session?.user?.isNexusTeam ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"}`}>
+          <div className={`grid gap-4 sm:grid-cols-2 ${isAdmin && session?.user?.isNexusTeam ? "lg:grid-cols-5" : isAdmin ? "lg:grid-cols-4" : session?.user?.isNexusTeam ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
             {[
-              { href: "members", label: "Membres", icon: Users, count: community._count.memberships },
-              { href: "events", label: "Événements", icon: Calendar, count: community._count.events },
-              ...(session?.user?.isNexusTeam ? [{ href: "orbat", label: "ORBAT", icon: GitBranch, count: null }] : []),
-              { href: "rp", label: "Registre des effectifs", icon: Sword, count: null },
-            ].map(({ href, label, icon: Icon, count }) => (
+              { href: "members", label: "Membres", icon: Users, count: community._count.memberships, adminOnly: false },
+              { href: "events", label: "Événements", icon: Calendar, count: community._count.events, adminOnly: false },
+              ...(isAdmin ? [{ href: "applications", label: "Candidatures", icon: ClipboardList, count: pendingApplicationsCount, adminOnly: true, highlight: pendingApplicationsCount > 0 }] : []),
+              ...(session?.user?.isNexusTeam ? [{ href: "orbat", label: "ORBAT", icon: GitBranch, count: null, adminOnly: false }] : []),
+              { href: "rp", label: "Registre des effectifs", icon: Sword, count: null, adminOnly: false },
+            ].map(({ href, label, icon: Icon, count, highlight }) => (
               <Link key={href} href={`/communities/${params.slug}/${href}`} className="h-full">
                 <Card className="h-full transition-colors hover:bg-muted/50">
                   <CardContent className="flex h-full items-center justify-center gap-2 py-4">
-                    <Icon className="h-5 w-5 text-primary" />
+                    <Icon className={`h-5 w-5 ${highlight ? "text-orange-500" : "text-primary"}`} />
                     {count !== null ? (
                       <>
-                        <p className="text-lg font-bold">{count}</p>
+                        <p className={`text-lg font-bold ${highlight ? "text-orange-500" : ""}`}>{count}</p>
                         <p className="font-medium">{label}</p>
                       </>
                     ) : (

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
-import { Calendar, Shield, Plus, ClipboardList, ChevronRight, UserCheck, Clock } from "lucide-react"
+import { Calendar, Shield, Plus, ChevronRight, UserCheck, Clock } from "lucide-react"
 import { CommunityLogo } from "@/components/community/community-logo"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
@@ -120,7 +120,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Communautés</CardTitle>
@@ -146,18 +146,6 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{friendsCount}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Candidatures à traiter</CardTitle>
-            <ClipboardList className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{pendingApplications.length}</p>
-            {pendingApplications.length > 0 && (
-              <p className="text-xs text-orange-500 font-medium mt-0.5">en attente</p>
-            )}
           </CardContent>
         </Card>
       </div>
