@@ -4,11 +4,13 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
 import { EventCard } from "@/components/events/event-card"
+import { EventCalendar } from "@/components/events/event-calendar"
 import Link from "next/link"
-import { Plus, ChevronLeft } from "lucide-react"
+import { Plus, ChevronLeft, List, CalendarDays } from "lucide-react"
 
 interface PageProps {
   params: { slug: string }
+  searchParams?: { view?: string }
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -16,8 +18,9 @@ export async function generateMetadata({ params }: PageProps) {
   return { title: community ? `Événements — ${community.name}` : "Événements" }
 }
 
-export default async function CommunityEventsPage({ params }: PageProps) {
+export default async function CommunityEventsPage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
+  const view = searchParams?.view === "calendar" ? "calendar" : "list"
 
   const community = await prisma.community.findUnique({
     where: { slug: params.slug },
@@ -44,7 +47,6 @@ export default async function CommunityEventsPage({ params }: PageProps) {
     orderBy: { startDate: "asc" },
   })
 
-  // Attach user's participation status
   const participations = session?.user?.id
     ? await prisma.eventParticipant.findMany({
         where: { userId: session.user.id as string, eventId: { in: events.map((e) => e.id) } },
@@ -57,7 +59,15 @@ export default async function CommunityEventsPage({ params }: PageProps) {
   const upcoming = events.filter(
     (e) => new Date(e.startDate) >= now && ["DRAFT", "PUBLISHED", "ONGOING"].includes(e.status)
   )
-  const past = events.filter((e) => e.status === "COMPLETED" || new Date(e.startDate) < now && e.status !== "DRAFT")
+  const past = events.filter((e) => e.status === "COMPLETED" || (new Date(e.startDate) < now && e.status !== "DRAFT"))
+
+  const calendarEvents = events.map((e) => ({
+    id: e.id,
+    title: e.title,
+    type: e.type,
+    status: e.status,
+    startDate: e.startDate.toISOString(),
+  }))
 
   return (
     <div className="space-y-6">
@@ -70,46 +80,71 @@ export default async function CommunityEventsPage({ params }: PageProps) {
           <h1 className="text-2xl font-bold">Événements</h1>
           <p className="text-sm text-muted-foreground">{community.name}</p>
         </div>
-        {isStaff && (
-          <Button asChild>
-            <Link href={`/communities/${params.slug}/events/new`}>
-              <Plus className="mr-2 h-4 w-4" />
-              Créer un événement
+        <div className="flex items-center gap-2">
+          {/* Toggle vue */}
+          <div className="flex items-center rounded-md border">
+            <Link
+              href={`/communities/${params.slug}/events`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-l-md transition-colors ${view === "list" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              <List className="h-3.5 w-3.5" />
+              Liste
             </Link>
-          </Button>
-        )}
+            <Link
+              href={`/communities/${params.slug}/events?view=calendar`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-r-md transition-colors ${view === "calendar" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              <CalendarDays className="h-3.5 w-3.5" />
+              Calendrier
+            </Link>
+          </div>
+          {isStaff && (
+            <Button asChild>
+              <Link href={`/communities/${params.slug}/events/new`}>
+                <Plus className="mr-2 h-4 w-4" />
+                Créer
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
-      {events.length === 0 && (
-        <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-          Aucun événement pour le moment.
-        </div>
-      )}
+      {view === "calendar" ? (
+        <EventCalendar events={calendarEvents} communitySlug={params.slug} />
+      ) : (
+        <>
+          {events.length === 0 && (
+            <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
+              Aucun événement pour le moment.
+            </div>
+          )}
 
-      {upcoming.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">À venir</h2>
-          {upcoming.map((event) => (
-            <EventCard
-              key={event.id}
-              event={{ ...event, myStatus: participationMap[event.id] ?? null }}
-              slug={params.slug}
-            />
-          ))}
-        </section>
-      )}
+          {upcoming.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">À venir</h2>
+              {upcoming.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={{ ...event, myStatus: participationMap[event.id] ?? null }}
+                  slug={params.slug}
+                />
+              ))}
+            </section>
+          )}
 
-      {past.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Passés</h2>
-          {past.map((event) => (
-            <EventCard
-              key={event.id}
-              event={{ ...event, myStatus: participationMap[event.id] ?? null }}
-              slug={params.slug}
-            />
-          ))}
-        </section>
+          {past.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Passés</h2>
+              {past.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={{ ...event, myStatus: participationMap[event.id] ?? null }}
+                  slug={params.slug}
+                />
+              ))}
+            </section>
+          )}
+        </>
       )}
     </div>
   )

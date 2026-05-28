@@ -90,6 +90,7 @@ model User {
   receivedFriendRequests Friendship[]  @relation("ReceivedRequests")
   notifications      Notification[]
   rpCharacters       RpCharacter[]
+  posts              CommunityPost[]
   nexusRank          NexusRank?        @relation("UserRole", fields: [nexusRankId], references: [id], onDelete: SetNull)
   nexusFunctions     NexusRank[]       @relation("UserFunctions")
 }
@@ -177,6 +178,7 @@ model Community {
   rpUnits      RpUnit[]
   rpCharacters RpCharacter[]
   rpGroups     RpGroup[]
+  posts        CommunityPost[]
 }
 
 enum MemberRole {
@@ -361,6 +363,24 @@ model RpCharacter {
   rpGroup   RpGroup?   @relation(fields: [rpGroupId], references: [id], onDelete: SetNull)
 
   @@unique([rpUnitId, userId])
+}
+
+// ─── COMMUNITY POSTS ──────────────────────────────────────────────────────────
+
+model CommunityPost {
+  id          String   @id @default(cuid())
+  communityId String
+  authorId    String
+  title       String
+  content     String   @db.Text
+  isPinned    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, createdAt])
 }
 
 // ─── APPLICATIONS ─────────────────────────────────────────────────────────────

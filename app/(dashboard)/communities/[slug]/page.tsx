@@ -9,7 +9,7 @@ import { RichTextContent } from "@/components/ui/rich-text-content"
 import { CommunityLogo } from "@/components/community/community-logo"
 import Image from "next/image"
 import Link from "next/link"
-import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList, ChevronLeft } from "lucide-react"
+import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList, ChevronLeft, Megaphone } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -46,6 +46,10 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
 
   const pendingApplicationsCount = isAdmin
     ? await prisma.application.count({ where: { communityId: community.id, status: "PENDING" } })
+    : 0
+
+  const postsCount = membership
+    ? await prisma.communityPost.count({ where: { communityId: community.id } })
     : 0
 
   const ROLE_LABELS: Record<string, string> = {
@@ -122,7 +126,7 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
       {/* Contenu réservé aux membres */}
       {membership && (
         <>
-          <div className={`grid gap-4 sm:grid-cols-2 ${isAdmin && session?.user?.isNexusTeam ? "lg:grid-cols-5" : isAdmin ? "lg:grid-cols-4" : session?.user?.isNexusTeam ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
+          <div className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3`}>
             {[
               {
                 href: "members",
@@ -130,6 +134,7 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
                 label: "Membres", icon: Users, count: community._count.memberships, highlight: false,
               },
               { href: "events", fullHref: null, label: "Événements", icon: Calendar, count: community._count.events, highlight: false },
+              { href: "news", fullHref: null, label: "Annonces", icon: Megaphone, count: postsCount, highlight: false },
               ...(isAdmin ? [{ href: "applications", fullHref: null, label: "Candidatures", icon: ClipboardList, count: pendingApplicationsCount, highlight: pendingApplicationsCount > 0 }] : []),
               ...(session?.user?.isNexusTeam ? [{ href: "orbat", fullHref: null, label: "ORBAT", icon: GitBranch, count: null, highlight: false }] : []),
               { href: "rp", fullHref: null, label: "Registre des effectifs", icon: Sword, count: null, highlight: false },
