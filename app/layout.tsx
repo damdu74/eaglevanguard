@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     default: "NEXUS",
     template: "%s | NEXUS",
   },
-  description: "Plateforme de gestion de communautés ARMA 3",
+  description: "Plateforme de gestion de communautés",
   icons: {
     icon: "/icon.png",
   },
