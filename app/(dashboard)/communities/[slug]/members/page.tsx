@@ -216,7 +216,7 @@ function MemberRow({
   return (
     <div className="flex items-center justify-between px-4 py-3 gap-3">
       <Link
-        href={isMe ? "/profile" : `/profile/${user.id}`}
+        href={isMe ? "/profile" : `/profile/${user.id}?back=${encodeURIComponent(`/communities/${communitySlug}/members`)}`}
         className="flex items-center gap-3 hover:opacity-80 transition-opacity min-w-0"
       >
         <Avatar className="h-9 w-9 shrink-0">
