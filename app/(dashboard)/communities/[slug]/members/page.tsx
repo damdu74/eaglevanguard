@@ -93,11 +93,11 @@ export default async function CommunityMembersPage({ params }: PageProps) {
     <div className="space-y-6 max-w-3xl">
       <div>
         <Link
-          href={`/communities/${params.slug}`}
+          href="/members"
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
-          {community.name}
+          Mes membres
         </Link>
         <div className="flex items-center justify-between">
           <div>
