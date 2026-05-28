@@ -50,6 +50,17 @@ export default async function CommunityPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
+      {/* Bannière */}
+      {community.bannerUrl && (
+        <div className="w-full h-48 sm:h-64 rounded-xl overflow-hidden">
+          <img
+            src={community.bannerUrl}
+            alt={`Bannière de ${community.name}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4">

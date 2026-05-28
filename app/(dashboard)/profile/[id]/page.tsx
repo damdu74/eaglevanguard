@@ -6,7 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { FriendButton } from "@/components/friends/friend-button"
-import { Lock, Users, Globe } from "lucide-react"
+import { CommunityLogo } from "@/components/community/community-logo"
+import { Lock, Users, Globe, Calendar } from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
+import { fr } from "date-fns/locale"
 
 export const dynamic = "force-dynamic"
 
@@ -24,24 +27,54 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
 
   if (params.id === session.user.id) redirect("/profile")
 
-  const target = await prisma.user.findUnique({
-    where: { id: params.id },
-    include: {
-      memberships: { include: { community: true }, take: 5 },
-      nexusRank: true,
-    },
-  })
+  const [target, friendship, viewerCommunityIds] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: params.id },
+      include: {
+        memberships: {
+          include: { community: { select: { id: true, name: true, slug: true, logoUrl: true, isPublic: true } } },
+          orderBy: { joinedAt: "asc" },
+        },
+        nexusRank: true,
+        events: {
+          where: {
+            status: { in: ["CONFIRMED", "TENTATIVE"] },
+            event: {
+              startDate: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+              status: { in: ["PUBLISHED", "ONGOING", "COMPLETED"] },
+            },
+          },
+          include: {
+            event: {
+              select: {
+                id: true,
+                title: true,
+                startDate: true,
+                status: true,
+                community: { select: { name: true, slug: true } },
+              },
+            },
+          },
+          orderBy: { event: { startDate: "desc" } },
+          take: 5,
+        },
+      },
+    }),
+    prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { requesterId: session.user.id, receiverId: params.id },
+          { requesterId: params.id, receiverId: session.user.id },
+        ],
+      },
+    }),
+    prisma.membership.findMany({
+      where: { userId: session.user.id },
+      select: { communityId: true },
+    }).then(ms => new Set(ms.map(m => m.communityId))),
+  ])
 
   if (!target) notFound()
-
-  const friendship = await prisma.friendship.findFirst({
-    where: {
-      OR: [
-        { requesterId: session.user.id, receiverId: params.id },
-        { requesterId: params.id, receiverId: session.user.id },
-      ],
-    },
-  })
 
   const isFriend = friendship?.status === "ACCEPTED"
 
@@ -92,6 +125,14 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     ? { icon: Globe, label: "Profil public" }
     : { icon: Users, label: "Profil amis" }
 
+  const visibleCommunities = target.memberships.filter(m => m.community.isPublic || viewerCommunityIds.has(m.communityId))
+  const sharedCommunities = visibleCommunities.filter(m => viewerCommunityIds.has(m.communityId))
+  const otherCommunities = visibleCommunities.filter(m => !viewerCommunityIds.has(m.communityId))
+
+  const recentEvents = target.events.filter(p =>
+    p.event.status !== "DRAFT" && p.status !== "DECLINED"
+  )
+
   return (
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-center justify-between">
@@ -138,16 +179,73 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         </CardContent>
       </Card>
 
-      {target.memberships.length > 0 && (
+      {/* Communautés en commun */}
+      {sharedCommunities.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Communautés en commun
+              <Badge variant="secondary">{sharedCommunities.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {sharedCommunities.map((m) => (
+              <div key={m.communityId} className="flex items-center justify-between">
+                <div className="flex items-center gap-3 min-w-0">
+                  <CommunityLogo url={m.community.logoUrl} name={m.community.name} size="sm" />
+                  <p className="font-medium text-sm truncate">{m.community.name}</p>
+                </div>
+                <Badge variant="outline">{ROLE_LABELS[m.role] ?? m.role}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Autres communautés publiques */}
+      {otherCommunities.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Communautés</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {target.memberships.map((m) => (
+            {otherCommunities.map((m) => (
               <div key={m.communityId} className="flex items-center justify-between">
-                <p className="font-medium">{m.community.name}</p>
+                <div className="flex items-center gap-3 min-w-0">
+                  <CommunityLogo url={m.community.logoUrl} name={m.community.name} size="sm" />
+                  <p className="font-medium text-sm truncate">{m.community.name}</p>
+                </div>
                 <Badge variant="outline">{ROLE_LABELS[m.role] ?? m.role}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Événements récents */}
+      {recentEvents.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Opérations récentes
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {recentEvents.map((p) => (
+              <div key={p.event.id} className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{p.event.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {p.event.community.name} · {formatDistanceToNow(new Date(p.event.startDate), { addSuffix: true, locale: fr })}
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="shrink-0 text-xs"
+                >
+                  {p.status === "CONFIRMED" ? "Confirmé" : "Intéressé"}
+                </Badge>
               </div>
             ))}
           </CardContent>

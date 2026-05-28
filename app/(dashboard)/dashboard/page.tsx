@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
-import { Users, Calendar, Shield, Plus, ClipboardList, ChevronRight } from "lucide-react"
+import { Users, Calendar, Shield, Plus, ClipboardList, ChevronRight, UserCheck, Clock } from "lucide-react"
 import { CommunityLogo } from "@/components/community/community-logo"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
@@ -27,7 +27,7 @@ export default async function DashboardPage() {
   const userId = session!.user!.id as string
   const displayName = session!.user!.name ?? "Joueur"
 
-  const [memberships, upcomingEvents, pendingApplications] = await Promise.all([
+  const [memberships, upcomingEvents, pendingApplications, friendsCount, myPendingApplications] = await Promise.all([
     prisma.membership.findMany({
       where: { userId },
       include: {
@@ -79,9 +79,19 @@ export default async function DashboardPage() {
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
+    prisma.friendship.count({
+      where: {
+        status: "ACCEPTED",
+        OR: [{ requesterId: userId }, { receiverId: userId }],
+      },
+    }),
+    prisma.application.findMany({
+      where: { userId, status: "PENDING" },
+      include: { community: { select: { name: true, slug: true, logoUrl: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
   ])
-
-  const totalMembers = memberships.reduce((acc, m) => acc + m.community._count.memberships, 0)
 
   return (
     <div className="space-y-6">
@@ -131,16 +141,16 @@ export default async function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total membres</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Amis</CardTitle>
+            <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{totalMembers}</p>
+            <p className="text-2xl font-bold">{friendsCount}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Candidatures</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Candidatures à traiter</CardTitle>
             <ClipboardList className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -192,7 +202,36 @@ export default async function DashboardPage() {
 
         {/* Colonne droite */}
         <div className="space-y-6">
-          {/* Candidatures en attente */}
+          {/* Mes candidatures en attente (comme candidat) */}
+          {myPendingApplications.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                Mes candidatures
+                <Badge variant="outline" className="text-muted-foreground">{myPendingApplications.length}</Badge>
+              </h2>
+              <div className="space-y-2">
+                {myPendingApplications.map((app) => (
+                  <Card key={app.id}>
+                    <CardContent className="flex items-center justify-between py-3 px-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <CommunityLogo url={app.community.logoUrl} name={app.community.name} size="sm" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{app.community.name}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatDistanceToNow(new Date(app.createdAt), { addSuffix: true, locale: fr })}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="text-xs shrink-0">En attente</Badge>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Candidatures en attente (comme admin) */}
           {pendingApplications.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold flex items-center gap-2">
