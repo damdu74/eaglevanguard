@@ -58,8 +58,13 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
   const participationMap = Object.fromEntries(participations.map((p) => [p.eventId, p.status]))
 
   const now = new Date()
-  const ongoing = events.filter((e) => e.status === "ONGOING")
-  const upcoming = events.filter((e) => ["DRAFT", "PUBLISHED"].includes(e.status) && new Date(e.startDate) >= now)
+  const ongoing = events.filter((e) =>
+    e.status === "ONGOING" ||
+    (e.status === "PUBLISHED" && new Date(e.startDate) <= now)
+  )
+  const upcoming = events.filter((e) =>
+    ["DRAFT", "PUBLISHED"].includes(e.status) && new Date(e.startDate) > now
+  )
   const past = events.filter((e) => e.status === "COMPLETED")
 
   const calendarEvents = events.map((e) => ({
