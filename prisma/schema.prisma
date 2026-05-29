@@ -359,6 +359,7 @@ model RpCharacter {
   rpUnitId    String?
   rpGroupId   String?
   name        String
+  grade       String?
   role        String?
   description String?   @db.Text
   imageUrl    String?

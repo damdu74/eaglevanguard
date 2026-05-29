@@ -31,6 +31,7 @@ interface RpGroup {
 interface RpCharacter {
   id: string
   name: string
+  grade: string | null
   role: string | null
   description: string | null
   rpGroupId: string | null
@@ -63,6 +64,7 @@ export function RpUnitDetail({
   const [charLastName, setCharLastName] = useState("")
   const [charDesc, setCharDesc] = useState("")
   const [editRoleCharId, setEditRoleCharId] = useState("")
+  const [gradeValue, setGradeValue] = useState("")
   const [roleValue, setRoleValue] = useState("")
   const [newGroupName, setNewGroupName] = useState("")
   const [editGroupId, setEditGroupId] = useState("")
@@ -83,7 +85,9 @@ export function RpUnitDetail({
     setDialog("edit")
   }
   function openRole(char: RpCharacter) {
-    setEditRoleCharId(char.id); setRoleValue(char.role ?? "")
+    setEditRoleCharId(char.id)
+    setGradeValue(char.grade ?? "")
+    setRoleValue(char.role ?? "")
     setDialog("role")
   }
 
@@ -128,7 +132,7 @@ export function RpUnitDetail({
       const res = await fetch(`/api/communities/${communitySlug}/rp/characters/${editRoleCharId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: roleValue.trim() || null }),
+        body: JSON.stringify({ grade: gradeValue.trim() || null, role: roleValue.trim() || null }),
       })
       if (!res.ok) throw new Error()
       toast.success("Rôle mis à jour")
@@ -352,14 +356,21 @@ export function RpUnitDetail({
         </DialogContent>
       </Dialog>
 
-      {/* Dialog — rôle (staff) */}
+      {/* Dialog — grade & fonction (staff) */}
       <Dialog open={dialog === "role"} onOpenChange={(o) => !o && setDialog(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Assigner un rôle</DialogTitle></DialogHeader>
-          <div className="space-y-1">
-            <Label>Rôle / Spécialité</Label>
-            <Input value={roleValue} onChange={(e) => setRoleValue(e.target.value)}
-              placeholder="Ex: Parachutiste, Sniper, Médecin…" />
+          <DialogHeader><DialogTitle>Grade &amp; Fonction</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label>Grade</Label>
+              <Input value={gradeValue} onChange={(e) => setGradeValue(e.target.value)}
+                placeholder="Ex: Sergent, Caporal, Lieutenant…" />
+            </div>
+            <div className="space-y-1">
+              <Label>Fonction</Label>
+              <Input value={roleValue} onChange={(e) => setRoleValue(e.target.value)}
+                placeholder="Ex: Parachutiste, Sniper, Médecin…" />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialog(null)}>Annuler</Button>
@@ -437,7 +448,8 @@ function CharacterTable({
           <TableRow>
             <TableHead>Personnage</TableHead>
             <TableHead>Joueur</TableHead>
-            <TableHead>Rôle</TableHead>
+            <TableHead className="hidden sm:table-cell">Grade</TableHead>
+            <TableHead>Fonction</TableHead>
             <TableHead className="hidden md:table-cell">Backstory</TableHead>
             {isStaff && groups.length > 0 && <TableHead className="text-center">Groupe</TableHead>}
             <TableHead className="w-20" />
@@ -460,6 +472,11 @@ function CharacterTable({
                     )}
                     <span className="text-sm">{char.user.name}</span>
                   </div>
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {char.grade
+                    ? <Badge variant="outline" className="text-xs">{char.grade}</Badge>
+                    : <span className="text-xs text-muted-foreground italic">—</span>}
                 </TableCell>
                 <TableCell>
                   {char.role

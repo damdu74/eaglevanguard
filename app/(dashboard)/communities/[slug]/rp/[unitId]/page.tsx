@@ -40,7 +40,10 @@ export default async function RpUnitPage({ params }: PageProps) {
   const [characters, groups] = await Promise.all([
     prisma.rpCharacter.findMany({
       where: { rpUnitId: params.unitId },
-      include: { user: { select: { id: true, name: true, image: true, customAvatar: true } } },
+      select: {
+        id: true, name: true, grade: true, role: true, description: true, rpGroupId: true,
+        user: { select: { id: true, name: true, image: true, customAvatar: true } },
+      },
       orderBy: { createdAt: "asc" },
     }),
     prisma.rpGroup.findMany({
