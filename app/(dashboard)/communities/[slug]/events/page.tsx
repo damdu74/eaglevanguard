@@ -39,6 +39,24 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
 
   const isStaff = membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
 
+  // Mise à jour automatique des statuts périmés avant affichage
+  const now = new Date()
+  const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000)
+  await Promise.all([
+    prisma.event.updateMany({
+      where: { communityId: community.id, status: "PUBLISHED", startDate: { lte: now } },
+      data: { status: "ONGOING" },
+    }),
+    prisma.event.updateMany({
+      where: { communityId: community.id, status: "ONGOING", endDate: { lte: now } },
+      data: { status: "COMPLETED" },
+    }),
+    prisma.event.updateMany({
+      where: { communityId: community.id, status: "ONGOING", endDate: null, startDate: { lte: eightHoursAgo } },
+      data: { status: "COMPLETED" },
+    }),
+  ])
+
   const events = await prisma.event.findMany({
     where: {
       communityId: community.id,
@@ -58,7 +76,6 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
     : []
   const participationMap = Object.fromEntries(participations.map((p) => [p.eventId, p.status]))
 
-  const now = new Date()
   const ongoing = events.filter((e) =>
     e.status === "ONGOING" ||
     (e.status === "PUBLISHED" && new Date(e.startDate) <= now)

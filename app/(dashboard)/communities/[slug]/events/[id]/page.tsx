@@ -34,6 +34,24 @@ export async function generateMetadata({ params }: PageProps) {
 export default async function EventDetailPage({ params }: PageProps) {
   const session = await getServerSession(authOptions)
 
+  // Mise à jour automatique du statut si périmé
+  const now = new Date()
+  const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000)
+  await Promise.all([
+    prisma.event.updateMany({
+      where: { id: params.id, status: "PUBLISHED", startDate: { lte: now } },
+      data: { status: "ONGOING" },
+    }),
+    prisma.event.updateMany({
+      where: { id: params.id, status: "ONGOING", endDate: { lte: now } },
+      data: { status: "COMPLETED" },
+    }),
+    prisma.event.updateMany({
+      where: { id: params.id, status: "ONGOING", endDate: null, startDate: { lte: eightHoursAgo } },
+      data: { status: "COMPLETED" },
+    }),
+  ])
+
   const event = await prisma.event.findFirst({
     where: { id: params.id, community: { slug: params.slug } },
     include: {
