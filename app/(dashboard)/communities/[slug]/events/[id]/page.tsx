@@ -167,8 +167,8 @@ export default async function EventDetailPage({ params }: PageProps) {
           <CardContent className="space-y-4">
             {[
               { list: confirmed, label: "Présents", colorClass: "text-green-600" },
-              { list: tentative, label: "Peut-être", colorClass: "text-yellow-600" },
-              { list: declined, label: "Absents", colorClass: "text-muted-foreground" },
+              { list: tentative, label: "Incertains", colorClass: "text-yellow-600" },
+              { list: declined, label: "Non présents", colorClass: "text-muted-foreground" },
             ].map(({ list, label, colorClass }) =>
               list.length > 0 ? (
                 <div key={label}>

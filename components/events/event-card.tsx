@@ -7,9 +7,9 @@ import { EventCardStatusDropdown } from "@/components/events/event-card-status-d
 import { computeDisplayStatus } from "@/lib/event-status"
 
 const PARTICIPATION_LABELS: Record<string, string> = {
-  CONFIRMED: "Confirmé",
-  TENTATIVE: "Peut-être",
-  DECLINED:  "Décliné",
+  CONFIRMED: "Présent",
+  TENTATIVE: "Incertain",
+  DECLINED:  "Non présent",
 }
 
 interface EventCardProps {

@@ -21,8 +21,8 @@ interface ParticipateButtonProps {
 
 const OPTIONS = [
   { value: "CONFIRMED", label: "Présent" },
-  { value: "TENTATIVE", label: "Peut-être" },
-  { value: "DECLINED", label: "Absent" },
+  { value: "TENTATIVE", label: "Incertain" },
+  { value: "DECLINED", label: "Non présent" },
 ] as const
 
 export function ParticipateButton({ communitySlug, eventId, currentStatus, isMember }: ParticipateButtonProps) {
