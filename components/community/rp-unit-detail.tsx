@@ -59,7 +59,8 @@ export function RpUnitDetail({
   const canCreate = canCreateProp && !myCharacter
 
   const [dialog, setDialog] = useState<DialogType>(null)
-  const [charName, setCharName] = useState("")
+  const [charFirstName, setCharFirstName] = useState("")
+  const [charLastName, setCharLastName] = useState("")
   const [charDesc, setCharDesc] = useState("")
   const [editRoleCharId, setEditRoleCharId] = useState("")
   const [roleValue, setRoleValue] = useState("")
@@ -72,10 +73,13 @@ export function RpUnitDetail({
 
   // ── Character actions ───────────────────────────────────────────────────────
 
-  function openCreate() { setCharName(""); setCharDesc(""); setDialog("create") }
+  function openCreate() { setCharFirstName(""); setCharLastName(""); setCharDesc(""); setDialog("create") }
   function openEdit() {
     if (!myCharacter) return
-    setCharName(myCharacter.name); setCharDesc(myCharacter.description ?? "")
+    const parts = myCharacter.name.split(" ")
+    setCharFirstName(parts[0] ?? "")
+    setCharLastName(parts.slice(1).join(" "))
+    setCharDesc(myCharacter.description ?? "")
     setDialog("edit")
   }
   function openRole(char: RpCharacter) {
@@ -84,13 +88,14 @@ export function RpUnitDetail({
   }
 
   async function createCharacter() {
-    if (!charName.trim()) return
+    if (!charFirstName.trim() || !charLastName.trim()) return
+    const fullName = `${charFirstName.trim()} ${charLastName.trim().toUpperCase()}`
     setSaving(true)
     try {
       const res = await fetch(`/api/communities/${communitySlug}/rp/characters`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: charName.trim(), description: charDesc.trim() || null, rpUnitId: unitId }),
+        body: JSON.stringify({ name: fullName, description: charDesc.trim() || null, rpUnitId: unitId }),
       })
       const data = await res.json()
       if (!res.ok) { toast.error(data.error ?? "Erreur"); return }
@@ -101,13 +106,14 @@ export function RpUnitDetail({
   }
 
   async function saveEdit() {
-    if (!myCharacter || !charName.trim()) return
+    if (!myCharacter || !charFirstName.trim() || !charLastName.trim()) return
+    const fullName = `${charFirstName.trim()} ${charLastName.trim().toUpperCase()}`
     setSaving(true)
     try {
       const res = await fetch(`/api/communities/${communitySlug}/rp/characters/${myCharacter.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: charName.trim(), description: charDesc.trim() || null }),
+        body: JSON.stringify({ name: fullName, description: charDesc.trim() || null }),
       })
       if (!res.ok) throw new Error()
       toast.success("Personnage mis à jour")
@@ -322,10 +328,10 @@ export function RpUnitDetail({
       <Dialog open={dialog === "create"} onOpenChange={(o) => !o && setDialog(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Créer mon personnage</DialogTitle></DialogHeader>
-          <CharacterForm charName={charName} setCharName={setCharName} charDesc={charDesc} setCharDesc={setCharDesc} />
+          <CharacterForm charFirstName={charFirstName} setCharFirstName={setCharFirstName} charLastName={charLastName} setCharLastName={setCharLastName} charDesc={charDesc} setCharDesc={setCharDesc} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialog(null)}>Annuler</Button>
-            <Button onClick={createCharacter} disabled={saving || !charName.trim()}>
+            <Button onClick={createCharacter} disabled={saving || !charFirstName.trim() || !charLastName.trim()}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Créer
             </Button>
           </DialogFooter>
@@ -336,10 +342,10 @@ export function RpUnitDetail({
       <Dialog open={dialog === "edit"} onOpenChange={(o) => !o && setDialog(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Modifier mon personnage</DialogTitle></DialogHeader>
-          <CharacterForm charName={charName} setCharName={setCharName} charDesc={charDesc} setCharDesc={setCharDesc} />
+          <CharacterForm charFirstName={charFirstName} setCharFirstName={setCharFirstName} charLastName={charLastName} setCharLastName={setCharLastName} charDesc={charDesc} setCharDesc={setCharDesc} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialog(null)}>Annuler</Button>
-            <Button onClick={saveEdit} disabled={saving || !charName.trim()}>
+            <Button onClick={saveEdit} disabled={saving || !charFirstName.trim() || !charLastName.trim()}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Sauvegarder
             </Button>
           </DialogFooter>
@@ -508,15 +514,30 @@ function CharacterTable({
   )
 }
 
-function CharacterForm({ charName, setCharName, charDesc, setCharDesc }: {
-  charName: string; setCharName: (v: string) => void
+function CharacterForm({ charFirstName, setCharFirstName, charLastName, setCharLastName, charDesc, setCharDesc }: {
+  charFirstName: string; setCharFirstName: (v: string) => void
+  charLastName: string; setCharLastName: (v: string) => void
   charDesc: string; setCharDesc: (v: string) => void
 }) {
   return (
     <div className="space-y-3">
-      <div className="space-y-1">
-        <Label>Nom du personnage</Label>
-        <Input value={charName} onChange={(e) => setCharName(e.target.value)} placeholder="Ex: John Coffee" />
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <Label>Prénom</Label>
+          <Input
+            value={charFirstName}
+            onChange={(e) => setCharFirstName(e.target.value)}
+            placeholder="Ex: Jean"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label>Nom</Label>
+          <Input
+            value={charLastName}
+            onChange={(e) => setCharLastName(e.target.value.toUpperCase())}
+            placeholder="Ex: DUPONT"
+          />
+        </div>
       </div>
       <div className="space-y-1">
         <Label>Backstory <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
