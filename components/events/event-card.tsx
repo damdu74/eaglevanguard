@@ -70,11 +70,11 @@ export function EventCard({ event, slug, isStaff }: EventCardProps) {
           </div>
         </Link>
 
-        {isStaff && ["DRAFT", "PUBLISHED", "CANCELLED"].includes(event.status) && (
+        {isStaff && event.status !== "ARCHIVED" && (
           <EventCardStatusDropdown
             communitySlug={slug}
             eventId={event.id}
-            currentStatus={event.status as "DRAFT" | "PUBLISHED" | "CANCELLED"}
+            currentStatus={event.status as "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED"}
           />
         )}
       </CardContent>

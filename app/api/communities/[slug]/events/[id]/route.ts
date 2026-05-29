@@ -7,8 +7,8 @@ import type { EventStatus } from "@prisma/client"
 const VALID_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
   DRAFT:      ["PUBLISHED", "CANCELLED"],
   PUBLISHED:  ["DRAFT", "ONGOING", "CANCELLED"],
-  ONGOING:    ["COMPLETED", "CANCELLED"],
-  COMPLETED:  ["ARCHIVED"],
+  ONGOING:    ["PUBLISHED", "DRAFT", "CANCELLED"],
+  COMPLETED:  ["PUBLISHED", "DRAFT", "ARCHIVED"],
   CANCELLED:  ["DRAFT", "PUBLISHED"],
   ARCHIVED:   [],
 }

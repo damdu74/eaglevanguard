@@ -5,21 +5,20 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-const STATUS_LABELS: Record<string, string> = {
+type DbStatus = "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED"
+
+const STATUS_LABELS: Record<DbStatus, string> = {
   DRAFT:     "Brouillon",
   PUBLISHED: "Publié",
+  ONGOING:   "Publié",
+  COMPLETED: "Publié",
   CANCELLED: "Annulé",
-}
-
-const STATUS_TOAST: Record<string, string> = {
-  DRAFT:     "Repassé en brouillon",
-  PUBLISHED: "Événement publié",
 }
 
 interface Props {
   communitySlug: string
   eventId: string
-  currentStatus: "DRAFT" | "PUBLISHED" | "CANCELLED"
+  currentStatus: DbStatus
 }
 
 export function EventCardStatusDropdown({ communitySlug, eventId, currentStatus }: Props) {
@@ -39,7 +38,7 @@ export function EventCardStatusDropdown({ communitySlug, eventId, currentStatus 
         const data = await res.json().catch(() => ({}))
         throw new Error((data.error as string) ?? "Erreur")
       }
-      toast.success(STATUS_TOAST[newStatus] ?? "Statut mis à jour")
+      toast.success(newStatus === "PUBLISHED" ? "Événement publié" : newStatus === "DRAFT" ? "Repassé en brouillon" : "Statut mis à jour")
       router.refresh()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erreur")
@@ -48,9 +47,14 @@ export function EventCardStatusDropdown({ communitySlug, eventId, currentStatus 
     }
   }
 
+  // Afficher la valeur normalisée (ONGOING/COMPLETED → "Publié")
+  const displayValue = currentStatus === "CANCELLED" ? "CANCELLED"
+    : currentStatus === "DRAFT" ? "DRAFT"
+    : "PUBLISHED"
+
   return (
     <div onClick={(e) => e.preventDefault()}>
-      <Select value={currentStatus} onValueChange={handleChange} disabled={loading}>
+      <Select value={displayValue} onValueChange={handleChange} disabled={loading}>
         <SelectTrigger className="h-7 text-xs w-32">
           <SelectValue>{STATUS_LABELS[currentStatus]}</SelectValue>
         </SelectTrigger>
