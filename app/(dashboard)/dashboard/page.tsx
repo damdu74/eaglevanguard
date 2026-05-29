@@ -131,7 +131,7 @@ export default async function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Événements à venir</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Événements</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -255,9 +255,9 @@ export default async function DashboardPage() {
             </div>
           )}
 
-          {/* Événements à venir */}
+          {/* Événements */}
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold">Événements à venir</h2>
+            <h2 className="text-lg font-semibold">Événements</h2>
             {upcomingEvents.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
