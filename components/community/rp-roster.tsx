@@ -137,20 +137,20 @@ export function RpRoster({ communitySlug, units, isStaff }: Props) {
               <Link href={`/communities/${communitySlug}/rp/${unit.id}`}>
                 <Card className="h-full transition-colors hover:bg-muted/50 cursor-pointer">
                   <CardContent className="p-4 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Sword className="h-4 w-4 text-primary shrink-0" />
-                        <span className="font-semibold truncate">{unit.name}</span>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Sword className="h-4 w-4 text-primary shrink-0" />
+                      <span className="font-semibold truncate">{unit.name}</span>
                     </div>
                     {unit.era && <Badge variant="outline" className="text-xs">{unit.era}</Badge>}
                     {unit.description && (
                       <p className="text-sm text-muted-foreground line-clamp-2">{unit.description}</p>
                     )}
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground pt-1">
-                      <Users className="h-3.5 w-3.5" />
-                      {unit._count.characters} personnage{unit._count.characters !== 1 ? "s" : ""}
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Users className="h-3.5 w-3.5" />
+                        {unit._count.characters} personnage{unit._count.characters !== 1 ? "s" : ""}
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                     </div>
                   </CardContent>
                 </Card>
