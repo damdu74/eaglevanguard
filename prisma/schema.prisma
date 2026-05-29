@@ -173,12 +173,13 @@ model Community {
   units        Unit[]
   orbat        OrbatNode[]
   orbatEdges   OrbatEdge[]
-  events       Event[]
-  applications Application[]
-  rpUnits      RpUnit[]
-  rpCharacters RpCharacter[]
-  rpGroups     RpGroup[]
-  posts        CommunityPost[]
+  events         Event[]
+  applications   Application[]
+  rpUnits        RpUnit[]
+  rpCharacters   RpCharacter[]
+  rpGroups       RpGroup[]
+  posts          CommunityPost[]
+  eventTemplates EventTemplate[]
 }
 
 enum MemberRole {
@@ -389,6 +390,24 @@ model CommunityPost {
   author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@index([communityId, createdAt])
+}
+
+// ─── EVENT TEMPLATES ──────────────────────────────────────────────────────────
+
+model EventTemplate {
+  id          String   @id @default(cuid())
+  communityId String
+  name        String
+  title       String
+  type        String
+  description String?  @db.Text
+  maxSlots    Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([communityId])
 }
 
 // ─── APPLICATIONS ─────────────────────────────────────────────────────────────

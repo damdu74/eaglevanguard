@@ -40,9 +40,33 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
   const total = friendRequests + pendingApplications + unreadCount
 
   useEffect(() => {
-    fetchAll()
-    const interval = setInterval(fetchAll, 10000)
-    return () => clearInterval(interval)
+    let fallbackInterval: ReturnType<typeof setInterval> | null = null
+
+    const es = new EventSource("/api/notifications/stream")
+
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data as string)
+        setFriendRequests(data.friendRequests ?? 0)
+        setPendingApplications(data.pendingApplications ?? 0)
+        setNotifications(data.notifications ?? [])
+        setUnreadCount(data.unreadCount ?? 0)
+        router.refresh()
+      } catch {}
+    }
+
+    es.onerror = () => {
+      es.close()
+      if (!fallbackInterval) {
+        fetchAll()
+        fallbackInterval = setInterval(fetchAll, 30000)
+      }
+    }
+
+    return () => {
+      es.close()
+      if (fallbackInterval) clearInterval(fallbackInterval)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

@@ -49,9 +49,17 @@ export interface EventData {
   maxSlots: number | null
 }
 
+export interface TemplateValues {
+  title?: string
+  type?: string
+  description?: string | null
+  maxSlots?: number | null
+}
+
 interface EventFormProps {
   communitySlug: string
   event?: EventData
+  initialValues?: TemplateValues
 }
 
 function toDateInput(iso: string): string {
@@ -69,10 +77,12 @@ function toTimeInput(iso: string): string {
   return `${h}:${min}`
 }
 
-export function EventForm({ communitySlug, event }: EventFormProps) {
+export function EventForm({ communitySlug, event, initialValues }: EventFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [description, setDescription] = useState(event?.description ?? "")
+  const [description, setDescription] = useState(
+    event?.description ?? initialValues?.description ?? ""
+  )
   const isEdit = !!event
 
   const {
@@ -93,7 +103,12 @@ export function EventForm({ communitySlug, event }: EventFormProps) {
           endTime: event.endDate ? toTimeInput(event.endDate) : "",
           maxSlots: event.maxSlots != null ? String(event.maxSlots) : "",
         }
-      : { status: "DRAFT" },
+      : {
+          status: "DRAFT",
+          title: initialValues?.title ?? "",
+          type: initialValues?.type ?? "",
+          maxSlots: initialValues?.maxSlots != null ? String(initialValues.maxSlots) : "",
+        },
   })
 
   const onSubmit = async (data: FormData) => {
