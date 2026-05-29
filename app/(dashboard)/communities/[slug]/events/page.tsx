@@ -81,8 +81,11 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
     e.status === "ONGOING" ||
     (e.status === "PUBLISHED" && new Date(e.startDate) <= now)
   )
-  const upcoming = events.filter((e) =>
-    ["DRAFT", "PUBLISHED"].includes(e.status) && new Date(e.startDate) > now
+  const upcomingPublished = events.filter((e) =>
+    e.status === "PUBLISHED" && new Date(e.startDate) > now
+  )
+  const upcomingDraft = events.filter((e) =>
+    e.status === "DRAFT" && new Date(e.startDate) > now
   )
   const past = events.filter((e) => e.status === "COMPLETED")
 
@@ -123,7 +126,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
         <EventCalendar events={calendarEvents} communitySlug={params.slug} />
       ) : (
         <>
-          {events.length === 0 && (
+          {ongoing.length === 0 && upcomingPublished.length === 0 && upcomingDraft.length === 0 && past.length === 0 && (
             <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
               Aucun événement pour le moment.
             </div>
@@ -142,10 +145,23 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
             </section>
           )}
 
-          {upcoming.length > 0 && (
+          {upcomingPublished.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">À venir</h2>
-              {upcoming.map((event) => (
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">Publiés</h2>
+              {upcomingPublished.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={{ ...event, myStatus: participationMap[event.id] ?? null }}
+                  slug={params.slug}
+                />
+              ))}
+            </section>
+          )}
+
+          {upcomingDraft.length > 0 && isStaff && (
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Brouillons</h2>
+              {upcomingDraft.map((event) => (
                 <EventCard
                   key={event.id}
                   event={{ ...event, myStatus: participationMap[event.id] ?? null }}
