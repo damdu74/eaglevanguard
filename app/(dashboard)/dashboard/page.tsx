@@ -275,7 +275,8 @@ export default async function DashboardPage() {
               <div className="space-y-2">
                 {upcomingEvents.map((event) => {
                   const displayStatus = computeDisplayStatus(event.status, event.startDate, event.endDate)
-                  const time = new Date(event.startDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+                  const timeStart = new Date(event.startDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+                  const timeEnd = event.endDate ? new Date(event.endDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : null
                   return (
                     <Link key={event.id} href={`/communities/${event.community.slug}/events/${event.id}`}>
                       <Card className="transition-colors hover:bg-muted/50">
@@ -289,7 +290,7 @@ export default async function DashboardPage() {
                               <span className="text-xs text-muted-foreground">
                                 {event.community.name} · {new Date(event.startDate).toLocaleDateString("fr-FR", {
                                   weekday: "short", day: "numeric", month: "short",
-                                })} · {time}
+                                })} · {timeStart}{timeEnd && ` – ${timeEnd}`}
                               </span>
                             </div>
                           </div>
