@@ -9,7 +9,7 @@ const VALID_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
   PUBLISHED:  ["DRAFT", "ONGOING", "CANCELLED"],
   ONGOING:    ["COMPLETED", "CANCELLED"],
   COMPLETED:  ["ARCHIVED"],
-  CANCELLED:  [],
+  CANCELLED:  ["DRAFT", "PUBLISHED"],
   ARCHIVED:   [],
 }
 

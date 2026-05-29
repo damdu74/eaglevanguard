@@ -32,6 +32,7 @@ const TRANSITIONS: Record<Status, { status: Status; label: string; icon: React.E
   ],
   COMPLETED: [],
   CANCELLED: [
+    { status: "PUBLISHED", label: "Republier", icon: Send },
     { status: "DRAFT", label: "Rouvrir en brouillon", icon: RotateCcw },
   ],
   ARCHIVED: [],
