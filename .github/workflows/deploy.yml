@@ -18,7 +18,9 @@ jobs:
 
       - name: Deploy to Vercel Production
         run: |
-          TOKEN=$(echo "${{ secrets.VERCEL_TOKEN }}" | tr -d '\xef\xbb\xbf' | tr -d '\r\n')
+          RAW="${{ secrets.VERCEL_TOKEN }}"
+          TOKEN="${RAW#$'\xef\xbb\xbf'}"
+          TOKEN="$(printf '%s' "$TOKEN" | tr -d '\r\n')"
           vercel --prod --token="$TOKEN" --yes
         env:
           VERCEL_ORG_ID: team_JWq542kltY1brzPvSLqF5jEA
