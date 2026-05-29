@@ -6,10 +6,10 @@ import { LocalDate, LocalTime } from "@/components/ui/local-date-time"
 import { EventCardStatusDropdown } from "@/components/events/event-card-status-dropdown"
 import { computeDisplayStatus } from "@/lib/event-status"
 
-const PARTICIPATION_LABELS: Record<string, string> = {
-  CONFIRMED: "Présent",
-  TENTATIVE: "Incertain",
-  DECLINED:  "Non présent",
+const PARTICIPATION_STYLES: Record<string, { label: string; className: string }> = {
+  CONFIRMED: { label: "Présent",     className: "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20" },
+  TENTATIVE: { label: "Incertain",   className: "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/20" },
+  DECLINED:  { label: "Non présent", className: "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/20" },
 }
 
 interface EventCardProps {
@@ -45,9 +45,9 @@ export function EventCard({ event, slug, isStaff }: EventCardProps) {
               <p className="font-semibold truncate">{event.title}</p>
               <Badge variant={displayStatus.variant}>{displayStatus.label}</Badge>
               <Badge variant="outline" className="text-xs">{event.type}</Badge>
-              {event.myStatus && (
-                <Badge variant="secondary" className="text-xs">
-                  {PARTICIPATION_LABELS[event.myStatus] ?? event.myStatus}
+              {event.myStatus && PARTICIPATION_STYLES[event.myStatus] && (
+                <Badge variant="outline" className={`text-xs ${PARTICIPATION_STYLES[event.myStatus].className}`}>
+                  {PARTICIPATION_STYLES[event.myStatus].label}
                 </Badge>
               )}
             </div>
