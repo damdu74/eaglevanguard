@@ -17,14 +17,6 @@ const EVENT_TYPES = ["Opération", "Entraînement", "Réunion", "Autre"]
 
 const ALL_STATUSES = ["DRAFT", "PUBLISHED", "ONGOING", "COMPLETED", "CANCELLED"] as const
 
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: "Brouillon",
-  PUBLISHED: "Publié",
-  ONGOING: "En cours",
-  COMPLETED: "Terminé",
-  CANCELLED: "Annulé",
-}
-
 const schema = z.object({
   title: z.string().min(3, "Minimum 3 caractères").max(100),
   type: z.string().min(1, "Sélectionnez un type"),
@@ -178,22 +170,23 @@ export function EventForm({ communitySlug, event, initialValues }: EventFormProp
               {errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
             </div>
 
-            <div className="space-y-1">
-              <Label>Statut</Label>
-              <Select
-                defaultValue={event?.status ?? "DRAFT"}
-                onValueChange={(v) => setValue("status", v as typeof ALL_STATUSES[number])}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(isEdit ? ALL_STATUSES : (["DRAFT", "PUBLISHED"] as const)).map((s) => (
-                    <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {(!isEdit || ["DRAFT", "PUBLISHED"].includes(event?.status ?? "DRAFT")) && (
+              <div className="space-y-1">
+                <Label>Visibilité</Label>
+                <Select
+                  defaultValue={event?.status ?? "DRAFT"}
+                  onValueChange={(v) => setValue("status", v as typeof ALL_STATUSES[number])}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DRAFT">Brouillon</SelectItem>
+                    <SelectItem value="PUBLISHED">Publié</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
