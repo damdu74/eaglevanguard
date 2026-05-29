@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button"
 import { EventCard } from "@/components/events/event-card"
 import { EventCalendar } from "@/components/events/event-calendar"
 import { EventsViewToggle } from "@/components/events/events-view-toggle"
+import { EventsStatusFilter } from "@/components/events/events-status-filter"
 import { AutoRefresh } from "@/components/ui/auto-refresh"
 import Link from "next/link"
 import { Plus, ChevronLeft } from "lucide-react"
 
 interface PageProps {
   params: { slug: string }
-  searchParams?: { view?: string }
+  searchParams?: { view?: string; status?: string }
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -23,6 +24,7 @@ export async function generateMetadata({ params }: PageProps) {
 export default async function CommunityEventsPage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
   const view = searchParams?.view === "calendar" ? "calendar" : "list"
+  const statusFilter = searchParams?.status ?? "all"
 
   const community = await prisma.community.findUnique({
     where: { slug: params.slug },
@@ -58,13 +60,19 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
     }),
   ])
 
+  // Statuts autorisés selon le rôle
+  const allowedStatuses = isStaff
+    ? ["DRAFT", "PUBLISHED", "ONGOING", "COMPLETED", "CANCELLED"]
+    : ["PUBLISHED", "ONGOING", "COMPLETED"]
+
+  // Filtre par statut sélectionné
+  const statusWhere =
+    statusFilter !== "all" && allowedStatuses.includes(statusFilter)
+      ? { status: statusFilter as "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED" }
+      : { status: { in: allowedStatuses as ("DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED")[] } }
+
   const events = await prisma.event.findMany({
-    where: {
-      communityId: community.id,
-      status: isStaff
-        ? { not: "ARCHIVED" }
-        : { in: ["PUBLISHED", "ONGOING", "COMPLETED"] },
-    },
+    where: { communityId: community.id, ...statusWhere },
     include: { _count: { select: { participants: true } } },
     orderBy: { startDate: "asc" },
   })
@@ -87,7 +95,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
   const upcomingDraft = events.filter((e) =>
     e.status === "DRAFT" && new Date(e.startDate) > now
   )
-  const past = events.filter((e) => e.status === "COMPLETED")
+  const past = events.filter((e) => ["COMPLETED", "CANCELLED"].includes(e.status))
 
   const calendarEvents = events.map((e) => ({
     id: e.id,
@@ -110,6 +118,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
           <p className="text-sm text-muted-foreground">{community.name}</p>
         </div>
         <div className="flex items-center gap-2">
+          <EventsStatusFilter isStaff={!!isStaff} currentStatus={statusFilter} />
           <EventsViewToggle currentView={view} />
           {isStaff && (
             <Button asChild>
@@ -126,9 +135,9 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
         <EventCalendar events={calendarEvents} communitySlug={params.slug} />
       ) : (
         <>
-          {ongoing.length === 0 && upcomingPublished.length === 0 && upcomingDraft.length === 0 && past.length === 0 && (
+          {events.length === 0 && (
             <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-              Aucun événement pour le moment.
+              Aucun événement pour ce filtre.
             </div>
           )}
 
