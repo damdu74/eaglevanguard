@@ -95,8 +95,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "La date de fin doit être après la date de début" }, { status: 400 })
   }
 
-  // Statut explicite : valider la transition
-  let finalStatus: EventStatus | undefined = status as EventStatus | undefined
+  // Statut explicite uniquement (Brouillon ↔ Publié ↔ Annulé)
+  // Le statut affiché (À venir / En cours / Terminé) est calculé depuis les dates, pas stocké
+  const finalStatus: EventStatus | undefined = status as EventStatus | undefined
   if (finalStatus !== undefined) {
     const current = event.status as EventStatus
     if (current !== finalStatus && !VALID_TRANSITIONS[current]?.includes(finalStatus)) {
@@ -104,22 +105,6 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         { error: `Transition invalide : ${current} → ${finalStatus}` },
         { status: 400 }
       )
-    }
-  } else if (startDate !== undefined || endDate !== undefined) {
-    // Dates modifiées sans statut explicite : recalculer automatiquement
-    const currentStatus = event.status as EventStatus
-    if (["PUBLISHED", "ONGOING", "COMPLETED"].includes(currentStatus)) {
-      const now = new Date()
-      const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000)
-      if (start > now) {
-        finalStatus = "PUBLISHED"
-      } else if (!end || end > now) {
-        finalStatus = "ONGOING"
-      } else if (end && end <= now) {
-        finalStatus = "COMPLETED"
-      } else if (!end && start <= eightHoursAgo) {
-        finalStatus = "COMPLETED"
-      }
     }
   }
 
