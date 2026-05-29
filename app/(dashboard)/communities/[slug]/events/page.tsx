@@ -149,6 +149,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
                   key={event.id}
                   event={{ ...event, myStatus: participationMap[event.id] ?? null }}
                   slug={params.slug}
+                  isStaff={!!isStaff}
                 />
               ))}
             </section>
@@ -162,6 +163,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
                   key={event.id}
                   event={{ ...event, myStatus: participationMap[event.id] ?? null }}
                   slug={params.slug}
+                  isStaff={!!isStaff}
                 />
               ))}
             </section>
@@ -175,6 +177,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
                   key={event.id}
                   event={{ ...event, myStatus: participationMap[event.id] ?? null }}
                   slug={params.slug}
+                  isStaff={!!isStaff}
                 />
               ))}
             </section>
@@ -188,6 +191,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
                   key={event.id}
                   event={{ ...event, myStatus: participationMap[event.id] ?? null }}
                   slug={params.slug}
+                  isStaff={!!isStaff}
                 />
               ))}
             </section>

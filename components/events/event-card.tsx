@@ -3,20 +3,21 @@ import { Calendar, Clock, Users } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { LocalDate, LocalTime } from "@/components/ui/local-date-time"
+import { EventCardStatusDropdown } from "@/components/events/event-card-status-dropdown"
 
 const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
-  DRAFT: { label: "Brouillon", variant: "outline" },
-  PUBLISHED: { label: "Publié", variant: "secondary" },
-  ONGOING: { label: "En cours", variant: "default" },
-  COMPLETED: { label: "Terminé", variant: "outline" },
-  CANCELLED: { label: "Annulé", variant: "destructive" },
-  ARCHIVED: { label: "Archivé", variant: "outline" },
+  DRAFT:     { label: "Brouillon", variant: "outline" },
+  PUBLISHED: { label: "Publié",    variant: "secondary" },
+  ONGOING:   { label: "En cours",  variant: "default" },
+  COMPLETED: { label: "Terminé",   variant: "outline" },
+  CANCELLED: { label: "Annulé",    variant: "destructive" },
+  ARCHIVED:  { label: "Archivé",   variant: "outline" },
 }
 
 const PARTICIPATION_LABELS: Record<string, string> = {
   CONFIRMED: "Confirmé",
   TENTATIVE: "Peut-être",
-  DECLINED: "Décliné",
+  DECLINED:  "Décliné",
 }
 
 interface EventCardProps {
@@ -32,20 +33,23 @@ interface EventCardProps {
     myStatus?: string | null
   }
   slug: string
+  isStaff?: boolean
 }
 
-export function EventCard({ event, slug }: EventCardProps) {
+export function EventCard({ event, slug, isStaff }: EventCardProps) {
   const startIso = typeof event.startDate === "string" ? event.startDate : event.startDate.toISOString()
   const endIso = event.endDate
     ? typeof event.endDate === "string" ? event.endDate : event.endDate.toISOString()
     : null
   const statusInfo = STATUS_LABELS[event.status] ?? { label: event.status, variant: "outline" as const }
 
+  const canChangeStatus = isStaff && ["DRAFT", "PUBLISHED", "ONGOING", "CANCELLED"].includes(event.status)
+
   return (
-    <Link href={`/communities/${slug}/events/${event.id}`}>
-      <Card className="transition-colors hover:bg-muted/50">
-        <CardContent className="py-4 flex items-start justify-between gap-4">
-          <div className="min-w-0 space-y-1">
+    <Card className="transition-colors hover:bg-muted/50">
+      <CardContent className="py-4 flex items-center gap-4">
+        <Link href={`/communities/${slug}/events/${event.id}`} className="flex-1 min-w-0">
+          <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-semibold truncate">{event.title}</p>
               <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
@@ -73,8 +77,16 @@ export function EventCard({ event, slug }: EventCardProps) {
               </span>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </Link>
+        </Link>
+
+        {canChangeStatus && (
+          <EventCardStatusDropdown
+            communitySlug={slug}
+            eventId={event.id}
+            currentStatus={event.status as "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED"}
+          />
+        )}
+      </CardContent>
+    </Card>
   )
 }
