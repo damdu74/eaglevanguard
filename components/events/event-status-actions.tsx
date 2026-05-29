@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown, Send, Play, CheckCircle, XCircle, RotateCcw } from "lucide-react"
+import { ChevronDown, Send, XCircle, RotateCcw } from "lucide-react"
 
 type Status = "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED" | "ARCHIVED"
 
@@ -22,12 +22,10 @@ const TRANSITIONS: Record<Status, { status: Status; label: string; icon: React.E
     { status: "CANCELLED", label: "Annuler", icon: XCircle, variant: "destructive" },
   ],
   PUBLISHED: [
-    { status: "ONGOING", label: "Démarrer", icon: Play },
     { status: "DRAFT", label: "Repasser en brouillon", icon: RotateCcw },
     { status: "CANCELLED", label: "Annuler", icon: XCircle, variant: "destructive" },
   ],
   ONGOING: [
-    { status: "COMPLETED", label: "Terminer", icon: CheckCircle },
     { status: "CANCELLED", label: "Annuler", icon: XCircle, variant: "destructive" },
   ],
   COMPLETED: [],

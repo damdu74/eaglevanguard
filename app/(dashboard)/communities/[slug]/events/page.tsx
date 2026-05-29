@@ -47,8 +47,8 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
     where: {
       communityId: community.id,
       status: isStaff
-        ? { in: ["DRAFT", "PUBLISHED", "CANCELLED"] }
-        : { in: ["PUBLISHED"] },
+        ? { not: "ARCHIVED" }
+        : { in: ["PUBLISHED", "ONGOING"] },
     },
     include: { _count: { select: { participants: true } } },
     orderBy: { startDate: "asc" },
