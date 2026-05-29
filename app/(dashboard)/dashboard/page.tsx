@@ -10,6 +10,7 @@ import { Calendar, Shield, Plus, ChevronRight, UserCheck, Clock } from "lucide-r
 import { CommunityLogo } from "@/components/community/community-logo"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
+import { computeDisplayStatus } from "@/lib/event-status"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Tableau de bord" }
@@ -50,7 +51,12 @@ export default async function DashboardPage() {
         status: { in: ["PUBLISHED", "ONGOING"] },
         community: { memberships: { some: { userId } } },
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        startDate: true,
+        endDate: true,
         community: { select: { name: true, slug: true } },
         _count: { select: { participants: true } },
       },
@@ -267,24 +273,32 @@ export default async function DashboardPage() {
               </Card>
             ) : (
               <div className="space-y-2">
-                {upcomingEvents.map((event) => (
-                  <Link key={event.id} href={`/communities/${event.community.slug}/events`}>
-                    <Card className="transition-colors hover:bg-muted/50">
-                      <CardContent className="flex items-center justify-between py-3 px-4">
-                        <div>
-                          <p className="font-medium text-sm">{event.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {event.community.name} · {new Date(event.startDate).toLocaleDateString("fr-FR", {
-                              weekday: "short", day: "numeric", month: "short",
-                            })}
-                            {event._count.participants > 0 && ` · ${event._count.participants} participants`}
-                          </p>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
+                {upcomingEvents.map((event) => {
+                  const displayStatus = computeDisplayStatus(event.status, event.startDate, event.endDate)
+                  const time = new Date(event.startDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+                  return (
+                    <Link key={event.id} href={`/communities/${event.community.slug}/events/${event.id}`}>
+                      <Card className="transition-colors hover:bg-muted/50">
+                        <CardContent className="flex items-center justify-between py-3 px-4">
+                          <div className="space-y-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{event.title}</p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge variant={displayStatus.variant} className={`text-xs ${displayStatus.className}`}>
+                                {displayStatus.label}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {event.community.name} · {new Date(event.startDate).toLocaleDateString("fr-FR", {
+                                  weekday: "short", day: "numeric", month: "short",
+                                })} · {time}
+                              </span>
+                            </div>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  )
+                })}
               </div>
             )}
           </div>
