@@ -44,18 +44,18 @@ export function EventCard({ event, slug, isStaff }: EventCardProps) {
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-semibold truncate">{event.title}</p>
               <Badge variant={displayStatus.variant}>{displayStatus.label}</Badge>
-              <Badge variant="outline" className="text-xs">{event.type}</Badge>
               {event.myStatus && PARTICIPATION_STYLES[event.myStatus] && (
                 <Badge variant="outline" className={`text-xs ${PARTICIPATION_STYLES[event.myStatus].className}`}>
                   {PARTICIPATION_STYLES[event.myStatus].label}
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
                 <LocalDate iso={startIso} options={{ day: "numeric", month: "short", year: "numeric" }} />
               </span>
+              <Badge variant="outline" className="text-xs">{event.type}</Badge>
               <span className="flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5" />
                 <LocalTime iso={startIso} />
