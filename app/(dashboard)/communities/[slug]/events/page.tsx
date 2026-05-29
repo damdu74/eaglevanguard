@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { EventCard } from "@/components/events/event-card"
 import { EventCalendar } from "@/components/events/event-calendar"
 import { EventsViewToggle } from "@/components/events/events-view-toggle"
+import { AutoRefresh } from "@/components/ui/auto-refresh"
 import Link from "next/link"
 import { Plus, ChevronLeft } from "lucide-react"
 
@@ -95,6 +96,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
 
   return (
     <div className="space-y-6">
+      <AutoRefresh intervalMs={30000} />
       <div className="flex items-center justify-between">
         <div>
           <Link href={`/communities/${params.slug}`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">

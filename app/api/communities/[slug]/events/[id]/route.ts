@@ -89,21 +89,38 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const body = await req.json()
   const { title, description, type, status, startDate, endDate, maxSlots } = body
 
-  if (status !== undefined) {
-    const current = event.status as EventStatus
-    const next = status as EventStatus
-    if (current !== next && !VALID_TRANSITIONS[current]?.includes(next)) {
-      return NextResponse.json(
-        { error: `Transition invalide : ${current} → ${next}` },
-        { status: 400 }
-      )
-    }
-  }
-
   const start = startDate ? new Date(startDate as string) : event.startDate
   const end = endDate !== undefined ? (endDate ? new Date(endDate as string) : null) : event.endDate
   if (end && end <= start) {
     return NextResponse.json({ error: "La date de fin doit être après la date de début" }, { status: 400 })
+  }
+
+  // Statut explicite : valider la transition
+  let finalStatus: EventStatus | undefined = status as EventStatus | undefined
+  if (finalStatus !== undefined) {
+    const current = event.status as EventStatus
+    if (current !== finalStatus && !VALID_TRANSITIONS[current]?.includes(finalStatus)) {
+      return NextResponse.json(
+        { error: `Transition invalide : ${current} → ${finalStatus}` },
+        { status: 400 }
+      )
+    }
+  } else if (startDate !== undefined || endDate !== undefined) {
+    // Dates modifiées sans statut explicite : recalculer automatiquement
+    const currentStatus = event.status as EventStatus
+    if (["PUBLISHED", "ONGOING", "COMPLETED"].includes(currentStatus)) {
+      const now = new Date()
+      const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000)
+      if (start > now) {
+        finalStatus = "PUBLISHED"
+      } else if (!end || end > now) {
+        finalStatus = "ONGOING"
+      } else if (end && end <= now) {
+        finalStatus = "COMPLETED"
+      } else if (!end && start <= eightHoursAgo) {
+        finalStatus = "COMPLETED"
+      }
+    }
   }
 
   const updated = await prisma.event.update({
@@ -112,7 +129,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(title !== undefined && { title: (title as string).trim() }),
       ...(description !== undefined && { description: description ?? null }),
       ...(type !== undefined && { type: type as string }),
-      ...(status !== undefined && { status: status as EventStatus }),
+      ...(finalStatus !== undefined && { status: finalStatus }),
       ...(startDate !== undefined && { startDate: start }),
       ...(endDate !== undefined && { endDate: end }),
       ...(maxSlots !== undefined && { maxSlots: maxSlots ? Number(maxSlots) : null }),

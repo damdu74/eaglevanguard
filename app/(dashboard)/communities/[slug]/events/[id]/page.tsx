@@ -12,6 +12,7 @@ import { LocalDate, LocalTime } from "@/components/ui/local-date-time"
 import Link from "next/link"
 import { ChevronLeft, Calendar, Clock, Users, Info, Pencil } from "lucide-react"
 import Image from "next/image"
+import { AutoRefresh } from "@/components/ui/auto-refresh"
 
 interface PageProps {
   params: { slug: string; id: string }
@@ -105,6 +106,7 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6 max-w-3xl">
+      <AutoRefresh intervalMs={60000} />
       <div>
         <Link
           href={`/communities/${params.slug}/events`}
