@@ -8,6 +8,7 @@ import { EventCalendar } from "@/components/events/event-calendar"
 import { EventsViewToggle } from "@/components/events/events-view-toggle"
 import { EventsStatusFilter } from "@/components/events/events-status-filter"
 import { AutoRefresh } from "@/components/ui/auto-refresh"
+import { computeDisplayStatus } from "@/lib/event-status"
 import Link from "next/link"
 import { Plus, ChevronLeft } from "lucide-react"
 
@@ -42,37 +43,13 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
 
   const isStaff = membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
 
-  // Mise à jour automatique des statuts périmés avant affichage
-  const now = new Date()
-  const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000)
-  await Promise.all([
-    prisma.event.updateMany({
-      where: { communityId: community.id, status: "PUBLISHED", startDate: { lte: now } },
-      data: { status: "ONGOING" },
-    }),
-    prisma.event.updateMany({
-      where: { communityId: community.id, status: "ONGOING", endDate: { lte: now } },
-      data: { status: "COMPLETED" },
-    }),
-    prisma.event.updateMany({
-      where: { communityId: community.id, status: "ONGOING", endDate: null, startDate: { lte: eightHoursAgo } },
-      data: { status: "COMPLETED" },
-    }),
-  ])
-
-  // Statuts autorisés selon le rôle
-  const allowedStatuses = isStaff
-    ? ["DRAFT", "PUBLISHED", "ONGOING", "COMPLETED", "CANCELLED"]
-    : ["PUBLISHED", "ONGOING", "COMPLETED"]
-
-  // Filtre par statut sélectionné
-  const statusWhere =
-    statusFilter !== "all" && allowedStatuses.includes(statusFilter)
-      ? { status: statusFilter as "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED" }
-      : { status: { in: allowedStatuses as ("DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED")[] } }
-
   const events = await prisma.event.findMany({
-    where: { communityId: community.id, ...statusWhere },
+    where: {
+      communityId: community.id,
+      status: isStaff
+        ? { in: ["DRAFT", "PUBLISHED", "CANCELLED"] }
+        : { in: ["PUBLISHED"] },
+    },
     include: { _count: { select: { participants: true } } },
     orderBy: { startDate: "asc" },
   })
@@ -85,19 +62,31 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
     : []
   const participationMap = Object.fromEntries(participations.map((p) => [p.eventId, p.status]))
 
-  const ongoing = events.filter((e) =>
-    e.status === "ONGOING" ||
-    (e.status === "PUBLISHED" && new Date(e.startDate) <= now)
-  )
-  const upcomingPublished = events.filter((e) =>
-    e.status === "PUBLISHED" && new Date(e.startDate) > now
-  )
-  const upcomingDraft = events.filter((e) =>
-    e.status === "DRAFT" && new Date(e.startDate) > now
-  )
-  const past = events.filter((e) => ["COMPLETED", "CANCELLED"].includes(e.status))
+  // Calcul du statut affiché depuis les dates (pas depuis la DB)
+  const eventsWithDisplay = events.map((e) => ({
+    ...e,
+    displayStatus: computeDisplayStatus(e.status, e.startDate, e.endDate),
+  }))
 
-  const calendarEvents = events.map((e) => ({
+  // Filtre par statut calculé
+  const filtered = statusFilter === "all"
+    ? eventsWithDisplay
+    : eventsWithDisplay.filter((e) => {
+        if (statusFilter === "DRAFT")     return e.displayStatus.label === "Brouillon"
+        if (statusFilter === "ONGOING")   return e.displayStatus.label === "En cours"
+        if (statusFilter === "UPCOMING")  return e.displayStatus.label === "À venir"
+        if (statusFilter === "COMPLETED") return e.displayStatus.label === "Terminé"
+        if (statusFilter === "CANCELLED") return e.displayStatus.label === "Annulé"
+        return true
+      })
+
+  const ongoing   = filtered.filter((e) => e.displayStatus.label === "En cours")
+  const upcoming  = filtered.filter((e) => e.displayStatus.label === "À venir")
+  const completed = filtered.filter((e) => e.displayStatus.label === "Terminé")
+  const drafts    = filtered.filter((e) => e.displayStatus.label === "Brouillon")
+  const cancelled = filtered.filter((e) => e.displayStatus.label === "Annulé")
+
+  const calendarEvents = eventsWithDisplay.map((e) => ({
     id: e.id,
     title: e.title,
     type: e.type,
@@ -135,7 +124,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
         <EventCalendar events={calendarEvents} communitySlug={params.slug} />
       ) : (
         <>
-          {events.length === 0 && (
+          {filtered.length === 0 && (
             <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
               Aucun événement pour ce filtre.
             </div>
@@ -145,54 +134,43 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-green-600 dark:text-green-500">En cours</h2>
               {ongoing.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={{ ...event, myStatus: participationMap[event.id] ?? null }}
-                  slug={params.slug}
-                  isStaff={!!isStaff}
-                />
+                <EventCard key={event.id} event={{ ...event, myStatus: participationMap[event.id] ?? null }} slug={params.slug} isStaff={!!isStaff} />
               ))}
             </section>
           )}
 
-          {upcomingPublished.length > 0 && (
+          {upcoming.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">Publiés</h2>
-              {upcomingPublished.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={{ ...event, myStatus: participationMap[event.id] ?? null }}
-                  slug={params.slug}
-                  isStaff={!!isStaff}
-                />
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">À venir</h2>
+              {upcoming.map((event) => (
+                <EventCard key={event.id} event={{ ...event, myStatus: participationMap[event.id] ?? null }} slug={params.slug} isStaff={!!isStaff} />
               ))}
             </section>
           )}
 
-          {upcomingDraft.length > 0 && isStaff && (
-            <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Brouillons</h2>
-              {upcomingDraft.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={{ ...event, myStatus: participationMap[event.id] ?? null }}
-                  slug={params.slug}
-                  isStaff={!!isStaff}
-                />
-              ))}
-            </section>
-          )}
-
-          {past.length > 0 && (
+          {completed.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Terminés</h2>
-              {past.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={{ ...event, myStatus: participationMap[event.id] ?? null }}
-                  slug={params.slug}
-                  isStaff={!!isStaff}
-                />
+              {completed.map((event) => (
+                <EventCard key={event.id} event={{ ...event, myStatus: participationMap[event.id] ?? null }} slug={params.slug} isStaff={!!isStaff} />
+              ))}
+            </section>
+          )}
+
+          {drafts.length > 0 && isStaff && (
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Brouillons</h2>
+              {drafts.map((event) => (
+                <EventCard key={event.id} event={{ ...event, myStatus: participationMap[event.id] ?? null }} slug={params.slug} isStaff={!!isStaff} />
+              ))}
+            </section>
+          )}
+
+          {cancelled.length > 0 && isStaff && (
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-destructive/70">Annulés</h2>
+              {cancelled.map((event) => (
+                <EventCard key={event.id} event={{ ...event, myStatus: participationMap[event.id] ?? null }} slug={params.slug} isStaff={!!isStaff} />
               ))}
             </section>
           )}

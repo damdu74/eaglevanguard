@@ -4,15 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { LocalDate, LocalTime } from "@/components/ui/local-date-time"
 import { EventCardStatusDropdown } from "@/components/events/event-card-status-dropdown"
-
-const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
-  DRAFT:     { label: "Brouillon", variant: "outline" },
-  PUBLISHED: { label: "Publié",    variant: "secondary" },
-  ONGOING:   { label: "En cours",  variant: "default" },
-  COMPLETED: { label: "Terminé",   variant: "outline" },
-  CANCELLED: { label: "Annulé",    variant: "destructive" },
-  ARCHIVED:  { label: "Archivé",   variant: "outline" },
-}
+import { computeDisplayStatus } from "@/lib/event-status"
 
 const PARTICIPATION_LABELS: Record<string, string> = {
   CONFIRMED: "Confirmé",
@@ -41,9 +33,8 @@ export function EventCard({ event, slug, isStaff }: EventCardProps) {
   const endIso = event.endDate
     ? typeof event.endDate === "string" ? event.endDate : event.endDate.toISOString()
     : null
-  const statusInfo = STATUS_LABELS[event.status] ?? { label: event.status, variant: "outline" as const }
 
-  const canChangeStatus = isStaff && ["DRAFT", "PUBLISHED", "ONGOING", "CANCELLED"].includes(event.status)
+  const displayStatus = computeDisplayStatus(event.status, event.startDate, event.endDate ?? null)
 
   return (
     <Card className="transition-colors hover:bg-muted/50">
@@ -52,7 +43,7 @@ export function EventCard({ event, slug, isStaff }: EventCardProps) {
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-semibold truncate">{event.title}</p>
-              <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+              <Badge variant={displayStatus.variant}>{displayStatus.label}</Badge>
               <Badge variant="outline" className="text-xs">{event.type}</Badge>
               {event.myStatus && (
                 <Badge variant="secondary" className="text-xs">
@@ -79,11 +70,11 @@ export function EventCard({ event, slug, isStaff }: EventCardProps) {
           </div>
         </Link>
 
-        {canChangeStatus && (
+        {isStaff && (event.status === "DRAFT" || event.status === "PUBLISHED") && (
           <EventCardStatusDropdown
             communitySlug={slug}
             eventId={event.id}
-            currentStatus={event.status as "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "CANCELLED"}
+            currentStatus={event.status as "DRAFT" | "PUBLISHED"}
           />
         )}
       </CardContent>

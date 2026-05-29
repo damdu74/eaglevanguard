@@ -3,27 +3,6 @@
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-interface Option {
-  value: string
-  label: string
-}
-
-const ALL_OPTIONS: Option[] = [
-  { value: "all",       label: "Tous les états" },
-  { value: "ONGOING",   label: "En cours" },
-  { value: "PUBLISHED", label: "Publié" },
-  { value: "DRAFT",     label: "Brouillon" },
-  { value: "COMPLETED", label: "Terminé" },
-  { value: "CANCELLED", label: "Annulé" },
-]
-
-const MEMBER_OPTIONS: Option[] = [
-  { value: "all",       label: "Tous les états" },
-  { value: "ONGOING",   label: "En cours" },
-  { value: "PUBLISHED", label: "Publié" },
-  { value: "COMPLETED", label: "Terminé" },
-]
-
 interface Props {
   isStaff: boolean
   currentStatus: string
@@ -44,19 +23,18 @@ export function EventsStatusFilter({ isStaff, currentStatus }: Props) {
     router.push(`${pathname}?${params.toString()}`)
   }
 
-  const options = isStaff ? ALL_OPTIONS : MEMBER_OPTIONS
-
   return (
     <Select value={currentStatus} onValueChange={handleChange}>
       <SelectTrigger className="w-40 h-9">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {options.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value}>
-            {opt.label}
-          </SelectItem>
-        ))}
+        <SelectItem value="all">Tous</SelectItem>
+        <SelectItem value="ONGOING">En cours</SelectItem>
+        <SelectItem value="UPCOMING">À venir</SelectItem>
+        <SelectItem value="COMPLETED">Terminé</SelectItem>
+        {isStaff && <SelectItem value="DRAFT">Brouillon</SelectItem>}
+        {isStaff && <SelectItem value="CANCELLED">Annulé</SelectItem>}
       </SelectContent>
     </Select>
   )

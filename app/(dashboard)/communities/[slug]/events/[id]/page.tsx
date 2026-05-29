@@ -13,17 +13,10 @@ import Link from "next/link"
 import { ChevronLeft, Calendar, Clock, Users, Info, Pencil } from "lucide-react"
 import Image from "next/image"
 import { AutoRefresh } from "@/components/ui/auto-refresh"
+import { computeDisplayStatus } from "@/lib/event-status"
 
 interface PageProps {
   params: { slug: string; id: string }
-}
-
-const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
-  DRAFT: { label: "Brouillon", variant: "outline" },
-  PUBLISHED: { label: "Publié", variant: "secondary" },
-  ONGOING: { label: "En cours", variant: "default" },
-  COMPLETED: { label: "Terminé", variant: "outline" },
-  CANCELLED: { label: "Annulé", variant: "destructive" },
 }
 
 
@@ -34,24 +27,6 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function EventDetailPage({ params }: PageProps) {
   const session = await getServerSession(authOptions)
-
-  // Mise à jour automatique du statut si périmé
-  const now = new Date()
-  const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000)
-  await Promise.all([
-    prisma.event.updateMany({
-      where: { id: params.id, status: "PUBLISHED", startDate: { lte: now } },
-      data: { status: "ONGOING" },
-    }),
-    prisma.event.updateMany({
-      where: { id: params.id, status: "ONGOING", endDate: { lte: now } },
-      data: { status: "COMPLETED" },
-    }),
-    prisma.event.updateMany({
-      where: { id: params.id, status: "ONGOING", endDate: null, startDate: { lte: eightHoursAgo } },
-      data: { status: "COMPLETED" },
-    }),
-  ])
 
   const event = await prisma.event.findFirst({
     where: { id: params.id, community: { slug: params.slug } },
@@ -96,13 +71,14 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   const startIso = event.startDate.toISOString()
   const endIso = event.endDate?.toISOString() ?? null
-  const statusInfo = STATUS_LABELS[event.status] ?? { label: event.status, variant: "outline" as const }
+  const statusInfo = computeDisplayStatus(event.status, event.startDate, event.endDate ?? null)
 
   const confirmed = event.participants.filter((p) => p.status === "CONFIRMED")
   const tentative = event.participants.filter((p) => p.status === "TENTATIVE")
   const declined = event.participants.filter((p) => p.status === "DECLINED")
 
-  const canParticipate = ["PUBLISHED", "ONGOING"].includes(event.status)
+  const canParticipate = event.status === "PUBLISHED" &&
+    ["À venir", "En cours"].includes(statusInfo.label)
 
   return (
     <div className="space-y-6 max-w-3xl">
