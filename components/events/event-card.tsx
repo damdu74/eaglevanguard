@@ -50,7 +50,7 @@ export function EventCard({ event, slug, isStaff }: EventCardProps) {
               )}
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
-              <Badge variant={displayStatus.variant} className="text-xs">{displayStatus.label}</Badge>
+              <Badge variant={displayStatus.variant} className={`text-xs ${displayStatus.className}`}>{displayStatus.label}</Badge>
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
                 <LocalDate iso={startIso} options={{ day: "numeric", month: "short", year: "numeric" }} />

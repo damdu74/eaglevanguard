@@ -96,7 +96,7 @@ export default async function EventDetailPage({ params }: PageProps) {
           <div className="space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold">{event.title}</h1>
-              <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+              <Badge variant={statusInfo.variant} className={statusInfo.className}>{statusInfo.label}</Badge>
               <Badge variant="outline">{event.type}</Badge>
             </div>
             <p className="text-sm text-muted-foreground">{event.community.name}</p>

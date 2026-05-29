@@ -3,15 +3,15 @@ export type DisplayStatus = "À venir" | "En cours" | "Terminé" | "Brouillon" |
 export interface DisplayStatusInfo {
   label: DisplayStatus
   variant: "default" | "secondary" | "outline" | "destructive"
-  color: string
+  className: string
 }
 
 const STATUS_MAP: Record<DisplayStatus, DisplayStatusInfo> = {
-  "À venir":  { label: "À venir",  variant: "secondary",    color: "text-blue-600 dark:text-blue-400" },
-  "En cours": { label: "En cours", variant: "default",      color: "text-green-600 dark:text-green-500" },
-  "Terminé":  { label: "Terminé",  variant: "outline",      color: "text-muted-foreground" },
-  "Brouillon":{ label: "Brouillon",variant: "outline",      color: "text-muted-foreground" },
-  "Annulé":   { label: "Annulé",   variant: "destructive",  color: "text-destructive" },
+  "À venir":  { label: "À venir",  variant: "outline", className: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/20" },
+  "En cours": { label: "En cours", variant: "outline", className: "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20" },
+  "Terminé":  { label: "Terminé",  variant: "outline", className: "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/20" },
+  "Brouillon":{ label: "Brouillon",variant: "outline", className: "" },
+  "Annulé":   { label: "Annulé",   variant: "outline", className: "bg-muted text-muted-foreground" },
 }
 
 export function computeDisplayStatus(
