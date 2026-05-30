@@ -115,7 +115,7 @@ export function RpUnitDetail({
   columnConfig: rawColumnConfig, isStaff, currentUserId, canCreate: canCreateProp,
 }: Props) {
   const router = useRouter()
-  const columns = parseColumns(rawColumnConfig)
+  const [columns, setColumns] = useState<ColumnDef[]>(() => parseColumns(rawColumnConfig))
 
   const myCharacter = characters.find((c) => c.user.id === currentUserId) ?? null
   const canCreate = canCreateProp && !myCharacter
@@ -332,6 +332,7 @@ export function RpUnitDetail({
       })
       if (!res.ok) throw new Error()
       toast.success("Paramètres sauvegardés")
+      setColumns(settingsColumns)
       setSettingsOpen(false)
       router.refresh()
     } catch {
