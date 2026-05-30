@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table"
 import {
   Loader2, Plus, Trash2, Pencil, UserCircle2,
-  ChevronUp, ChevronDown, FolderPlus, Users, Settings,
+  ChevronUp, ChevronDown, FolderPlus, Users, Settings, ImagePlus,
 } from "lucide-react"
 
 type GradeOption = { label: string; icon?: string }
@@ -52,6 +52,14 @@ function parseColumns(raw: unknown): ColumnDef[] {
       options: c.key === "grade" ? parseGradeOptions(opts) : opts.map(String),
     }
   })
+}
+
+function isUrl(s?: string) { return !!s && s.startsWith("http") }
+
+function GradeIcon({ icon, size = 16 }: { icon?: string; size?: number }) {
+  if (!icon) return null
+  if (isUrl(icon)) return <img src={icon} alt="" style={{ width: size, height: size }} className="object-contain inline-block" />
+  return <span style={{ fontSize: size }}>{icon}</span>
 }
 
 function gradeOptions(col: ColumnDef): GradeOption[] {
@@ -114,6 +122,9 @@ export function RpUnitDetail({
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsColumns, setSettingsColumns] = useState<ColumnDef[]>(columns)
   const [settingsSaving, setSettingsSaving] = useState(false)
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const uploadTargetIdx = useRef<number>(-1)
   const [newGroupName, setNewGroupName] = useState("")
   const [editGroupId, setEditGroupId] = useState("")
   const [editGroupName, setEditGroupName] = useState("")
@@ -279,6 +290,24 @@ export function RpUnitDetail({
     router.refresh()
   }
 
+  async function handleIconUpload(file: File, idx: number) {
+    setUploadingIdx(idx)
+    try {
+      const fd = new FormData()
+      fd.append("file", file)
+      const res = await fetch("/api/upload/image", { method: "POST", body: fd })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+        ? { ...c, options: gradeOptions(c).map((o, i) => i === idx ? { ...o, icon: data.url } : o) }
+        : c))
+    } catch {
+      toast.error("Erreur lors de l'upload")
+    } finally {
+      setUploadingIdx(null)
+    }
+  }
+
   async function saveSettings() {
     if (settingsColumns.some((c) => !c.label.trim())) {
       toast.error("Tous les noms de colonnes sont obligatoires")
@@ -424,31 +453,45 @@ export function RpUnitDetail({
                 {col.key === "grade" && (
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Grades disponibles</Label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleIconUpload(file, uploadTargetIdx.current)
+                        e.target.value = ""
+                      }}
+                    />
                     {gradeOptions(col).map((opt, idx) => (
                       <div key={idx} className="flex items-center gap-2">
-                        <Input
-                          value={opt.icon ?? ""}
-                          onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
-                            ? { ...c, options: gradeOptions(c).map((o, i) => i === idx ? { ...o, icon: e.target.value } : o) }
-                            : c))}
-                          className="h-7 text-sm w-14 text-center shrink-0"
-                          placeholder="🎖️"
-                          maxLength={4}
-                        />
+                        <button
+                          type="button"
+                          className="h-8 w-8 shrink-0 rounded border flex items-center justify-center hover:bg-muted transition-colors relative overflow-hidden"
+                          title="Changer l'icône"
+                          onClick={() => { uploadTargetIdx.current = idx; fileInputRef.current?.click() }}
+                        >
+                          {uploadingIdx === idx
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                            : opt.icon
+                              ? <GradeIcon icon={opt.icon} size={20} />
+                              : <ImagePlus className="h-3.5 w-3.5 text-muted-foreground" />}
+                        </button>
                         <Input
                           value={opt.label}
                           onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
                             ? { ...c, options: gradeOptions(c).map((o, i) => i === idx ? { ...o, label: e.target.value } : o) }
                             : c))}
-                          className="h-7 text-sm"
+                          className="h-8 text-sm"
                           placeholder="Ex: Sergent, Lieutenant…"
                         />
                         <Button size="icon" variant="ghost"
-                          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                          className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
                           onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
                             ? { ...c, options: gradeOptions(c).filter((_, i) => i !== idx) }
                             : c))}>
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     ))}
@@ -558,7 +601,7 @@ export function RpUnitDetail({
                         {opts.map((opt) => (
                           <SelectItem key={opt.label} value={opt.label}>
                             <span className="flex items-center gap-2">
-                              {opt.icon && <span>{opt.icon}</span>}
+                              <GradeIcon icon={opt.icon} size={16} />
                               {opt.label}
                             </span>
                           </SelectItem>
@@ -707,7 +750,7 @@ function CharacterTable({
                     <TableCell key={col.key} className="hidden sm:table-cell">
                       {val
                         ? <Badge variant={col.key === "grade" ? "outline" : "secondary"} className="text-xs flex items-center gap-1 w-fit">
-                            {icon && <span>{icon}</span>}
+                            {icon && <GradeIcon icon={icon} size={14} />}
                             {val}
                           </Badge>
                         : <span className="text-xs text-muted-foreground italic">—</span>}
