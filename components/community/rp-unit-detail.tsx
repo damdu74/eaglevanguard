@@ -22,10 +22,10 @@ import {
   ChevronUp, ChevronDown, FolderPlus, Users, Settings,
 } from "lucide-react"
 
-type ColumnDef = { key: string; label: string; builtin: boolean }
+type ColumnDef = { key: string; label: string; builtin: boolean; options?: string[] }
 
 const DEFAULT_COLUMNS: ColumnDef[] = [
-  { key: "grade", label: "Grade", builtin: true },
+  { key: "grade", label: "Grade", builtin: true, options: [] },
   { key: "role", label: "Fonction", builtin: true },
 ]
 
@@ -35,6 +35,7 @@ function parseColumns(raw: unknown): ColumnDef[] {
     key: String(c.key ?? ""),
     label: String(c.label ?? ""),
     builtin: !!c.builtin,
+    options: Array.isArray(c.options) ? c.options.map(String) : undefined,
   }))
 }
 
@@ -372,13 +373,12 @@ export function RpUnitDetail({
 
       {/* Dialog — paramètres colonnes */}
       <Dialog open={settingsOpen} onOpenChange={(o) => !o && setSettingsOpen(false)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Paramètres du tableau</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Configurez les colonnes du tableau des effectifs.</p>
-            <div className="space-y-2">
-              {settingsColumns.map((col) => (
-                <div key={col.key} className="flex items-center gap-2">
+          <div className="space-y-5">
+            {settingsColumns.map((col) => (
+              <div key={col.key} className="space-y-2 border rounded-md p-3">
+                <div className="flex items-center gap-2">
                   <div className="flex-1 space-y-0.5">
                     <Label className="text-xs text-muted-foreground">
                       {col.builtin ? "Colonne intégrée" : "Colonne personnalisée"}
@@ -398,15 +398,46 @@ export function RpUnitDetail({
                     </Button>
                   )}
                 </div>
-              ))}
-            </div>
+                {col.key === "grade" && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Grades disponibles</Label>
+                    {(col.options ?? []).map((opt, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <Input
+                          value={opt}
+                          onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                            ? { ...c, options: c.options?.map((o, i) => i === idx ? e.target.value : o) }
+                            : c))}
+                          className="h-7 text-sm"
+                          placeholder="Ex: Sergent, Lieutenant…"
+                        />
+                        <Button size="icon" variant="ghost"
+                          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                            ? { ...c, options: c.options?.filter((_, i) => i !== idx) }
+                            : c))}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button size="sm" variant="ghost" className="h-7 text-xs"
+                      onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                        ? { ...c, options: [...(c.options ?? []), ""] }
+                        : c))}>
+                      <Plus className="h-3 w-3 mr-1" />
+                      Ajouter un grade
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
             <Button size="sm" variant="outline"
               onClick={() => setSettingsColumns((prev) => [...prev, { key: `custom_${Date.now()}`, label: "", builtin: false }])}>
               <Plus className="h-3.5 w-3.5 mr-1" />
               Ajouter une colonne
             </Button>
           </div>
-          <DialogFooter>
+          <DialogFooter className="mt-2">
             <Button variant="outline" onClick={() => setSettingsOpen(false)}>Annuler</Button>
             <Button onClick={saveSettings} disabled={settingsSaving}>
               {settingsSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -454,18 +485,33 @@ export function RpUnitDetail({
           <DialogHeader><DialogTitle>{dialogTitle}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             {columns.map((col) => {
-              if (col.key === "grade") return (
-                <div key="grade" className="space-y-1">
-                  <Label>{col.label}</Label>
-                  <Input value={gradeValue} onChange={(e) => setGradeValue(e.target.value)}
-                    placeholder={`Ex: Sergent, Caporal…`} />
-                </div>
-              )
+              if (col.key === "grade") {
+                const opts = col.options ?? []
+                return (
+                  <div key="grade" className="space-y-1">
+                    <Label>{col.label}</Label>
+                    {opts.length > 0 ? (
+                      <Select value={gradeValue || "__none__"} onValueChange={(v) => setGradeValue(v === "__none__" ? "" : v)}>
+                        <SelectTrigger><SelectValue placeholder={`— ${col.label} —`} /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__"><span className="text-muted-foreground">— Aucun —</span></SelectItem>
+                          {opts.filter(Boolean).map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input value={gradeValue} onChange={(e) => setGradeValue(e.target.value)}
+                        placeholder="Ex: Sergent, Caporal…" />
+                    )}
+                  </div>
+                )
+              }
               if (col.key === "role") return (
                 <div key="role" className="space-y-1">
                   <Label>{col.label}</Label>
                   <Input value={roleValue} onChange={(e) => setRoleValue(e.target.value)}
-                    placeholder={`Ex: Parachutiste, Sniper…`} />
+                    placeholder="Ex: Parachutiste, Sniper…" />
                 </div>
               )
               return (
