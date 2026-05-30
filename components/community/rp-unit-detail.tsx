@@ -301,7 +301,7 @@ export function RpUnitDetail({
           </Button>
         )}
         {isStaff && (
-          <Button size="sm" variant="outline" onClick={() => { setSettingsColumns(columns); setSettingsOpen(true) }}>
+          <Button size="sm" variant="outline" className="ml-auto" onClick={() => { setSettingsColumns(columns); setSettingsOpen(true) }}>
             <Settings className="h-4 w-4 mr-1" />
             Paramètres du tableau
           </Button>
