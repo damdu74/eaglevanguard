@@ -25,7 +25,7 @@ type ColumnDef = { key: string; label: string; builtin: boolean; options?: strin
 
 const DEFAULT_COLUMNS: ColumnDef[] = [
   { key: "grade", label: "Grade", builtin: true, options: [] },
-  { key: "role", label: "Fonction", builtin: true },
+  { key: "role", label: "Fonction", builtin: true, options: [] },
 ]
 
 function parseColumns(raw: unknown): ColumnDef[] {
@@ -395,22 +395,24 @@ export function RpUnitDetail({
                     </Button>
                   )}
                 </div>
-                {col.key === "grade" && (
+                {(col.key === "grade" || col.key === "role") && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">Grades disponibles</Label>
+                    <Label className="text-xs text-muted-foreground">
+                      {col.key === "grade" ? "Grades disponibles" : "Fonctions disponibles"}
+                    </Label>
                     {(col.options ?? []).map((opt, idx) => (
                       <div key={idx} className="flex items-center gap-2">
                         <Input
                           value={opt}
-                          onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                          onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === col.key
                             ? { ...c, options: c.options?.map((o, i) => i === idx ? e.target.value : o) }
                             : c))}
                           className="h-7 text-sm"
-                          placeholder="Ex: Sergent, Lieutenant…"
+                          placeholder={col.key === "grade" ? "Ex: Sergent, Lieutenant…" : "Ex: Sniper, Médecin…"}
                         />
                         <Button size="icon" variant="ghost"
                           className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-                          onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                          onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === col.key
                             ? { ...c, options: c.options?.filter((_, i) => i !== idx) }
                             : c))}>
                           <Trash2 className="h-3 w-3" />
@@ -418,11 +420,11 @@ export function RpUnitDetail({
                       </div>
                     ))}
                     <Button size="sm" variant="ghost" className="h-7 text-xs"
-                      onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                      onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === col.key
                         ? { ...c, options: [...(c.options ?? []), ""] }
                         : c))}>
                       <Plus className="h-3 w-3 mr-1" />
-                      Ajouter un grade
+                      {col.key === "grade" ? "Ajouter un grade" : "Ajouter une fonction"}
                     </Button>
                   </div>
                 )}
@@ -497,13 +499,23 @@ export function RpUnitDetail({
                   </div>
                 )
               }
-              if (col.key === "role") return (
-                <div key="role" className="space-y-1">
-                  <Label>{col.label}</Label>
-                  <Input value={roleValue} onChange={(e) => setRoleValue(e.target.value)}
-                    placeholder="Ex: Parachutiste, Sniper…" />
-                </div>
-              )
+              if (col.key === "role") {
+                const opts = (col.options ?? []).filter(Boolean)
+                return (
+                  <div key="role" className="space-y-1">
+                    <Label>{col.label}</Label>
+                    <Select value={roleValue || "__none__"} onValueChange={(v) => setRoleValue(v === "__none__" ? "" : v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__"><span className="text-muted-foreground">Aucune</span></SelectItem>
+                        {opts.map((opt) => (
+                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )
+              }
               return (
                 <div key={col.key} className="space-y-1">
                   <Label>{col.label}</Label>
