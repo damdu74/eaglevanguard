@@ -118,6 +118,7 @@ export function RpUnitDetail({
   const [editRoleCharId, setEditRoleCharId] = useState("")
   const [gradeValue, setGradeValue] = useState("")
   const [roleValue, setRoleValue] = useState("")
+  const [role2Value, setRole2Value] = useState("")
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({})
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsColumns, setSettingsColumns] = useState<ColumnDef[]>(columns)
@@ -145,6 +146,7 @@ export function RpUnitDetail({
     setGradeValue(char.grade ?? "")
     setRoleValue(char.role ?? "")
     const cf = (char.customFields && typeof char.customFields === "object" ? char.customFields : {}) as Record<string, string>
+    setRole2Value(cf["__role2"] ?? "")
     const init: Record<string, string> = {}
     columns.filter((c) => !c.builtin).forEach((c) => { init[c.key] = cf[c.key] ?? "" })
     setCustomFieldValues(init)
@@ -188,7 +190,7 @@ export function RpUnitDetail({
 
   async function saveRole() {
     setSaving(true)
-    const customFields: Record<string, string | null> = {}
+    const customFields: Record<string, string | null> = { __role2: role2Value.trim() || null }
     columns.filter((c) => !c.builtin).forEach((c) => {
       customFields[c.key] = customFieldValues[c.key]?.trim() || null
     })
@@ -529,25 +531,47 @@ export function RpUnitDetail({
                 {col.key === "role" && (
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Fonctions disponibles</Label>
-                    {roleOptions(col).map((opt, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <Input
-                          value={opt}
-                          onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "role"
-                            ? { ...c, options: roleOptions(c).map((o, i) => i === idx ? e.target.value : o) }
-                            : c))}
-                          className="h-7 text-sm"
-                          placeholder="Ex: Sniper, Médecin…"
-                        />
-                        <Button size="icon" variant="ghost"
-                          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-                          onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "role"
-                            ? { ...c, options: roleOptions(c).filter((_, i) => i !== idx) }
-                            : c))}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
+                    {roleOptions(col).map((opt, idx) => {
+                      const opts = roleOptions(col)
+                      function moveRole(from: number, to: number) {
+                        setSettingsColumns((prev) => prev.map((c) => {
+                          if (c.key !== "role") return c
+                          const arr = [...roleOptions(c)]
+                          const [moved] = arr.splice(from, 1)
+                          arr.splice(to, 0, moved)
+                          return { ...c, options: arr }
+                        }))
+                      }
+                      return (
+                        <div key={idx} className="flex items-center gap-1">
+                          <div className="flex flex-col gap-0 shrink-0">
+                            <Button size="icon" variant="ghost" className="h-4 w-6 rounded-b-none"
+                              disabled={idx === 0} onClick={() => moveRole(idx, idx - 1)}>
+                              <ChevronUp className="h-3 w-3" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-4 w-6 rounded-t-none"
+                              disabled={idx === opts.length - 1} onClick={() => moveRole(idx, idx + 1)}>
+                              <ChevronDown className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <Input
+                            value={opt}
+                            onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "role"
+                              ? { ...c, options: roleOptions(c).map((o, i) => i === idx ? e.target.value : o) }
+                              : c))}
+                            className="h-8 text-sm"
+                            placeholder="Ex: Sniper, Médecin…"
+                          />
+                          <Button size="icon" variant="ghost"
+                            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "role"
+                              ? { ...c, options: roleOptions(c).filter((_, i) => i !== idx) }
+                              : c))}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      )
+                    })}
                     <Button size="sm" variant="ghost" className="h-7 text-xs"
                       onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "role"
                         ? { ...c, options: [...roleOptions(c), ""] }
@@ -636,17 +660,31 @@ export function RpUnitDetail({
               if (col.key === "role") {
                 const opts = roleOptions(col).filter(Boolean)
                 return (
-                  <div key="role" className="space-y-1">
-                    <Label>{col.label}</Label>
-                    <Select value={roleValue || "__none__"} onValueChange={(v) => setRoleValue(v === "__none__" ? "" : v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__"><span className="text-muted-foreground">Aucune</span></SelectItem>
-                        {opts.map((opt) => (
-                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div key="role" className="space-y-2">
+                    <div className="space-y-1">
+                      <Label>{col.label} principale</Label>
+                      <Select value={roleValue || "__none__"} onValueChange={(v) => setRoleValue(v === "__none__" ? "" : v)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__"><span className="text-muted-foreground">Aucune</span></SelectItem>
+                          {opts.map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label>{col.label} secondaire</Label>
+                      <Select value={role2Value || "__none__"} onValueChange={(v) => setRole2Value(v === "__none__" ? "" : v)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__"><span className="text-muted-foreground">Aucune</span></SelectItem>
+                          {opts.map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 )
               }
@@ -764,7 +802,23 @@ function CharacterTable({
                   </div>
                 </TableCell>
                 {columns.map((col) => {
-                  const val = col.key === "grade" ? char.grade : col.key === "role" ? char.role : cf[col.key]
+                  if (col.key === "role") {
+                    const primary = char.role
+                    const secondary = cf["__role2"] as string | undefined
+                    return (
+                      <TableCell key="role" className="hidden sm:table-cell">
+                        <div className="flex flex-col gap-0.5">
+                          {primary
+                            ? <Badge variant="secondary" className="text-xs w-fit">{primary}</Badge>
+                            : <span className="text-xs text-muted-foreground italic">—</span>}
+                          {secondary && (
+                            <Badge variant="outline" className="text-xs w-fit text-muted-foreground">{secondary}</Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                    )
+                  }
+                  const val = col.key === "grade" ? char.grade : cf[col.key]
                   const icon = col.key === "grade" && val
                     ? gradeOptions(col).find((o) => o.label === val)?.icon
                     : undefined
