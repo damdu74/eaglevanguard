@@ -15,21 +15,6 @@ import {
 import { Loader2, Plus, Trash2, Pencil, Sword, Users, ChevronRight } from "lucide-react"
 import Link from "next/link"
 
-export type ColumnDef = { key: string; label: string; builtin: boolean }
-
-const DEFAULT_COLUMNS: ColumnDef[] = [
-  { key: "grade", label: "Grade", builtin: true },
-  { key: "role", label: "Fonction", builtin: true },
-]
-
-function parseColumns(raw: unknown): ColumnDef[] {
-  if (!Array.isArray(raw) || raw.length === 0) return DEFAULT_COLUMNS
-  return (raw as ColumnDef[]).map((c) => ({
-    key: String(c.key ?? ""),
-    label: String(c.label ?? ""),
-    builtin: !!c.builtin,
-  }))
-}
 
 interface RpUnit {
   id: string
