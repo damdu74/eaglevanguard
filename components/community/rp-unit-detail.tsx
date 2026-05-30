@@ -22,7 +22,7 @@ import {
 } from "lucide-react"
 
 type GradeOption = { label: string; icon?: string }
-type RoleOption = string
+type RoleOption = { label: string; color?: string }
 type ColumnDef = {
   key: string; label: string; builtin: boolean
   options?: GradeOption[] | RoleOption[]
@@ -49,7 +49,7 @@ function parseColumns(raw: unknown): ColumnDef[] {
       key: String(c.key ?? ""),
       label: String(c.label ?? ""),
       builtin: !!c.builtin,
-      options: c.key === "grade" ? parseGradeOptions(opts) : opts.map(String),
+      options: c.key === "grade" ? parseGradeOptions(opts) : parseRoleOptions(opts),
     }
   })
 }
@@ -62,14 +62,22 @@ function GradeIcon({ icon, size = 16 }: { icon?: string; size?: number }) {
   return <span style={{ fontSize: size }}>{icon}</span>
 }
 
+function parseRoleOptions(opts: unknown[]): RoleOption[] {
+  return opts.map((o) => {
+    if (typeof o === "string") return { label: o }
+    const obj = o as RoleOption
+    return { label: String(obj.label ?? ""), color: obj.color ? String(obj.color) : undefined }
+  })
+}
+
 function gradeOptions(col: ColumnDef): GradeOption[] {
   if (!Array.isArray(col.options)) return []
   return parseGradeOptions(col.options)
 }
 
-function roleOptions(col: ColumnDef): string[] {
+function roleOptions(col: ColumnDef): RoleOption[] {
   if (!Array.isArray(col.options)) return []
-  return (col.options as Array<string | GradeOption>).map((o) => typeof o === "string" ? o : o.label)
+  return parseRoleOptions(col.options as unknown[])
 }
 
 interface RpGroup {
@@ -542,6 +550,11 @@ export function RpUnitDetail({
                           return { ...c, options: arr }
                         }))
                       }
+                      function updateRole(patch: Partial<RoleOption>) {
+                        setSettingsColumns((prev) => prev.map((c) => c.key === "role"
+                          ? { ...c, options: roleOptions(c).map((o, i) => i === idx ? { ...o, ...patch } : o) }
+                          : c))
+                      }
                       return (
                         <div key={idx} className="flex items-center gap-1">
                           <div className="flex flex-col gap-0 shrink-0">
@@ -554,11 +567,16 @@ export function RpUnitDetail({
                               <ChevronDown className="h-3 w-3" />
                             </Button>
                           </div>
+                          <input
+                            type="color"
+                            value={opt.color ?? "#6366f1"}
+                            onChange={(e) => updateRole({ color: e.target.value })}
+                            className="h-8 w-8 shrink-0 rounded border cursor-pointer p-0.5"
+                            title="Couleur de l'étiquette"
+                          />
                           <Input
-                            value={opt}
-                            onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "role"
-                              ? { ...c, options: roleOptions(c).map((o, i) => i === idx ? e.target.value : o) }
-                              : c))}
+                            value={opt.label}
+                            onChange={(e) => updateRole({ label: e.target.value })}
                             className="h-8 text-sm"
                             placeholder="Ex: Sniper, Médecin…"
                           />
@@ -574,7 +592,7 @@ export function RpUnitDetail({
                     })}
                     <Button size="sm" variant="ghost" className="h-7 text-xs"
                       onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "role"
-                        ? { ...c, options: [...roleOptions(c), ""] }
+                        ? { ...c, options: [...roleOptions(c), { label: "", color: "#6366f1" }] }
                         : c))}>
                       <Plus className="h-3 w-3 mr-1" />
                       Ajouter une fonction
@@ -658,7 +676,7 @@ export function RpUnitDetail({
                 )
               }
               if (col.key === "role") {
-                const opts = roleOptions(col).filter(Boolean)
+                const opts = roleOptions(col)
                 return (
                   <div key="role" className="space-y-2">
                     <div className="space-y-1">
@@ -667,8 +685,13 @@ export function RpUnitDetail({
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__none__"><span className="text-muted-foreground">Aucune</span></SelectItem>
-                          {opts.map((opt) => (
-                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          {opts.filter((o) => o.label).map((opt) => (
+                            <SelectItem key={opt.label} value={opt.label}>
+                              <span className="flex items-center gap-2">
+                                {opt.color && <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: opt.color }} />}
+                                {opt.label}
+                              </span>
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -679,8 +702,13 @@ export function RpUnitDetail({
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__none__"><span className="text-muted-foreground">Aucune</span></SelectItem>
-                          {opts.map((opt) => (
-                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          {opts.filter((o) => o.label).map((opt) => (
+                            <SelectItem key={opt.label} value={opt.label}>
+                              <span className="flex items-center gap-2">
+                                {opt.color && <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: opt.color }} />}
+                                {opt.label}
+                              </span>
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -809,15 +837,24 @@ function CharacterTable({
                   if (col.key === "role") {
                     const primary = char.role
                     const secondary = cf["__role2"] as string | undefined
+                    const allOpts = roleOptions(col)
+                    const primaryColor = allOpts.find((o) => o.label === primary)?.color
+                    const secondaryColor = allOpts.find((o) => o.label === secondary)?.color
                     return [
                       <TableCell key="role-primary" className="hidden sm:table-cell">
                         {primary
-                          ? <Badge variant="secondary" className="text-xs">{primary}</Badge>
+                          ? <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium"
+                              style={primaryColor ? { backgroundColor: primaryColor + "22", borderColor: primaryColor + "66", color: primaryColor } : {}}>
+                              {primary}
+                            </span>
                           : <span className="text-xs text-muted-foreground italic">—</span>}
                       </TableCell>,
                       <TableCell key="role-secondary" className="hidden sm:table-cell">
                         {secondary
-                          ? <Badge variant="outline" className="text-xs">{secondary}</Badge>
+                          ? <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium"
+                              style={secondaryColor ? { backgroundColor: secondaryColor + "22", borderColor: secondaryColor + "66", color: secondaryColor } : {}}>
+                              {secondary}
+                            </span>
                           : <span className="text-xs text-muted-foreground italic">—</span>}
                       </TableCell>,
                     ]
