@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -64,9 +64,9 @@ function GradeIcon({ icon, size = 16 }: { icon?: string; size?: number }) {
 
 function parseRoleOptions(opts: unknown[]): RoleOption[] {
   return opts.map((o) => {
-    if (typeof o === "string") return { label: o }
+    if (typeof o === "string") return { label: o, color: "#6366f1" }
     const obj = o as RoleOption
-    return { label: String(obj.label ?? ""), color: obj.color ? String(obj.color) : undefined }
+    return { label: String(obj.label ?? ""), color: obj.color ? String(obj.color) : "#6366f1" }
   })
 }
 
@@ -140,6 +140,16 @@ export function RpUnitDetail({
   const [saving, setSaving] = useState(false)
 
   const sortedGroups = [...initialGroups].sort((a, b) => a.order - b.order)
+
+  const roleColorMap = useMemo(() => {
+    const col = columns.find((c) => c.key === "role")
+    if (!col || !Array.isArray(col.options)) return {} as Record<string, string>
+    const map: Record<string, string> = {}
+    for (const o of col.options as RoleOption[]) {
+      if (o.label) map[o.label] = o.color ?? "#6366f1"
+    }
+    return map
+  }, [columns])
 
   function openCreate() { setCharFirstName(""); setCharLastName(""); setDialog("create") }
   function openEdit() {
@@ -376,7 +386,7 @@ export function RpUnitDetail({
 
       {sortedGroups.length === 0 && (
         <CharacterTable
-          characters={characters} groups={[]} columns={columns}
+          characters={characters} groups={[]} columns={columns} roleColorMap={roleColorMap}
           isStaff={isStaff} currentUserId={currentUserId}
           onRole={openRole} onDelete={deleteCharacter} onAssign={assignGroup}
         />
@@ -411,7 +421,7 @@ export function RpUnitDetail({
               )}
             </div>
             <CharacterTable
-              characters={groupChars} groups={sortedGroups} columns={columns}
+              characters={groupChars} groups={sortedGroups} columns={columns} roleColorMap={roleColorMap}
               isStaff={isStaff} currentUserId={currentUserId}
               onRole={openRole} onDelete={deleteCharacter} onAssign={assignGroup}
               emptyMessage="Aucun personnage dans ce groupe."
@@ -427,7 +437,7 @@ export function RpUnitDetail({
             <Badge variant="outline" className="text-xs h-5">{unassigned.length}</Badge>
           </div>
           <CharacterTable
-            characters={unassigned} groups={sortedGroups} columns={columns}
+            characters={unassigned} groups={sortedGroups} columns={columns} roleColorMap={roleColorMap}
             isStaff={isStaff} currentUserId={currentUserId}
             onRole={openRole} onDelete={deleteCharacter} onAssign={assignGroup}
           />
@@ -777,11 +787,12 @@ export function RpUnitDetail({
 }
 
 function CharacterTable({
-  characters, groups, columns, isStaff, currentUserId, onRole, onDelete, onAssign, emptyMessage,
+  characters, groups, columns, roleColorMap, isStaff, currentUserId, onRole, onDelete, onAssign, emptyMessage,
 }: {
   characters: RpCharacter[]
   groups: RpGroup[]
   columns: ColumnDef[]
+  roleColorMap: Record<string, string>
   isStaff: boolean
   currentUserId: string | null
   onRole: (c: RpCharacter) => void
@@ -838,14 +849,13 @@ function CharacterTable({
                   if (col.key === "role") {
                     const primary = char.role
                     const secondary = cf["__role2"] as string | undefined
-                    const allOpts = roleOptions(col)
-                    const primaryColor = allOpts.find((o) => o.label === primary)?.color
-                    const secondaryColor = allOpts.find((o) => o.label === secondary)?.color
+                    const primaryColor = primary ? roleColorMap[primary] : undefined
+                    const secondaryColor = secondary ? roleColorMap[secondary] : undefined
                     return [
                       <TableCell key="role-primary" className="hidden sm:table-cell">
                         {primary
                           ? <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium"
-                              style={primaryColor ? { backgroundColor: primaryColor + "22", borderColor: primaryColor + "66", color: primaryColor } : {}}>
+                              style={primaryColor ? { backgroundColor: primaryColor + "33", borderColor: primaryColor + "88", color: primaryColor } : {}}>
                               {primary}
                             </span>
                           : <span className="text-xs text-muted-foreground italic">—</span>}
@@ -853,7 +863,7 @@ function CharacterTable({
                       <TableCell key="role-secondary" className="hidden sm:table-cell">
                         {secondary
                           ? <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium"
-                              style={secondaryColor ? { backgroundColor: secondaryColor + "22", borderColor: secondaryColor + "66", color: secondaryColor } : {}}>
+                              style={secondaryColor ? { backgroundColor: secondaryColor + "33", borderColor: secondaryColor + "88", color: secondaryColor } : {}}>
                               {secondary}
                             </span>
                           : <span className="text-xs text-muted-foreground italic">—</span>}
