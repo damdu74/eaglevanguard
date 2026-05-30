@@ -325,12 +325,13 @@ model EventParticipant {
 // ─── ROSTER RP ────────────────────────────────────────────────────────────────
 
 model RpUnit {
-  id          String        @id @default(cuid())
-  communityId String
-  name        String
-  description String?       @db.Text
-  era         String?
-  createdAt   DateTime      @default(now())
+  id           String        @id @default(cuid())
+  communityId  String
+  name         String
+  description  String?       @db.Text
+  era          String?
+  columnConfig Json?
+  createdAt    DateTime      @default(now())
 
   community   Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
   characters  RpCharacter[]
@@ -358,10 +359,11 @@ model RpCharacter {
   userId      String
   rpUnitId    String?
   rpGroupId   String?
-  name        String
-  grade       String?
-  role        String?
-  description String?   @db.Text
+  name         String
+  grade        String?
+  role         String?
+  customFields Json?
+  description  String?   @db.Text
   imageUrl    String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

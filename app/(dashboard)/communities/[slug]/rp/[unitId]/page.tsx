@@ -41,7 +41,8 @@ export default async function RpUnitPage({ params }: PageProps) {
     prisma.rpCharacter.findMany({
       where: { rpUnitId: params.unitId },
       select: {
-        id: true, name: true, grade: true, role: true, description: true, rpGroupId: true,
+        id: true, name: true, grade: true, role: true, customFields: true,
+        description: true, rpGroupId: true,
         user: { select: { id: true, name: true, image: true, customAvatar: true } },
       },
       orderBy: { createdAt: "asc" },
@@ -75,6 +76,7 @@ export default async function RpUnitPage({ params }: PageProps) {
         unitId={unit.id}
         characters={characters}
         groups={groups}
+        columnConfig={unit.columnConfig}
         isStaff={isStaff}
         currentUserId={session?.user?.id ?? null}
         canCreate={canCreate}

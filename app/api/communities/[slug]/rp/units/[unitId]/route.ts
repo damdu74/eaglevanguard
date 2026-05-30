@@ -25,7 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { slug: stri
   if (!unit || unit.communityId !== community.id) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
 
   const body = await req.json()
-  const { name, description, era } = body
+  const { name, description, era, columnConfig } = body
 
   if (name !== undefined && !String(name).trim()) {
     return NextResponse.json({ error: "Le nom ne peut pas être vide" }, { status: 400 })
@@ -37,6 +37,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { slug: stri
       ...(name !== undefined && { name: String(name).trim() }),
       ...(description !== undefined && { description: description || null }),
       ...(era !== undefined && { era: era || null }),
+      ...(columnConfig !== undefined && { columnConfig }),
     },
   })
 

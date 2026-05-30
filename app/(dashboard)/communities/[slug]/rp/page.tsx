@@ -35,7 +35,10 @@ export default async function RpPage({ params }: PageProps) {
 
   const units = await prisma.rpUnit.findMany({
     where: { communityId: community.id },
-    include: { _count: { select: { characters: true } } },
+    select: {
+      id: true, name: true, description: true, era: true, columnConfig: true,
+      _count: { select: { characters: true } },
+    },
     orderBy: { createdAt: "asc" },
   })
 

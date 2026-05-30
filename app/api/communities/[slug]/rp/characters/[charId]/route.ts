@@ -43,13 +43,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { slug: stri
 
   if (!isOwner && !isStaff) return NextResponse.json({ error: "Droits insuffisants" }, { status: 403 })
 
-  const { name, grade, role, description, rpUnitId, rpGroupId } = await req.json()
+  const { name, grade, role, customFields, description, rpUnitId, rpGroupId } = await req.json()
   const updated = await prisma.rpCharacter.update({
     where: { id: params.charId },
     data: {
       ...(isOwner && name?.trim() && { name: name.trim() }),
       ...(isStaff && grade !== undefined && { grade: grade?.trim() || null }),
       ...(isStaff && role !== undefined && { role: role?.trim() || null }),
+      ...(isStaff && customFields !== undefined && { customFields }),
       ...(isOwner && description !== undefined && { description: description?.trim() || null }),
       ...(isOwner && rpUnitId !== undefined && { rpUnitId: rpUnitId || null }),
       ...(isStaff && rpGroupId !== undefined && { rpGroupId: rpGroupId || null }),
