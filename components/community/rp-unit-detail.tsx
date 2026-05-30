@@ -481,24 +481,19 @@ export function RpUnitDetail({
           <div className="space-y-3">
             {columns.map((col) => {
               if (col.key === "grade") {
-                const opts = col.options ?? []
+                const opts = (col.options ?? []).filter(Boolean)
                 return (
                   <div key="grade" className="space-y-1">
                     <Label>{col.label}</Label>
-                    {opts.length > 0 ? (
-                      <Select value={gradeValue || "__none__"} onValueChange={(v) => setGradeValue(v === "__none__" ? "" : v)}>
-                        <SelectTrigger><SelectValue placeholder={`— ${col.label} —`} /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__"><span className="text-muted-foreground">— Aucun —</span></SelectItem>
-                          {opts.filter(Boolean).map((opt) => (
-                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input value={gradeValue} onChange={(e) => setGradeValue(e.target.value)}
-                        placeholder="Ex: Sergent, Caporal…" />
-                    )}
+                    <Select value={gradeValue || "__none__"} onValueChange={(v) => setGradeValue(v === "__none__" ? "" : v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__"><span className="text-muted-foreground">Aucun</span></SelectItem>
+                        {opts.map((opt) => (
+                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 )
               }
