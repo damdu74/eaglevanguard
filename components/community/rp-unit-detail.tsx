@@ -61,7 +61,7 @@ function gradeOptions(col: ColumnDef): GradeOption[] {
 
 function roleOptions(col: ColumnDef): string[] {
   if (!Array.isArray(col.options)) return []
-  return col.options.map(String)
+  return (col.options as Array<string | GradeOption>).map((o) => typeof o === "string" ? o : o.label)
 }
 
 interface RpGroup {
