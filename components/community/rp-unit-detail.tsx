@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table"
 import {
   Loader2, Plus, Trash2, Pencil, UserCircle2,
-  ChevronUp, ChevronDown, FolderPlus, Users,
+  ChevronUp, ChevronDown, FolderPlus, Users, Settings,
 } from "lucide-react"
 
 type ColumnDef = { key: string; label: string; builtin: boolean }
@@ -86,6 +86,9 @@ export function RpUnitDetail({
   const [gradeValue, setGradeValue] = useState("")
   const [roleValue, setRoleValue] = useState("")
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({})
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsColumns, setSettingsColumns] = useState<ColumnDef[]>(columns)
+  const [settingsSaving, setSettingsSaving] = useState(false)
   const [newGroupName, setNewGroupName] = useState("")
   const [editGroupId, setEditGroupId] = useState("")
   const [editGroupName, setEditGroupName] = useState("")
@@ -252,6 +255,29 @@ export function RpUnitDetail({
     router.refresh()
   }
 
+  async function saveSettings() {
+    if (settingsColumns.some((c) => !c.label.trim())) {
+      toast.error("Tous les noms de colonnes sont obligatoires")
+      return
+    }
+    setSettingsSaving(true)
+    try {
+      const res = await fetch(`/api/communities/${communitySlug}/rp/units/${unitId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ columnConfig: settingsColumns }),
+      })
+      if (!res.ok) throw new Error()
+      toast.success("Paramètres sauvegardés")
+      setSettingsOpen(false)
+      router.refresh()
+    } catch {
+      toast.error("Erreur lors de la sauvegarde")
+    } finally {
+      setSettingsSaving(false)
+    }
+  }
+
   const unassigned = characters.filter((c) => !c.rpGroupId)
   const dialogTitle = columns.map((c) => c.label).join(" & ")
 
@@ -274,6 +300,12 @@ export function RpUnitDetail({
           <Button size="sm" variant="outline" onClick={openGroupCreate}>
             <FolderPlus className="h-4 w-4 mr-1" />
             Nouveau groupe
+          </Button>
+        )}
+        {isStaff && (
+          <Button size="sm" variant="outline" onClick={() => { setSettingsColumns(columns); setSettingsOpen(true) }}>
+            <Settings className="h-4 w-4 mr-1" />
+            Paramètres du tableau
           </Button>
         )}
       </div>
@@ -337,6 +369,52 @@ export function RpUnitDetail({
           />
         </div>
       )}
+
+      {/* Dialog — paramètres colonnes */}
+      <Dialog open={settingsOpen} onOpenChange={(o) => !o && setSettingsOpen(false)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Paramètres du tableau</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">Configurez les colonnes du tableau des effectifs.</p>
+            <div className="space-y-2">
+              {settingsColumns.map((col) => (
+                <div key={col.key} className="flex items-center gap-2">
+                  <div className="flex-1 space-y-0.5">
+                    <Label className="text-xs text-muted-foreground">
+                      {col.builtin ? "Colonne intégrée" : "Colonne personnalisée"}
+                    </Label>
+                    <Input
+                      value={col.label}
+                      onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === col.key ? { ...c, label: e.target.value } : c))}
+                      placeholder="Nom de la colonne"
+                      className="h-8"
+                    />
+                  </div>
+                  {!col.builtin && (
+                    <Button size="icon" variant="ghost"
+                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive mt-4"
+                      onClick={() => setSettingsColumns((prev) => prev.filter((c) => c.key !== col.key))}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <Button size="sm" variant="outline"
+              onClick={() => setSettingsColumns((prev) => [...prev, { key: `custom_${Date.now()}`, label: "", builtin: false }])}>
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Ajouter une colonne
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSettingsOpen(false)}>Annuler</Button>
+            <Button onClick={saveSettings} disabled={settingsSaving}>
+              {settingsSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sauvegarder
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog — créer personnage */}
       <Dialog open={dialog === "create"} onOpenChange={(o) => !o && setDialog(null)}>

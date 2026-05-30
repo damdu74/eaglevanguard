@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
-import { Loader2, Plus, Trash2, Pencil, Sword, Users, ChevronRight, Settings } from "lucide-react"
+import { Loader2, Plus, Trash2, Pencil, Sword, Users, ChevronRight } from "lucide-react"
 import Link from "next/link"
 
 export type ColumnDef = { key: string; label: string; builtin: boolean }
@@ -61,9 +61,6 @@ export function RpRoster({ communitySlug, units, isStaff }: Props) {
   const [editEra, setEditEra] = useState("")
   const [editSaving, setEditSaving] = useState(false)
 
-  const [settingsUnit, setSettingsUnit] = useState<RpUnit | null>(null)
-  const [settingsColumns, setSettingsColumns] = useState<ColumnDef[]>([])
-  const [settingsSaving, setSettingsSaving] = useState(false)
 
   function openEdit(unit: RpUnit, e: React.MouseEvent) {
     e.preventDefault(); e.stopPropagation()
@@ -71,52 +68,7 @@ export function RpRoster({ communitySlug, units, isStaff }: Props) {
     setEditDesc(unit.description ?? ""); setEditEra(unit.era ?? "")
   }
 
-  function openSettings(unit: RpUnit, e: React.MouseEvent) {
-    e.preventDefault(); e.stopPropagation()
-    setSettingsUnit(unit)
-    setSettingsColumns(parseColumns(unit.columnConfig))
-  }
-
-  function addCustomColumn() {
-    setSettingsColumns((prev) => [
-      ...prev,
-      { key: `custom_${Date.now()}`, label: "", builtin: false },
-    ])
-  }
-
-  function updateColumnLabel(key: string, label: string) {
-    setSettingsColumns((prev) => prev.map((c) => c.key === key ? { ...c, label } : c))
-  }
-
-  function removeColumn(key: string) {
-    setSettingsColumns((prev) => prev.filter((c) => c.key !== key))
-  }
-
-  async function saveSettings() {
-    if (!settingsUnit) return
-    if (settingsColumns.some((c) => !c.label.trim())) {
-      toast.error("Tous les noms de colonnes sont obligatoires")
-      return
-    }
-    setSettingsSaving(true)
-    try {
-      const res = await fetch(`/api/communities/${communitySlug}/rp/units/${settingsUnit.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ columnConfig: settingsColumns }),
-      })
-      if (!res.ok) throw new Error()
-      toast.success("Paramètres sauvegardés")
-      setSettingsUnit(null)
-      router.refresh()
-    } catch {
-      toast.error("Erreur lors de la sauvegarde")
-    } finally {
-      setSettingsSaving(false)
-    }
-  }
-
-  async function createUnit() {
+async function createUnit() {
     if (!name.trim()) return
     setSaving(true)
     try {
@@ -212,13 +164,6 @@ export function RpRoster({ communitySlug, units, isStaff }: Props) {
               {isStaff && (
                 <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
-                    onClick={(e) => openSettings(unit, e)}
-                    className="p-1 rounded hover:text-primary text-muted-foreground"
-                    title="Paramètres du tableau"
-                  >
-                    <Settings className="h-3.5 w-3.5" />
-                  </button>
-                  <button
                     onClick={(e) => openEdit(unit, e)}
                     className="p-1 rounded hover:text-primary text-muted-foreground"
                   >
@@ -236,56 +181,6 @@ export function RpRoster({ communitySlug, units, isStaff }: Props) {
           ))}
         </div>
       )}
-
-      {/* Dialog paramètres colonnes */}
-      <Dialog open={!!settingsUnit} onOpenChange={(open) => !open && setSettingsUnit(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Paramètres — {settingsUnit?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Configurez les colonnes du tableau des effectifs.</p>
-            <div className="space-y-2">
-              {settingsColumns.map((col) => (
-                <div key={col.key} className="flex items-center gap-2">
-                  <div className="flex-1 space-y-0.5">
-                    <Label className="text-xs text-muted-foreground">
-                      {col.builtin ? "Colonne intégrée" : "Colonne personnalisée"}
-                    </Label>
-                    <Input
-                      value={col.label}
-                      onChange={(e) => updateColumnLabel(col.key, e.target.value)}
-                      placeholder="Nom de la colonne"
-                      className="h-8"
-                    />
-                  </div>
-                  {!col.builtin && (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive mt-4"
-                      onClick={() => removeColumn(col.key)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-            <Button size="sm" variant="outline" onClick={addCustomColumn}>
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              Ajouter une colonne
-            </Button>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSettingsUnit(null)}>Annuler</Button>
-            <Button onClick={saveSettings} disabled={settingsSaving}>
-              {settingsSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sauvegarder
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Dialog création */}
       <Dialog open={createDialog} onOpenChange={setCreateDialog}>
