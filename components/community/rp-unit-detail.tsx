@@ -464,37 +464,59 @@ export function RpUnitDetail({
                         e.target.value = ""
                       }}
                     />
-                    {gradeOptions(col).map((opt, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          className="h-8 w-8 shrink-0 rounded border flex items-center justify-center hover:bg-muted transition-colors relative overflow-hidden"
-                          title="Changer l'icône"
-                          onClick={() => { uploadTargetIdx.current = idx; fileInputRef.current?.click() }}
-                        >
-                          {uploadingIdx === idx
-                            ? <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                            : opt.icon
-                              ? <GradeIcon icon={opt.icon} size={20} />
-                              : <ImagePlus className="h-3.5 w-3.5 text-muted-foreground" />}
-                        </button>
-                        <Input
-                          value={opt.label}
-                          onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
-                            ? { ...c, options: gradeOptions(c).map((o, i) => i === idx ? { ...o, label: e.target.value } : o) }
-                            : c))}
-                          className="h-8 text-sm"
-                          placeholder="Ex: Sergent, Lieutenant…"
-                        />
-                        <Button size="icon" variant="ghost"
-                          className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                          onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
-                            ? { ...c, options: gradeOptions(c).filter((_, i) => i !== idx) }
-                            : c))}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    ))}
+                    {gradeOptions(col).map((opt, idx) => {
+                      const opts = gradeOptions(col)
+                      function moveGrade(from: number, to: number) {
+                        setSettingsColumns((prev) => prev.map((c) => {
+                          if (c.key !== "grade") return c
+                          const arr = [...gradeOptions(c)]
+                          const [moved] = arr.splice(from, 1)
+                          arr.splice(to, 0, moved)
+                          return { ...c, options: arr }
+                        }))
+                      }
+                      return (
+                        <div key={idx} className="flex items-center gap-1">
+                          <div className="flex flex-col gap-0 shrink-0">
+                            <Button size="icon" variant="ghost" className="h-4 w-6 rounded-b-none"
+                              disabled={idx === 0} onClick={() => moveGrade(idx, idx - 1)}>
+                              <ChevronUp className="h-3 w-3" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-4 w-6 rounded-t-none"
+                              disabled={idx === opts.length - 1} onClick={() => moveGrade(idx, idx + 1)}>
+                              <ChevronDown className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <button
+                            type="button"
+                            className="h-8 w-8 shrink-0 rounded border flex items-center justify-center hover:bg-muted transition-colors relative overflow-hidden"
+                            title="Changer l'icône"
+                            onClick={() => { uploadTargetIdx.current = idx; fileInputRef.current?.click() }}
+                          >
+                            {uploadingIdx === idx
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                              : opt.icon
+                                ? <GradeIcon icon={opt.icon} size={20} />
+                                : <ImagePlus className="h-3.5 w-3.5 text-muted-foreground" />}
+                          </button>
+                          <Input
+                            value={opt.label}
+                            onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                              ? { ...c, options: gradeOptions(c).map((o, i) => i === idx ? { ...o, label: e.target.value } : o) }
+                              : c))}
+                            className="h-8 text-sm"
+                            placeholder="Ex: Sergent, Lieutenant…"
+                          />
+                          <Button size="icon" variant="ghost"
+                            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                              ? { ...c, options: gradeOptions(c).filter((_, i) => i !== idx) }
+                              : c))}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      )
+                    })}
                     <Button size="sm" variant="ghost" className="h-7 text-xs"
                       onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
                         ? { ...c, options: [...gradeOptions(c), { label: "", icon: "" }] }
