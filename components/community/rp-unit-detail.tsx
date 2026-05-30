@@ -569,7 +569,7 @@ export function RpUnitDetail({
                 )
               }
               if (col.key === "role") {
-                const opts = (col.options ?? []).filter(Boolean)
+                const opts = roleOptions(col).filter(Boolean)
                 return (
                   <div key="role" className="space-y-1">
                     <Label>{col.label}</Label>
