@@ -21,21 +21,47 @@ import {
   ChevronUp, ChevronDown, FolderPlus, Users, Settings,
 } from "lucide-react"
 
-type ColumnDef = { key: string; label: string; builtin: boolean; options?: string[] }
+type GradeOption = { label: string; icon?: string }
+type RoleOption = string
+type ColumnDef = {
+  key: string; label: string; builtin: boolean
+  options?: GradeOption[] | RoleOption[]
+}
 
 const DEFAULT_COLUMNS: ColumnDef[] = [
   { key: "grade", label: "Grade", builtin: true, options: [] },
   { key: "role", label: "Fonction", builtin: true, options: [] },
 ]
 
+function parseGradeOptions(opts: unknown[]): GradeOption[] {
+  return opts.map((o) => {
+    if (typeof o === "string") return { label: o }
+    const obj = o as GradeOption
+    return { label: String(obj.label ?? ""), icon: obj.icon ? String(obj.icon) : undefined }
+  })
+}
+
 function parseColumns(raw: unknown): ColumnDef[] {
   if (!Array.isArray(raw) || raw.length === 0) return DEFAULT_COLUMNS
-  return (raw as ColumnDef[]).map((c) => ({
-    key: String(c.key ?? ""),
-    label: String(c.label ?? ""),
-    builtin: !!c.builtin,
-    options: Array.isArray(c.options) ? c.options.map(String) : undefined,
-  }))
+  return (raw as ColumnDef[]).map((c) => {
+    const opts = Array.isArray(c.options) ? c.options : []
+    return {
+      key: String(c.key ?? ""),
+      label: String(c.label ?? ""),
+      builtin: !!c.builtin,
+      options: c.key === "grade" ? parseGradeOptions(opts) : opts.map(String),
+    }
+  })
+}
+
+function gradeOptions(col: ColumnDef): GradeOption[] {
+  if (!Array.isArray(col.options)) return []
+  return parseGradeOptions(col.options)
+}
+
+function roleOptions(col: ColumnDef): string[] {
+  if (!Array.isArray(col.options)) return []
+  return col.options.map(String)
 }
 
 interface RpGroup {
@@ -395,36 +421,74 @@ export function RpUnitDetail({
                     </Button>
                   )}
                 </div>
-                {(col.key === "grade" || col.key === "role") && (
+                {col.key === "grade" && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">
-                      {col.key === "grade" ? "Grades disponibles" : "Fonctions disponibles"}
-                    </Label>
-                    {(col.options ?? []).map((opt, idx) => (
+                    <Label className="text-xs text-muted-foreground">Grades disponibles</Label>
+                    {gradeOptions(col).map((opt, idx) => (
                       <div key={idx} className="flex items-center gap-2">
                         <Input
-                          value={opt}
-                          onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === col.key
-                            ? { ...c, options: c.options?.map((o, i) => i === idx ? e.target.value : o) }
+                          value={opt.icon ?? ""}
+                          onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                            ? { ...c, options: gradeOptions(c).map((o, i) => i === idx ? { ...o, icon: e.target.value } : o) }
+                            : c))}
+                          className="h-7 text-sm w-14 text-center shrink-0"
+                          placeholder="🎖️"
+                          maxLength={4}
+                        />
+                        <Input
+                          value={opt.label}
+                          onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                            ? { ...c, options: gradeOptions(c).map((o, i) => i === idx ? { ...o, label: e.target.value } : o) }
                             : c))}
                           className="h-7 text-sm"
-                          placeholder={col.key === "grade" ? "Ex: Sergent, Lieutenant…" : "Ex: Sniper, Médecin…"}
+                          placeholder="Ex: Sergent, Lieutenant…"
                         />
                         <Button size="icon" variant="ghost"
                           className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-                          onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === col.key
-                            ? { ...c, options: c.options?.filter((_, i) => i !== idx) }
+                          onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                            ? { ...c, options: gradeOptions(c).filter((_, i) => i !== idx) }
                             : c))}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     ))}
                     <Button size="sm" variant="ghost" className="h-7 text-xs"
-                      onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === col.key
-                        ? { ...c, options: [...(c.options ?? []), ""] }
+                      onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                        ? { ...c, options: [...gradeOptions(c), { label: "", icon: "" }] }
                         : c))}>
                       <Plus className="h-3 w-3 mr-1" />
-                      {col.key === "grade" ? "Ajouter un grade" : "Ajouter une fonction"}
+                      Ajouter un grade
+                    </Button>
+                  </div>
+                )}
+                {col.key === "role" && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Fonctions disponibles</Label>
+                    {roleOptions(col).map((opt, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <Input
+                          value={opt}
+                          onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "role"
+                            ? { ...c, options: roleOptions(c).map((o, i) => i === idx ? e.target.value : o) }
+                            : c))}
+                          className="h-7 text-sm"
+                          placeholder="Ex: Sniper, Médecin…"
+                        />
+                        <Button size="icon" variant="ghost"
+                          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "role"
+                            ? { ...c, options: roleOptions(c).filter((_, i) => i !== idx) }
+                            : c))}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button size="sm" variant="ghost" className="h-7 text-xs"
+                      onClick={() => setSettingsColumns((prev) => prev.map((c) => c.key === "role"
+                        ? { ...c, options: [...roleOptions(c), ""] }
+                        : c))}>
+                      <Plus className="h-3 w-3 mr-1" />
+                      Ajouter une fonction
                     </Button>
                   </div>
                 )}
@@ -483,7 +547,7 @@ export function RpUnitDetail({
           <div className="space-y-3">
             {columns.map((col) => {
               if (col.key === "grade") {
-                const opts = (col.options ?? []).filter(Boolean)
+                const opts = gradeOptions(col).filter((o) => o.label)
                 return (
                   <div key="grade" className="space-y-1">
                     <Label>{col.label}</Label>
@@ -492,7 +556,12 @@ export function RpUnitDetail({
                       <SelectContent>
                         <SelectItem value="__none__"><span className="text-muted-foreground">Aucun</span></SelectItem>
                         {opts.map((opt) => (
-                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          <SelectItem key={opt.label} value={opt.label}>
+                            <span className="flex items-center gap-2">
+                              {opt.icon && <span>{opt.icon}</span>}
+                              {opt.label}
+                            </span>
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -631,10 +700,16 @@ function CharacterTable({
                 </TableCell>
                 {columns.map((col) => {
                   const val = col.key === "grade" ? char.grade : col.key === "role" ? char.role : cf[col.key]
+                  const icon = col.key === "grade" && val
+                    ? gradeOptions(col).find((o) => o.label === val)?.icon
+                    : undefined
                   return (
                     <TableCell key={col.key} className="hidden sm:table-cell">
                       {val
-                        ? <Badge variant={col.key === "grade" ? "outline" : "secondary"} className="text-xs">{val}</Badge>
+                        ? <Badge variant={col.key === "grade" ? "outline" : "secondary"} className="text-xs flex items-center gap-1 w-fit">
+                            {icon && <span>{icon}</span>}
+                            {val}
+                          </Badge>
                         : <span className="text-xs text-muted-foreground italic">—</span>}
                     </TableCell>
                   )
