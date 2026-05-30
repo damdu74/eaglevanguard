@@ -6,7 +6,6 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -82,7 +81,6 @@ export function RpUnitDetail({
   const [dialog, setDialog] = useState<DialogType>(null)
   const [charFirstName, setCharFirstName] = useState("")
   const [charLastName, setCharLastName] = useState("")
-  const [charDesc, setCharDesc] = useState("")
   const [editRoleCharId, setEditRoleCharId] = useState("")
   const [gradeValue, setGradeValue] = useState("")
   const [roleValue, setRoleValue] = useState("")
@@ -97,13 +95,12 @@ export function RpUnitDetail({
 
   const sortedGroups = [...initialGroups].sort((a, b) => a.order - b.order)
 
-  function openCreate() { setCharFirstName(""); setCharLastName(""); setCharDesc(""); setDialog("create") }
+  function openCreate() { setCharFirstName(""); setCharLastName(""); setDialog("create") }
   function openEdit() {
     if (!myCharacter) return
     const parts = myCharacter.name.split(" ")
     setCharFirstName(parts[0] ?? "")
     setCharLastName(parts.slice(1).join(" "))
-    setCharDesc(myCharacter.description ?? "")
     setDialog("edit")
   }
   function openRole(char: RpCharacter) {
@@ -125,7 +122,7 @@ export function RpUnitDetail({
       const res = await fetch(`/api/communities/${communitySlug}/rp/characters`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: fullName, description: charDesc.trim() || null, rpUnitId: unitId }),
+        body: JSON.stringify({ name: fullName, rpUnitId: unitId }),
       })
       const data = await res.json()
       if (!res.ok) { toast.error(data.error ?? "Erreur"); return }
@@ -143,7 +140,7 @@ export function RpUnitDetail({
       const res = await fetch(`/api/communities/${communitySlug}/rp/characters/${myCharacter.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: fullName, description: charDesc.trim() || null }),
+        body: JSON.stringify({ name: fullName }),
       })
       if (!res.ok) throw new Error()
       toast.success("Personnage mis à jour")
@@ -452,8 +449,7 @@ export function RpUnitDetail({
         <DialogContent>
           <DialogHeader><DialogTitle>Créer mon personnage</DialogTitle></DialogHeader>
           <CharacterForm charFirstName={charFirstName} setCharFirstName={setCharFirstName}
-            charLastName={charLastName} setCharLastName={setCharLastName}
-            charDesc={charDesc} setCharDesc={setCharDesc} />
+            charLastName={charLastName} setCharLastName={setCharLastName} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialog(null)}>Annuler</Button>
             <Button onClick={createCharacter} disabled={saving || !charFirstName.trim() || !charLastName.trim()}>
@@ -468,8 +464,7 @@ export function RpUnitDetail({
         <DialogContent>
           <DialogHeader><DialogTitle>Modifier mon personnage</DialogTitle></DialogHeader>
           <CharacterForm charFirstName={charFirstName} setCharFirstName={setCharFirstName}
-            charLastName={charLastName} setCharLastName={setCharLastName}
-            charDesc={charDesc} setCharDesc={setCharDesc} />
+            charLastName={charLastName} setCharLastName={setCharLastName} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialog(null)}>Annuler</Button>
             <Button onClick={saveEdit} disabled={saving || !charFirstName.trim() || !charLastName.trim()}>
@@ -682,27 +677,19 @@ function CharacterTable({
   )
 }
 
-function CharacterForm({ charFirstName, setCharFirstName, charLastName, setCharLastName, charDesc, setCharDesc }: {
+function CharacterForm({ charFirstName, setCharFirstName, charLastName, setCharLastName }: {
   charFirstName: string; setCharFirstName: (v: string) => void
   charLastName: string; setCharLastName: (v: string) => void
-  charDesc: string; setCharDesc: (v: string) => void
 }) {
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1">
-          <Label>Prénom</Label>
-          <Input value={charFirstName} onChange={(e) => setCharFirstName(e.target.value)} placeholder="Ex: Jean" />
-        </div>
-        <div className="space-y-1">
-          <Label>Nom</Label>
-          <Input value={charLastName} onChange={(e) => setCharLastName(e.target.value.toUpperCase())} placeholder="Ex: DUPONT" />
-        </div>
+    <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-1">
+        <Label>Prénom</Label>
+        <Input value={charFirstName} onChange={(e) => setCharFirstName(e.target.value)} placeholder="Ex: Jean" />
       </div>
       <div className="space-y-1">
-        <Label>Backstory <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-        <Textarea value={charDesc} onChange={(e) => setCharDesc(e.target.value)} rows={3}
-          placeholder="Origine, histoire, motivation du personnage…" />
+        <Label>Nom</Label>
+        <Input value={charLastName} onChange={(e) => setCharLastName(e.target.value.toUpperCase())} placeholder="Ex: DUPONT" />
       </div>
     </div>
   )
