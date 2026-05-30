@@ -775,9 +775,13 @@ function CharacterTable({
           <TableRow>
             <TableHead>Personnage</TableHead>
             <TableHead>Joueur</TableHead>
-            {columns.map((col) => (
-              <TableHead key={col.key} className="hidden sm:table-cell">{col.label}</TableHead>
-            ))}
+            {columns.map((col) => col.key === "role"
+              ? [
+                  <TableHead key="role-primary" className="hidden sm:table-cell">{col.label} principale</TableHead>,
+                  <TableHead key="role-secondary" className="hidden sm:table-cell">{col.label} secondaire</TableHead>,
+                ]
+              : <TableHead key={col.key} className="hidden sm:table-cell">{col.label}</TableHead>
+            )}
             {isStaff && groups.length > 0 && <TableHead className="text-center">Groupe</TableHead>}
             <TableHead className="w-20" />
           </TableRow>
@@ -805,18 +809,18 @@ function CharacterTable({
                   if (col.key === "role") {
                     const primary = char.role
                     const secondary = cf["__role2"] as string | undefined
-                    return (
-                      <TableCell key="role" className="hidden sm:table-cell">
-                        <div className="flex flex-col gap-0.5">
-                          {primary
-                            ? <Badge variant="secondary" className="text-xs w-fit">{primary}</Badge>
-                            : <span className="text-xs text-muted-foreground italic">—</span>}
-                          {secondary && (
-                            <Badge variant="outline" className="text-xs w-fit text-muted-foreground">{secondary}</Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                    )
+                    return [
+                      <TableCell key="role-primary" className="hidden sm:table-cell">
+                        {primary
+                          ? <Badge variant="secondary" className="text-xs">{primary}</Badge>
+                          : <span className="text-xs text-muted-foreground italic">—</span>}
+                      </TableCell>,
+                      <TableCell key="role-secondary" className="hidden sm:table-cell">
+                        {secondary
+                          ? <Badge variant="outline" className="text-xs">{secondary}</Badge>
+                          : <span className="text-xs text-muted-foreground italic">—</span>}
+                      </TableCell>,
+                    ]
                   }
                   const val = col.key === "grade" ? char.grade : cf[col.key]
                   const icon = col.key === "grade" && val
