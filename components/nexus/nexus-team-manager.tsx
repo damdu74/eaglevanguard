@@ -17,6 +17,7 @@ import {
   Users, Building2, FileText, Shield,
   UserPlus, UserMinus, Search, ChevronRight, Lock, X,
 } from "lucide-react"
+import { NexusModerateSearch } from "@/components/nexus/nexus-moderate-search"
 
 interface Stats {
   totalUsers: number
@@ -395,6 +396,20 @@ export function NexusTeamManager({ initialRanks, initialMembers, stats, currentU
               <p className="text-xs text-muted-foreground">Aucun utilisateur trouvé.</p>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Modération rapide */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Modération rapide
+          </CardTitle>
+          <CardDescription>Recherchez un utilisateur pour lui appliquer une sanction.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <NexusModerateSearch />
         </CardContent>
       </Card>
 
