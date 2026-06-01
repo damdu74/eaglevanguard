@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Prisma } from "@prisma/client"
+import { ModerationActionType, Prisma } from "@prisma/client"
 import { z } from "zod"
 
 const createSchema = z.object({
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   const communityId = searchParams.get("communityId") ?? undefined
 
   const where = {
-    ...(type && { type: type as any }),
+    ...(type && { type: type as ModerationActionType }),
     ...(targetId && { targetId }),
     ...(communityId && { communityId }),
   }

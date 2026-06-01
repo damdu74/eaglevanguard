@@ -42,7 +42,6 @@ export default async function CommunityModerationPage({ params }: PageProps) {
       mode="community"
       communitySlug={community.slug}
       communityName={community.name}
-      currentUserId={session.user.id}
       isNexusTeam={nexusUser?.isNexusTeam ?? false}
     />
   )

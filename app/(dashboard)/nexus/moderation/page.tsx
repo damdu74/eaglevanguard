@@ -13,7 +13,6 @@ export default async function NexusModerationPage() {
   return (
     <ModerationPanel
       mode="nexus"
-      currentUserId={session.user.id}
       isNexusTeam={true}
     />
   )

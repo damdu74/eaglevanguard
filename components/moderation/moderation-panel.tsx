@@ -4,10 +4,9 @@ import { useState, useCallback } from "react"
 import { toast } from "sonner"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
-import { Shield, AlertTriangle, Ban, UserX, ChevronDown, Plus, RotateCcw, Trash2, Search } from "lucide-react"
+import { Shield, AlertTriangle, Ban, UserX, Plus, RotateCcw, Trash2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
@@ -16,12 +15,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -47,7 +40,6 @@ interface Props {
   mode: "nexus" | "community"
   communitySlug?: string
   communityName?: string
-  currentUserId: string
   isNexusTeam: boolean
 }
 
@@ -83,7 +75,7 @@ function getUserAvatar(u: { steamAvatar?: string | null; customAvatar?: string |
   return u.customAvatar ?? u.steamAvatar ?? u.image ?? undefined
 }
 
-export function ModerationPanel({ mode, communitySlug, communityName, currentUserId, isNexusTeam }: Props) {
+export function ModerationPanel({ mode, communitySlug, communityName, isNexusTeam }: Props) {
   const [actions, setActions] = useState<ModerationAction[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -156,8 +148,8 @@ export function ModerationPanel({ mode, communitySlug, communityName, currentUse
       setFormReason("")
       setFormNote("")
       fetchActions(1)
-    } catch (err: any) {
-      toast.error(err.message ?? "Erreur lors de la création")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erreur lors de la création")
     } finally {
       setSubmitting(false)
     }
@@ -256,7 +248,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, currentUse
       {!loaded ? (
         <div className="text-center py-12 text-muted-foreground">
           <Shield className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p>Cliquez sur "Rechercher" pour charger les actions</p>
+          <p>Cliquez sur &quot;Rechercher&quot; pour charger les actions</p>
         </div>
       ) : loading ? (
         <div className="text-center py-10 text-muted-foreground text-sm">Chargement...</div>
@@ -353,7 +345,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, currentUse
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label>Type d'action</Label>
+              <Label>Type d&apos;action</Label>
               <Select value={formType} onValueChange={(v) => setFormType(v as ActionType)}>
                 <SelectTrigger className="mt-1">
                   <SelectValue />
@@ -371,7 +363,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, currentUse
               </Select>
             </div>
             <div>
-              <Label>ID de l'utilisateur ciblé</Label>
+              <Label>ID de l&apos;utilisateur ciblé</Label>
               <Input
                 className="mt-1"
                 placeholder="ID utilisateur..."
@@ -379,7 +371,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, currentUse
                 onChange={(e) => setFormTargetId(e.target.value)}
                 required
               />
-              <p className="text-xs text-muted-foreground mt-1">Visible sur le profil de l'utilisateur</p>
+              <p className="text-xs text-muted-foreground mt-1">Visible sur le profil de l&apos;utilisateur</p>
             </div>
             <div>
               <Label>Raison <span className="text-destructive">*</span></Label>
@@ -418,12 +410,12 @@ export function ModerationPanel({ mode, communitySlug, communityName, currentUse
       <Dialog open={!!resolveAction} onOpenChange={(o) => !o && setResolveAction(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Résoudre l'action</DialogTitle>
+            <DialogTitle>Résoudre l&apos;action</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {resolveAction && (
               <p className="text-sm text-muted-foreground">
-                Marquer comme résolue l'action <span className="font-medium">{ACTION_LABELS[resolveAction.type]}</span> sur{" "}
+                Marquer comme résolue l&apos;action <span className="font-medium">{ACTION_LABELS[resolveAction.type]}</span> sur{" "}
                 <span className="font-medium">{getUserDisplayName(resolveAction.target)}</span>.
               </p>
             )}
