@@ -22,7 +22,10 @@ export async function GET() {
       nexusRankId: true,
       nexusRank: true,
     },
-    orderBy: { createdAt: "asc" },
+    orderBy: [
+      { nexusRank: { order: "asc" } },
+      { createdAt: "asc" },
+    ],
   })
 
   return NextResponse.json(members)
