@@ -7,7 +7,7 @@ import { Users, ShieldAlert } from "lucide-react"
 
 const links = [
   { href: "/nexus/team", label: "Équipe", icon: Users },
-  { href: "/nexus/moderation", label: "Modération & Logs", icon: ShieldAlert },
+  { href: "/nexus/moderation", label: "Logs", icon: ShieldAlert },
 ]
 
 export function NexusNav() {
