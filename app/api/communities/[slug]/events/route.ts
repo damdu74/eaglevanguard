@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import type { EventStatus } from "@prisma/client"
+import { createAuditLog } from "@/lib/audit"
 
 export const dynamic = "force-dynamic"
 
@@ -96,6 +97,14 @@ export async function POST(req: NextRequest, { params }: Params) {
       endDate: end,
       maxSlots: maxSlots ? Number(maxSlots) : null,
     },
+  })
+
+  await createAuditLog({
+    action: "EVENT_CREATED",
+    description: `Événement « ${event.title} » créé (${event.status})`,
+    actorId: session.user.id,
+    communityId: community.id,
+    metadata: { eventId: event.id, type: event.type, status: event.status },
   })
 
   return NextResponse.json(event, { status: 201 })

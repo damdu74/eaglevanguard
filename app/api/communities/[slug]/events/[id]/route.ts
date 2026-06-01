@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import type { EventStatus } from "@prisma/client"
+import { createAuditLog } from "@/lib/audit"
 
 const VALID_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
   DRAFT:      ["PUBLISHED", "CANCELLED"],
@@ -121,6 +122,24 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     },
   })
 
+  if (finalStatus !== undefined && finalStatus !== event.status) {
+    await createAuditLog({
+      action: "EVENT_STATUS_CHANGED",
+      description: `Statut de « ${updated.title} » changé : ${event.status} → ${finalStatus}`,
+      actorId: session.user.id,
+      communityId: event.community.id,
+      metadata: { eventId: params.id, from: event.status, to: finalStatus },
+    })
+  } else if (title !== undefined || description !== undefined) {
+    await createAuditLog({
+      action: "EVENT_UPDATED",
+      description: `Événement « ${updated.title} » modifié`,
+      actorId: session.user.id,
+      communityId: event.community.id,
+      metadata: { eventId: params.id },
+    })
+  }
+
   return NextResponse.json(updated)
 }
 
@@ -134,6 +153,14 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
   }
+
+  await createAuditLog({
+    action: "EVENT_DELETED",
+    description: `Événement « ${event.title} » supprimé`,
+    actorId: session.user.id,
+    communityId: event.community.id,
+    metadata: { eventId: params.id, title: event.title },
+  })
 
   await prisma.event.delete({ where: { id: params.id } })
   return new NextResponse(null, { status: 204 })

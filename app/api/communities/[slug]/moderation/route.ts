@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { MemberRole, ModerationActionType, Prisma } from "@prisma/client"
 import { z } from "zod"
+import { createAuditLog } from "@/lib/audit"
 
 const STAFF_ROLES: MemberRole[] = ["OWNER", "ADMIN", "MODERATOR"]
 
@@ -111,6 +112,18 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     }
 
     return a
+  })
+
+  const actionLabels: Record<string, string> = {
+    WARN: "Avertissement", KICK: "Expulsion", BAN_COMMUNITY: "Ban communauté", UNBAN: "Levée de sanction",
+  }
+  await createAuditLog({
+    action: `MODERATION_${type}` as Parameters<typeof createAuditLog>[0]["action"],
+    description: `${actionLabels[type]} — ${reason}`,
+    actorId: session.user.id,
+    targetId,
+    communityId: community.id,
+    metadata: { moderationActionId: action.id, reason },
   })
 
   return NextResponse.json(action, { status: 201 })

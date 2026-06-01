@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { createAuditLog } from "@/lib/audit"
 
 export const dynamic = "force-dynamic"
 
@@ -27,6 +28,13 @@ export async function POST(req: NextRequest) {
       color: color ?? "#6366f1",
       category: category === "FUNCTION" ? "FUNCTION" : "ROLE",
     },
+  })
+
+  await createAuditLog({
+    action: "NEXUS_RANK_CREATED",
+    description: `Grade NEXUS « ${rank.name} » (${rank.category}) créé`,
+    actorId: session.user.id as string,
+    metadata: { rankId: rank.id, category: rank.category },
   })
 
   return NextResponse.json(rank, { status: 201 })

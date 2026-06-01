@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
+import { createAuditLog } from "@/lib/audit"
 
 const createSchema = z.object({
   name: z.string().min(3).max(50),
@@ -98,6 +99,14 @@ export async function POST(req: NextRequest) {
     })
 
     return created
+  })
+
+  await createAuditLog({
+    action: "COMMUNITY_CREATED",
+    description: `Communauté « ${community.name} » créée`,
+    actorId: session.user.id,
+    communityId: community.id,
+    metadata: { slug: community.slug, game: community.game },
   })
 
   return NextResponse.json(community, { status: 201 })

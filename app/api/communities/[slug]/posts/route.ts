@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
+import { createAuditLog } from "@/lib/audit"
 
 const createSchema = z.object({
   title: z.string().min(1).max(200),
@@ -76,6 +77,14 @@ export async function POST(req: Request, { params }: { params: { slug: string } 
         select: { id: true, steamName: true, discordName: true, name: true, customAvatar: true, steamAvatar: true, discordAvatar: true, image: true },
       },
     },
+  })
+
+  await createAuditLog({
+    action: "POST_CREATED",
+    description: `Annonce « ${post.title} » publiée`,
+    actorId: session.user.id as string,
+    communityId: community.id,
+    metadata: { postId: post.id, title: post.title },
   })
 
   return NextResponse.json(post, { status: 201 })

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { createAuditLog } from "@/lib/audit"
 
 const ROLE_POWER: Record<string, number> = {
   OWNER: 4,
@@ -86,6 +87,25 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     },
   })
 
+  if (body.role !== undefined) {
+    await createAuditLog({
+      action: "MEMBER_ROLE_CHANGED",
+      description: `Rôle changé en ${body.role} pour un membre`,
+      actorId: session.user.id as string,
+      targetId: params.userId,
+      communityId: result.community.id,
+      metadata: { newRole: body.role, oldRole: target.role },
+    })
+  } else {
+    await createAuditLog({
+      action: "MEMBER_RANK_CHANGED",
+      description: `Grade modifié pour un membre`,
+      actorId: session.user.id as string,
+      targetId: params.userId,
+      communityId: result.community.id,
+    })
+  }
+
   return NextResponse.json({ ok: true })
 }
 
@@ -108,6 +128,14 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   }
 
   await prisma.membership.delete({ where: { id: target.id } })
+
+  await createAuditLog({
+    action: "MEMBER_KICKED",
+    description: `Membre expulsé de la communauté`,
+    actorId: session.user.id as string,
+    targetId: params.userId,
+    communityId: result.community.id,
+  })
 
   return NextResponse.json({ ok: true })
 }

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { rateLimit } from "@/lib/rate-limit"
 import { z } from "zod"
+import { createAuditLog } from "@/lib/audit"
 
 const applySchema = z.object({
   message: z.string().max(1000).optional().nullable(),
@@ -48,6 +49,13 @@ export async function POST(req: NextRequest, { params }: Params) {
     },
   })
 
+  await createAuditLog({
+    action: "APPLICATION_SUBMITTED",
+    description: `Candidature soumise à « ${community.name} »`,
+    actorId: session.user.id as string,
+    communityId: community.id,
+  })
+
   return NextResponse.json(application, { status: 201 })
 }
 
@@ -68,6 +76,13 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   await prisma.application.update({
     where: { id: application.id },
     data: { status: "WITHDRAWN" },
+  })
+
+  await createAuditLog({
+    action: "APPLICATION_WITHDRAWN",
+    description: `Candidature retirée de « ${community.name} »`,
+    actorId: session.user.id as string,
+    communityId: community.id,
   })
 
   return NextResponse.json({ ok: true })

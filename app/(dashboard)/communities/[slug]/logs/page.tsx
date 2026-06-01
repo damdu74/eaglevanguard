@@ -1,0 +1,47 @@
+import { notFound, redirect } from "next/navigation"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { MemberRole } from "@prisma/client"
+import { LogsPanel } from "@/components/logs/logs-panel"
+
+export const dynamic = "force-dynamic"
+
+interface PageProps {
+  params: { slug: string }
+}
+
+export async function generateMetadata({ params }: PageProps) {
+  const community = await prisma.community.findUnique({ where: { slug: params.slug }, select: { name: true } })
+  return { title: community ? `Logs — ${community.name}` : "Logs" }
+}
+
+const STAFF_ROLES: MemberRole[] = ["OWNER", "ADMIN", "MODERATOR"]
+
+export default async function CommunityLogsPage({ params }: PageProps) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) redirect("/auth/signin")
+
+  const community = await prisma.community.findUnique({
+    where: { slug: params.slug },
+    select: { id: true, name: true, slug: true },
+  })
+  if (!community) notFound()
+
+  const [membership, nexusUser] = await Promise.all([
+    prisma.membership.findFirst({ where: { userId: session.user.id, communityId: community.id, role: { in: STAFF_ROLES } } }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } }),
+  ])
+
+  if (!membership && !nexusUser?.isNexusTeam) redirect(`/communities/${params.slug}`)
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold">Logs d&apos;activité</h1>
+        <p className="text-sm text-muted-foreground">Historique des actions dans {community.name}</p>
+      </div>
+      <LogsPanel mode="community" communitySlug={community.slug} communityName={community.name} />
+    </div>
+  )
+}

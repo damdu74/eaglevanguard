@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { createAuditLog } from "@/lib/audit"
 
 interface Params {
   params: { slug: string; id: string }
@@ -65,6 +66,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         },
       }),
     ])
+
+    await createAuditLog({
+      action: "APPLICATION_ACCEPTED",
+      description: `Candidature acceptée — membre rejoint « ${community.name} »`,
+      actorId: session.user.id as string,
+      targetId: application.userId,
+      communityId: community.id,
+    })
   } else {
     await prisma.$transaction([
       prisma.application.update({
@@ -80,6 +89,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         },
       }),
     ])
+
+    await createAuditLog({
+      action: "APPLICATION_REJECTED",
+      description: `Candidature refusée dans « ${community.name} »`,
+      actorId: session.user.id as string,
+      targetId: application.userId,
+      communityId: community.id,
+    })
   }
 
   return NextResponse.json({ ok: true })

@@ -97,6 +97,8 @@ model User {
   moderationTarget   ModerationAction[] @relation("ModTarget")
   moderationActed    ModerationAction[] @relation("ModActor")
   moderationResolved ModerationAction[] @relation("ModResolver")
+  auditLogsAsActor   AuditLog[]         @relation("AuditActor")
+  auditLogsAsTarget  AuditLog[]         @relation("AuditTarget")
 }
 
 // ─── NEXUS TEAM ───────────────────────────────────────────────────────────────
@@ -185,6 +187,7 @@ model Community {
   posts          CommunityPost[]
   eventTemplates EventTemplate[]
   moderationActions ModerationAction[]
+  auditLogs         AuditLog[]
 }
 
 enum MemberRole {
@@ -416,6 +419,28 @@ model EventTemplate {
   community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
 
   @@index([communityId])
+}
+
+// ─── AUDIT LOGS ───────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String
+  description String
+  actorId     String?
+  targetId    String?
+  communityId String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  actor     User?      @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  target    User?      @relation("AuditTarget", fields: [targetId], references: [id], onDelete: SetNull)
+  community Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([communityId, createdAt])
+  @@index([actorId])
+  @@index([action])
 }
 
 // ─── MODERATION ───────────────────────────────────────────────────────────────

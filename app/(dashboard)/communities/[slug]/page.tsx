@@ -9,7 +9,7 @@ import { RichTextContent } from "@/components/ui/rich-text-content"
 import { CommunityLogo } from "@/components/community/community-logo"
 import Image from "next/image"
 import Link from "next/link"
-import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList, ChevronLeft, Megaphone, ShieldAlert } from "lucide-react"
+import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList, ChevronLeft, Megaphone, ShieldAlert, ScrollText } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -138,6 +138,7 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
               { href: "news", fullHref: null, label: "Annonces", icon: Megaphone, count: postsCount, highlight: false },
               ...(isAdmin ? [{ href: "applications", fullHref: null, label: "Candidatures", icon: ClipboardList, count: pendingApplicationsCount, highlight: pendingApplicationsCount > 0 }] : []),
               ...(isStaff ? [{ href: "moderation", fullHref: null, label: "Modération", icon: ShieldAlert, count: null, highlight: false }] : []),
+              ...(isStaff ? [{ href: "logs", fullHref: null, label: "Logs", icon: ScrollText, count: null, highlight: false }] : []),
               ...(session?.user?.isNexusTeam ? [{ href: "orbat", fullHref: null, label: "ORBAT", icon: GitBranch, count: null, highlight: false }] : []),
               { href: "rp", fullHref: null, label: "Registre des effectifs", icon: Sword, count: null, highlight: false },
             ].map(({ href, fullHref, label, icon: Icon, count, highlight }) => (

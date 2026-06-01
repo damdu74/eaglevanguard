@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
+import { createAuditLog } from "@/lib/audit"
 
 const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
@@ -72,6 +73,14 @@ export async function DELETE(
   const isStaff = membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
   const isAuthor = post.authorId === (session.user.id as string)
   if (!isStaff && !isAuthor) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
+  await createAuditLog({
+    action: "POST_DELETED",
+    description: `Annonce « ${post.title} » supprimée`,
+    actorId: session.user.id as string,
+    communityId: community.id,
+    metadata: { postId: params.postId, title: post.title },
+  })
 
   await prisma.communityPost.delete({ where: { id: params.postId } })
 

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ModerationActionType, Prisma } from "@prisma/client"
 import { z } from "zod"
+import { createAuditLog } from "@/lib/audit"
 
 const createSchema = z.object({
   type: z.enum(["WARN", "KICK", "BAN_COMMUNITY", "BAN_PLATFORM", "UNBAN"]),
@@ -104,6 +105,19 @@ export async function POST(req: NextRequest) {
     }
 
     return a
+  })
+
+  const actionLabels: Record<string, string> = {
+    WARN: "Avertissement", KICK: "Expulsion", BAN_COMMUNITY: "Ban communauté",
+    BAN_PLATFORM: "Ban plateforme", UNBAN: "Levée de sanction",
+  }
+  await createAuditLog({
+    action: `MODERATION_${type}` as Parameters<typeof createAuditLog>[0]["action"],
+    description: `${actionLabels[type]} — ${reason}`,
+    actorId: session.user.id,
+    targetId,
+    communityId: communityId ?? null,
+    metadata: { moderationActionId: action.id, reason },
   })
 
   return NextResponse.json(action, { status: 201 })
