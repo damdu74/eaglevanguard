@@ -31,7 +31,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             },
           },
         }),
-      ])
+      ]).catch(() => [0, 0] as [number, number])
     : [0, 0]
 
   return (
