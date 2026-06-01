@@ -29,11 +29,13 @@ export async function GET(req: NextRequest) {
   const limit = 20
   const type = searchParams.get("type") ?? undefined
   const targetId = searchParams.get("targetId") ?? undefined
+  const moderatorId = searchParams.get("moderatorId") ?? undefined
   const communityId = searchParams.get("communityId") ?? undefined
 
   const where = {
     ...(type && { type: type as ModerationActionType }),
     ...(targetId && { targetId }),
+    ...(moderatorId && { moderatorId }),
     ...(communityId && { communityId }),
   }
 

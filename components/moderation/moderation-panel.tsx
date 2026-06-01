@@ -85,6 +85,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
 
   const [filterType, setFilterType] = useState<string>("all")
   const [filterTargetUser, setFilterTargetUser] = useState<SelectedUser | null>(null)
+  const [filterModeratorUser, setFilterModeratorUser] = useState<SelectedUser | null>(null)
 
   const [showForm, setShowForm] = useState(false)
   const [formType, setFormType] = useState<ActionType>("WARN")
@@ -105,6 +106,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
       const params = new URLSearchParams({ page: String(p) })
       if (filterType !== "all") params.set("type", filterType)
       if (filterTargetUser) params.set("targetId", filterTargetUser.id)
+      if (filterModeratorUser) params.set("moderatorId", filterModeratorUser.id)
       const res = await fetch(`${apiBase}?${params}`)
       if (!res.ok) throw new Error()
       const data = await res.json()
@@ -118,7 +120,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
     } finally {
       setLoading(false)
     }
-  }, [apiBase, filterType, filterTargetUser])
+  }, [apiBase, filterType, filterTargetUser, filterModeratorUser])
 
   const availableTypes: ActionType[] = mode === "nexus"
     ? ["WARN", "KICK", "BAN_COMMUNITY", "BAN_PLATFORM", "UNBAN"]
@@ -232,6 +234,15 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
               <UserSearchInput
                 value={filterTargetUser}
                 onChange={setFilterTargetUser}
+                placeholder="Rechercher par nom..."
+                forMod={mode === "nexus"}
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <Label className="text-xs mb-1 block">Modérateur</Label>
+              <UserSearchInput
+                value={filterModeratorUser}
+                onChange={setFilterModeratorUser}
                 placeholder="Rechercher par nom..."
                 forMod={mode === "nexus"}
               />

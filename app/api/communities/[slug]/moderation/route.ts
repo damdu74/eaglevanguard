@@ -40,11 +40,13 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   const limit = 20
   const type = searchParams.get("type") ?? undefined
   const targetId = searchParams.get("targetId") ?? undefined
+  const moderatorId = searchParams.get("moderatorId") ?? undefined
 
   const where = {
     communityId: community.id,
     ...(type && { type: type as ModerationActionType }),
     ...(targetId && { targetId }),
+    ...(moderatorId && { moderatorId }),
   }
 
   const [actions, total] = await Promise.all([
