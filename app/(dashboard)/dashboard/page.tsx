@@ -102,7 +102,7 @@ export default async function DashboardPage() {
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
-  ])
+  ]).catch(() => [[], [], [], 0, []] as const)
 
   return (
     <div className="space-y-6">
