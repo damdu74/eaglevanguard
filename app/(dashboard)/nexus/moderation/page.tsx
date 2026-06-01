@@ -27,8 +27,10 @@ export default async function NexusModerationPage() {
         <p className="text-sm text-muted-foreground">Gestion du staff de la plateforme</p>
       </div>
       <NexusNav />
-      {canModerate && <ModerationPanel mode="nexus" isNexusTeam={true} />}
-      {canViewLogs && <LogsPanel mode="nexus" />}
+      {canModerate
+        ? <ModerationPanel mode="nexus" isNexusTeam={true} showLogs={canViewLogs} />
+        : <LogsPanel mode="nexus" />
+      }
     </div>
   )
 }

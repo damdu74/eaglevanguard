@@ -19,6 +19,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { UserSearchInput, type SelectedUser } from "@/components/moderation/user-search-input"
+import { Separator } from "@/components/ui/separator"
+import { LogsPanel } from "@/components/logs/logs-panel"
 
 type ActionType = "WARN" | "KICK" | "BAN_COMMUNITY" | "BAN_PLATFORM" | "UNBAN"
 
@@ -41,6 +43,7 @@ interface Props {
   communitySlug?: string
   communityName?: string
   isNexusTeam: boolean
+  showLogs?: boolean
 }
 
 const ACTION_LABELS: Record<ActionType, string> = {
@@ -75,7 +78,7 @@ function getUserAvatar(u: { steamAvatar?: string | null; customAvatar?: string |
   return u.customAvatar ?? u.steamAvatar ?? u.image ?? undefined
 }
 
-export function ModerationPanel({ mode, communitySlug, communityName, isNexusTeam }: Props) {
+export function ModerationPanel({ mode, communitySlug, communityName, isNexusTeam, showLogs = false }: Props) {
   const [actions, setActions] = useState<ModerationAction[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -484,6 +487,18 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
           </div>
         </DialogContent>
       </Dialog>
+
+      {showLogs && (
+        <>
+          <Separator />
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+              Logs d&apos;activité
+            </h2>
+            <LogsPanel mode={mode} communitySlug={communitySlug} />
+          </div>
+        </>
+      )}
     </div>
   )
 }
