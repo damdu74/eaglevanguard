@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
+import { checkNexusPermission } from "@/lib/nexus-auth"
 
 export const dynamic = "force-dynamic"
 
@@ -13,7 +14,10 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.isNexusTeam) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+  if (!await checkNexusPermission(session.user.id, "MANAGE_RANKS")) {
+    return NextResponse.json({ error: "Permission MANAGE_RANKS requise" }, { status: 403 })
+  }
 
   const { name, abbreviation, order, color, category } = await req.json()
   if (!name?.trim() || !abbreviation?.trim()) {

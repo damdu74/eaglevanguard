@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { ModerationActionType, Prisma } from "@prisma/client"
 import { z } from "zod"
 import { createAuditLog } from "@/lib/audit"
+import { checkNexusPermission, getNexusActor } from "@/lib/nexus-auth"
+import { hasNexusPermission } from "@/lib/permissions"
 
 const createSchema = z.object({
   type: z.enum(["WARN", "KICK", "BAN_COMMUNITY", "BAN_PLATFORM", "UNBAN"]),
@@ -18,9 +20,9 @@ const createSchema = z.object({
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
-
-  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } })
-  if (!user?.isNexusTeam) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  if (!await checkNexusPermission(session.user.id, "GLOBAL_MODERATION")) {
+    return NextResponse.json({ error: "Permission GLOBAL_MODERATION requise" }, { status: 403 })
+  }
 
   const { searchParams } = new URL(req.url)
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"))
@@ -58,8 +60,11 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } })
-  if (!user?.isNexusTeam) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  const actor = await getNexusActor(session.user.id)
+  if (!actor?.isNexusTeam) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  if (!hasNexusPermission(actor.nexusRank, "GLOBAL_MODERATION")) {
+    return NextResponse.json({ error: "Permission GLOBAL_MODERATION requise" }, { status: 403 })
+  }
 
   const body = await req.json()
   const parsed = createSchema.safeParse(body)
@@ -72,6 +77,10 @@ export async function POST(req: NextRequest) {
 
   if (type === "BAN_PLATFORM" && communityId) {
     return NextResponse.json({ error: "Un ban plateforme ne peut pas être lié à une communauté" }, { status: 400 })
+  }
+
+  if ((type === "BAN_PLATFORM" || type === "UNBAN") && !hasNexusPermission(actor.nexusRank, "BAN_PLATFORM")) {
+    return NextResponse.json({ error: "Permission BAN_PLATFORM requise" }, { status: 403 })
   }
 
   const action = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {

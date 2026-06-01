@@ -49,3 +49,37 @@ export const ROLE_LABELS: Record<MemberRole, string> = {
   MEMBER:  "Membre",
   RECRUIT: "Nouveau Membre",
 }
+
+// ─── NEXUS TEAM PERMISSIONS ───────────────────────────────────────────────────
+
+export const NEXUS_PERMISSIONS = [
+  "MANAGE_TEAM",         // ajouter/retirer des membres NEXUS, changer leurs rôles
+  "MANAGE_RANKS",        // créer/modifier/supprimer les rangs NEXUS
+  "GLOBAL_MODERATION",   // accès à la modération globale (WARN, KICK, BAN)
+  "BAN_PLATFORM",        // bannir/débannir de la plateforme
+  "VIEW_LOGS",           // voir les logs d'activité globaux
+] as const
+
+export type NexusPermission = typeof NEXUS_PERMISSIONS[number]
+
+export const NEXUS_PERMISSION_LABELS: Record<NexusPermission, string> = {
+  MANAGE_TEAM:       "Gérer l'équipe NEXUS",
+  MANAGE_RANKS:      "Gérer les rangs et fonctions",
+  GLOBAL_MODERATION: "Modération globale",
+  BAN_PLATFORM:      "Bannir de la plateforme",
+  VIEW_LOGS:         "Voir les logs globaux",
+}
+
+interface NexusRankLike {
+  permissions: string[]
+  isProtected: boolean
+}
+
+export function hasNexusPermission(
+  nexusRank: NexusRankLike | null | undefined,
+  permission: NexusPermission
+): boolean {
+  if (!nexusRank) return false
+  if (nexusRank.isProtected) return true
+  return nexusRank.permissions.includes(permission)
+}

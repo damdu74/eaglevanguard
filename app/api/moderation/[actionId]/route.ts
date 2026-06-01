@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { z } from "zod"
+import { checkNexusPermission } from "@/lib/nexus-auth"
 
 const resolveSchema = z.object({
   note: z.string().max(500).optional(),
@@ -13,8 +14,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { actionId: 
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } })
-  if (!user?.isNexusTeam) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  if (!await checkNexusPermission(session.user.id, "GLOBAL_MODERATION")) {
+    return NextResponse.json({ error: "Permission GLOBAL_MODERATION requise" }, { status: 403 })
+  }
 
   const action = await prisma.moderationAction.findUnique({ where: { id: params.actionId } })
   if (!action) return NextResponse.json({ error: "Action introuvable" }, { status: 404 })
@@ -44,8 +46,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: { actionId
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } })
-  if (!user?.isNexusTeam) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  if (!await checkNexusPermission(session.user.id, "GLOBAL_MODERATION")) {
+    return NextResponse.json({ error: "Permission GLOBAL_MODERATION requise" }, { status: 403 })
+  }
 
   const action = await prisma.moderationAction.findUnique({ where: { id: params.actionId } })
   if (!action) return NextResponse.json({ error: "Action introuvable" }, { status: 404 })

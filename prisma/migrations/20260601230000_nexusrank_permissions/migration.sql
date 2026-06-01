@@ -1,0 +1,1 @@
+ALTER TABLE "NexusRank" ADD COLUMN "permissions" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];

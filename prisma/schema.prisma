@@ -109,6 +109,7 @@ model NexusRank {
   abbreviation String
   order        Int
   color        String   @default("#6366f1")
+  permissions  String[]
   isProtected  Boolean  @default(false)
   category     String   @default("ROLE")
   createdAt    DateTime @default(now())
