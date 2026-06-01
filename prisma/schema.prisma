@@ -74,10 +74,11 @@ model User {
   discordId     String?           @unique
   discordName   String?
   discordAvatar String?
-  isNexusTeam   Boolean           @default(false)
-  nexusRankId   String?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  isNexusTeam          Boolean           @default(false)
+  isBannedFromPlatform Boolean           @default(false)
+  nexusRankId          String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 
   accounts           Account[]
   sessions           Session[]
@@ -93,6 +94,9 @@ model User {
   posts              CommunityPost[]
   nexusRank          NexusRank?        @relation("UserRole", fields: [nexusRankId], references: [id], onDelete: SetNull)
   nexusFunctions     NexusRank[]       @relation("UserFunctions")
+  moderationTarget   ModerationAction[] @relation("ModTarget")
+  moderationActed    ModerationAction[] @relation("ModActor")
+  moderationResolved ModerationAction[] @relation("ModResolver")
 }
 
 // ─── NEXUS TEAM ───────────────────────────────────────────────────────────────
@@ -180,6 +184,7 @@ model Community {
   rpGroups       RpGroup[]
   posts          CommunityPost[]
   eventTemplates EventTemplate[]
+  moderationActions ModerationAction[]
 }
 
 enum MemberRole {
@@ -411,6 +416,39 @@ model EventTemplate {
   community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
 
   @@index([communityId])
+}
+
+// ─── MODERATION ───────────────────────────────────────────────────────────────
+
+enum ModerationActionType {
+  WARN
+  KICK
+  BAN_COMMUNITY
+  BAN_PLATFORM
+  UNBAN
+}
+
+model ModerationAction {
+  id           String               @id @default(cuid())
+  type         ModerationActionType
+  reason       String               @db.Text
+  targetId     String
+  moderatorId  String
+  communityId  String?
+  expiresAt    DateTime?
+  resolvedAt   DateTime?
+  resolvedById String?
+  note         String?              @db.Text
+  createdAt    DateTime             @default(now())
+
+  target     User       @relation("ModTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  moderator  User       @relation("ModActor", fields: [moderatorId], references: [id], onDelete: Cascade)
+  community  Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  resolvedBy User?      @relation("ModResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([targetId])
+  @@index([communityId, createdAt])
+  @@index([moderatorId])
 }
 
 // ─── APPLICATIONS ─────────────────────────────────────────────────────────────

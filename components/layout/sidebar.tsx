@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Shield, UserSearch, UserCheck, BookOpen } from "lucide-react"
+import { LayoutDashboard, Shield, UserSearch, UserCheck, BookOpen, Users, ShieldAlert } from "lucide-react"
 
 const navSections = [
   {
@@ -28,12 +28,28 @@ const navSections = [
   },
 ]
 
-export function Sidebar() {
+const nexusSections = [
+  {
+    label: "NEXUS Team",
+    items: [
+      { href: "/nexus/team", label: "Équipe", icon: Users, exact: false },
+      { href: "/nexus/moderation", label: "Modération", icon: ShieldAlert, exact: false },
+    ],
+  },
+]
+
+interface SidebarProps {
+  isNexusTeam?: boolean
+}
+
+export function Sidebar({ isNexusTeam }: SidebarProps) {
   const pathname = usePathname()
+
+  const sections = isNexusTeam ? [...navSections, ...nexusSections] : navSections
 
   return (
     <aside className="hidden w-56 shrink-0 border-r bg-muted/30 md:flex flex-col p-3 gap-4">
-      {navSections.map((section) => (
+      {sections.map((section) => (
         <div key={section.label} className="space-y-1">
           <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
             {section.label}
@@ -55,8 +71,6 @@ export function Sidebar() {
           ))}
         </div>
       ))}
-
-
     </aside>
   )
 }
