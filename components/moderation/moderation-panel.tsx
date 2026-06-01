@@ -2,11 +2,10 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { toast } from "sonner"
-import { format } from "date-fns"
+import { format, formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
-import { Shield, AlertTriangle, Ban, UserX, Plus, RotateCcw, Trash2, Search } from "lucide-react"
+import { Shield, AlertTriangle, Ban, UserX, Plus, RotateCcw, Trash2, ClipboardList } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
@@ -18,8 +17,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { UserSearchInput, type SelectedUser } from "@/components/moderation/user-search-input"
 import { Separator } from "@/components/ui/separator"
+import { UserSearchInput, type SelectedUser } from "@/components/moderation/user-search-input"
 import { LogsPanel } from "@/components/logs/logs-panel"
 
 type ActionType = "WARN" | "KICK" | "BAN_COMMUNITY" | "BAN_PLATFORM" | "UNBAN"
@@ -33,7 +32,7 @@ interface ModerationAction {
   expiresAt: string | null
   resolvedAt: string | null
   target: { id: string; name: string | null; steamName: string | null; steamAvatar: string | null; customAvatar: string | null; image: string | null }
-  moderator: { id: string; name: string | null; steamName: string | null }
+  moderator: { id: string; name: string | null; steamName: string | null; image: string | null; steamAvatar: string | null; customAvatar: string | null }
   community?: { id: string; name: string; slug: string; logoUrl: string | null } | null
   resolvedBy: { id: string; name: string | null; steamName: string | null } | null
 }
@@ -54,20 +53,28 @@ const ACTION_LABELS: Record<ActionType, string> = {
   UNBAN: "Levée de sanction",
 }
 
-const ACTION_COLORS: Record<ActionType, string> = {
-  WARN: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
-  KICK: "bg-orange-500/15 text-orange-600 border-orange-500/30",
-  BAN_COMMUNITY: "bg-red-500/15 text-red-600 border-red-500/30",
-  BAN_PLATFORM: "bg-red-700/15 text-red-700 border-red-700/30",
-  UNBAN: "bg-green-500/15 text-green-600 border-green-500/30",
+const ACTION_VERBS: Record<ActionType, string> = {
+  WARN: "a averti",
+  KICK: "a expulsé",
+  BAN_COMMUNITY: "a banni",
+  BAN_PLATFORM: "a banni définitivement",
+  UNBAN: "a levé le ban de",
+}
+
+const ACTION_ICON_BG: Record<ActionType, string> = {
+  WARN: "bg-yellow-500/15 text-yellow-500",
+  KICK: "bg-orange-500/15 text-orange-500",
+  BAN_COMMUNITY: "bg-red-500/15 text-red-500",
+  BAN_PLATFORM: "bg-red-700/15 text-red-600",
+  UNBAN: "bg-green-500/15 text-green-500",
 }
 
 const ACTION_ICONS: Record<ActionType, React.ReactNode> = {
-  WARN: <AlertTriangle className="h-3.5 w-3.5" />,
-  KICK: <UserX className="h-3.5 w-3.5" />,
-  BAN_COMMUNITY: <Ban className="h-3.5 w-3.5" />,
-  BAN_PLATFORM: <Ban className="h-3.5 w-3.5" />,
-  UNBAN: <RotateCcw className="h-3.5 w-3.5" />,
+  WARN: <AlertTriangle className="h-4 w-4" />,
+  KICK: <UserX className="h-4 w-4" />,
+  BAN_COMMUNITY: <Ban className="h-4 w-4" />,
+  BAN_PLATFORM: <Ban className="h-4 w-4" />,
+  UNBAN: <RotateCcw className="h-4 w-4" />,
 }
 
 function getUserDisplayName(u: { name: string | null; steamName: string | null }) {
@@ -78,13 +85,23 @@ function getUserAvatar(u: { steamAvatar?: string | null; customAvatar?: string |
   return u.customAvatar ?? u.steamAvatar ?? u.image ?? undefined
 }
 
+function getDateLabel(dateStr: string): string {
+  const date = new Date(dateStr)
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  const yesterdayStart = new Date(todayStart)
+  yesterdayStart.setDate(yesterdayStart.getDate() - 1)
+  if (date >= todayStart) return "Aujourd'hui"
+  if (date >= yesterdayStart) return "Hier"
+  return format(date, "d MMMM yyyy", { locale: fr })
+}
+
 export function ModerationPanel({ mode, communitySlug, communityName, isNexusTeam, showLogs = false }: Props) {
   const [actions, setActions] = useState<ModerationAction[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [loaded, setLoaded] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const [filterType, setFilterType] = useState<string>("all")
   const [filterTargetUser, setFilterTargetUser] = useState<SelectedUser | null>(null)
@@ -131,13 +148,16 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
       setTotal(data.total)
       setPage(data.page)
       setTotalPages(data.totalPages)
-      setLoaded(true)
     } catch {
       toast.error("Erreur lors du chargement")
     } finally {
       setLoading(false)
     }
   }, [apiBase, filterType, filterTargetUser, filterModeratorUser])
+
+  useEffect(() => {
+    fetchActions(1)
+  }, [fetchActions])
 
   const availableTypes: ActionType[] = mode === "nexus"
     ? ["WARN", "KICK", "BAN_COMMUNITY", "BAN_PLATFORM", "UNBAN"]
@@ -154,7 +174,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
         reason: formReason.trim(),
       }
       if (formNote.trim()) body.note = formNote.trim()
-      if (communitySlug && formType !== "BAN_PLATFORM") body.communityId = "" // sera ignoré côté communauté
+      if (communitySlug && formType !== "BAN_PLATFORM") body.communityId = ""
 
       const res = await fetch(apiBase, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
       if (!res.ok) {
@@ -207,182 +227,188 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
     }
   }
 
+  // Grouper par date
+  const dateGroups: { label: string; items: ModerationAction[] }[] = []
+  for (const action of actions) {
+    const label = getDateLabel(action.createdAt)
+    const last = dateGroups[dateGroups.length - 1]
+    if (last && last.label === label) last.items.push(action)
+    else dateGroups.push({ label, items: [action] })
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Shield className="h-6 w-6" />
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Shield className="h-5 w-5" />
             Modération{communityName ? ` — ${communityName}` : " Plateforme"}
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {mode === "nexus"
-              ? "Toutes les actions de modération sur la plateforme"
-              : "Actions de modération de cette communauté"}
+          </h2>
+          <p className="text-muted-foreground text-sm mt-0.5">
+            {total > 0 ? `${total} action${total > 1 ? "s" : ""}` : "Aucune action"}
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button size="sm" onClick={() => setShowForm(true)}>
+          <Plus className="h-4 w-4 mr-1.5" />
           Nouvelle action
         </Button>
       </div>
 
-      {/* Filtres + Chargement */}
-      <Card>
-        <CardContent className="pt-4 pb-4">
-          <div className="flex flex-wrap gap-3 items-end">
-            <div className="flex-1 min-w-[160px]">
-              <Label className="text-xs mb-1 block">Type</Label>
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les types</SelectItem>
-                  {availableTypes.map((t) => (
-                    <SelectItem key={t} value={t}>{ACTION_LABELS[t]}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex-1 min-w-[200px]">
-              <Label className="text-xs mb-1 block">Utilisateur cible</Label>
-              <UserSearchInput
-                value={filterTargetUser}
-                onChange={setFilterTargetUser}
-                placeholder="Rechercher par nom..."
-                forMod={mode === "nexus"}
-              />
-            </div>
-            {mode === "nexus" ? (
-              <div className="flex-1 min-w-[200px]">
-                <Label className="text-xs mb-1 block">Modérateur</Label>
-                <Select
-                  value={filterModeratorUser?.id ?? "all"}
-                  onValueChange={(v) => setFilterModeratorUser(v === "all" ? null : (staffList.find((s) => s.id === v) ?? null))}
-                >
-                  <SelectTrigger className="h-9">
-                    <SelectValue placeholder="Tous les modérateurs" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous les modérateurs</SelectItem>
-                    {staffList.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>{s.displayName}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ) : (
-              <div className="flex-1 min-w-[200px]">
-                <Label className="text-xs mb-1 block">Modérateur</Label>
-                <UserSearchInput
-                  value={filterModeratorUser}
-                  onChange={setFilterModeratorUser}
-                  placeholder="Rechercher par nom..."
-                  forMod={false}
-                />
-              </div>
-            )}
-            <Button variant="outline" className="h-9" onClick={() => fetchActions(1)} disabled={loading}>
-              <Search className="h-4 w-4 mr-2" />
-              Rechercher
-            </Button>
+      {/* Filtres compacts */}
+      <div className="flex flex-wrap gap-2">
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="h-8 text-xs w-auto min-w-[140px]">
+            <SelectValue placeholder="Type d'action" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les types</SelectItem>
+            {availableTypes.map((t) => (
+              <SelectItem key={t} value={t}>{ACTION_LABELS[t]}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div className="w-44">
+          <UserSearchInput
+            value={filterTargetUser}
+            onChange={setFilterTargetUser}
+            placeholder="Cible..."
+            forMod={mode === "nexus"}
+          />
+        </div>
+
+        {mode === "nexus" ? (
+          <Select
+            value={filterModeratorUser?.id ?? "all"}
+            onValueChange={(v) => setFilterModeratorUser(v === "all" ? null : (staffList.find((s) => s.id === v) ?? null))}
+          >
+            <SelectTrigger className="h-8 text-xs w-auto min-w-[150px]">
+              <SelectValue placeholder="Modérateur" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les modérateurs</SelectItem>
+              {staffList.map((s) => (
+                <SelectItem key={s.id} value={s.id}>{s.displayName}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="w-44">
+            <UserSearchInput
+              value={filterModeratorUser}
+              onChange={setFilterModeratorUser}
+              placeholder="Modérateur..."
+              forMod={false}
+            />
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* Liste */}
-      {!loaded ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <Shield className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p>Cliquez sur &quot;Rechercher&quot; pour charger les actions</p>
-        </div>
-      ) : loading ? (
+      {loading ? (
         <div className="text-center py-10 text-muted-foreground text-sm">Chargement...</div>
       ) : actions.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
-          <Shield className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p>Aucune action de modération</p>
+          <Shield className="h-10 w-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">Aucune action de modération</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">{total} action{total > 1 ? "s" : ""} trouvée{total > 1 ? "s" : ""}</p>
-          {actions.map((action) => (
-            <Card key={action.id} className={action.resolvedAt ? "opacity-60" : ""}>
-              <CardContent className="py-4">
-                <div className="flex items-start gap-4">
-                  <Avatar className="h-10 w-10 shrink-0">
-                    <AvatarImage src={getUserAvatar(action.target)} />
-                    <AvatarFallback>{getUserDisplayName(action.target)[0]?.toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="font-medium text-sm">{getUserDisplayName(action.target)}</span>
-                      <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium ${ACTION_COLORS[action.type]}`}>
-                        {ACTION_ICONS[action.type]}
-                        {ACTION_LABELS[action.type]}
-                      </span>
-                      {action.resolvedAt && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground border">
-                          Résolu
+        <div className="space-y-4">
+          {dateGroups.map(({ label, items }) => (
+            <div key={label}>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">{label}</p>
+              <div className="divide-y divide-border/50 rounded-lg border overflow-hidden">
+                {items.map((action) => (
+                  <div
+                    key={action.id}
+                    className={`flex items-start gap-3 px-4 py-3 hover:bg-muted/40 transition-colors group ${action.resolvedAt ? "opacity-50" : ""}`}
+                  >
+                    {/* Icône action */}
+                    <div className={`mt-0.5 h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${ACTION_ICON_BG[action.type]}`}>
+                      {ACTION_ICONS[action.type]}
+                    </div>
+
+                    {/* Contenu */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm leading-snug">
+                          <span className="font-medium">{getUserDisplayName(action.moderator)}</span>
+                          {" "}<span className="text-muted-foreground">{ACTION_VERBS[action.type]}</span>{" "}
+                          <span className="font-medium">{getUserDisplayName(action.target)}</span>
+                          {action.community && mode === "nexus" && (
+                            <span className="text-muted-foreground"> dans {action.community.name}</span>
+                          )}
+                          {action.resolvedAt && (
+                            <span className="ml-2 text-xs text-green-500 font-normal">· résolu</span>
+                          )}
+                        </p>
+                        <span className="text-xs text-muted-foreground shrink-0 mt-0.5">
+                          {formatDistanceToNow(new Date(action.createdAt), { addSuffix: true, locale: fr })}
                         </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">{action.reason}</p>
+                      {action.note && (
+                        <p className="text-xs text-muted-foreground/60 mt-0.5 italic">{action.note}</p>
                       )}
-                      {action.community && mode === "nexus" && (
-                        <span className="text-xs text-muted-foreground">
-                          via <span className="font-medium">{action.community.name}</span>
-                        </span>
+                      {action.expiresAt && (
+                        <p className="text-xs text-muted-foreground/60 mt-0.5">
+                          Expire le {format(new Date(action.expiresAt), "d MMM yyyy", { locale: fr })}
+                        </p>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{action.reason}</p>
-                    {action.note && (
-                      <p className="text-xs text-muted-foreground mt-1 italic">Note interne : {action.note}</p>
-                    )}
-                    <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
-                      <span>Par <span className="font-medium">{getUserDisplayName(action.moderator)}</span></span>
-                      <span>{format(new Date(action.createdAt), "d MMM yyyy à HH:mm", { locale: fr })}</span>
-                      {action.expiresAt && (
-                        <span>Expire le {format(new Date(action.expiresAt), "d MMM yyyy", { locale: fr })}</span>
+
+                    {/* Actions au hover */}
+                    <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 shrink-0 transition-opacity">
+                      {!action.resolvedAt && (
+                        <Button
+                          size="sm" variant="ghost"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => { setResolveAction(action); setResolveNote("") }}
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          Résoudre
+                        </Button>
                       )}
-                      {action.resolvedAt && action.resolvedBy && (
-                        <span>Résolu par {getUserDisplayName(action.resolvedBy)} le {format(new Date(action.resolvedAt), "d MMM yyyy", { locale: fr })}</span>
+                      {(!action.resolvedAt || isNexusTeam) && (
+                        <Button
+                          size="sm" variant="ghost"
+                          className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                          onClick={() => handleDelete(action.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       )}
                     </div>
                   </div>
-                  {!action.resolvedAt && (
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button size="sm" variant="outline" onClick={() => { setResolveAction(action); setResolveNote("") }}>
-                        <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                        Résoudre
-                      </Button>
-                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleDelete(action.id)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  )}
-                  {action.resolvedAt && isNexusTeam && (
-                    <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive shrink-0" onClick={() => handleDelete(action.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                ))}
+              </div>
+            </div>
           ))}
 
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 pt-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => fetchActions(page - 1)}>
-                Précédent
-              </Button>
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => fetchActions(page - 1)}>Précédent</Button>
               <span className="text-sm text-muted-foreground">Page {page} / {totalPages}</span>
-              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => fetchActions(page + 1)}>
-                Suivant
-              </Button>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => fetchActions(page + 1)}>Suivant</Button>
             </div>
           )}
         </div>
+      )}
+
+      {/* Section Logs intégrée */}
+      {showLogs && (
+        <>
+          <Separator />
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+              <ClipboardList className="h-5 w-5" />
+              Logs d&apos;activité
+            </h2>
+            <LogsPanel mode={mode} communitySlug={communitySlug} />
+          </div>
+        </>
       )}
 
       {/* Dialog nouvelle action */}
@@ -487,18 +513,6 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
           </div>
         </DialogContent>
       </Dialog>
-
-      {showLogs && (
-        <>
-          <Separator />
-          <div>
-            <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-              Logs d&apos;activité
-            </h2>
-            <LogsPanel mode={mode} communitySlug={communitySlug} />
-          </div>
-        </>
-      )}
     </div>
   )
 }
