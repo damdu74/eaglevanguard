@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { checkNexusPermission } from "@/lib/nexus-auth"
 
 export const dynamic = "force-dynamic"
 
@@ -12,10 +13,18 @@ export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q")?.trim()
   if (!q || q.length < 2) return NextResponse.json([])
 
+  const forMod = req.nextUrl.searchParams.get("forMod") === "true"
+  let skipVisibilityFilter = false
+
+  if (forMod) {
+    const canModerate = await checkNexusPermission(session.user.id, "GLOBAL_MODERATION")
+    skipVisibilityFilter = canModerate
+  }
+
   const users = await prisma.user.findMany({
     where: {
       id: { not: session.user.id },
-      visibility: { not: "PRIVATE" },
+      ...(!skipVisibilityFilter && { visibility: { not: "PRIVATE" } }),
       OR: [
         { steamName: { contains: q, mode: "insensitive" } },
         { discordName: { contains: q, mode: "insensitive" } },

@@ -16,9 +16,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { UserSearchInput, type SelectedUser } from "@/components/moderation/user-search-input"
 
 type ActionType = "WARN" | "KICK" | "BAN_COMMUNITY" | "BAN_PLATFORM" | "UNBAN"
 
@@ -84,11 +84,11 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
   const [loaded, setLoaded] = useState(false)
 
   const [filterType, setFilterType] = useState<string>("all")
-  const [filterTarget, setFilterTarget] = useState("")
+  const [filterTargetUser, setFilterTargetUser] = useState<SelectedUser | null>(null)
 
   const [showForm, setShowForm] = useState(false)
   const [formType, setFormType] = useState<ActionType>("WARN")
-  const [formTargetId, setFormTargetId] = useState("")
+  const [formTargetUser, setFormTargetUser] = useState<SelectedUser | null>(null)
   const [formReason, setFormReason] = useState("")
   const [formNote, setFormNote] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -104,7 +104,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
     try {
       const params = new URLSearchParams({ page: String(p) })
       if (filterType !== "all") params.set("type", filterType)
-      if (filterTarget.trim()) params.set("targetId", filterTarget.trim())
+      if (filterTargetUser) params.set("targetId", filterTargetUser.id)
       const res = await fetch(`${apiBase}?${params}`)
       if (!res.ok) throw new Error()
       const data = await res.json()
@@ -118,7 +118,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
     } finally {
       setLoading(false)
     }
-  }, [apiBase, filterType, filterTarget])
+  }, [apiBase, filterType, filterTargetUser])
 
   const availableTypes: ActionType[] = mode === "nexus"
     ? ["WARN", "KICK", "BAN_COMMUNITY", "BAN_PLATFORM", "UNBAN"]
@@ -126,12 +126,12 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!formTargetId.trim() || !formReason.trim()) return
+    if (!formTargetUser || !formReason.trim()) return
     setSubmitting(true)
     try {
       const body: Record<string, string> = {
         type: formType,
-        targetId: formTargetId.trim(),
+        targetId: formTargetUser.id,
         reason: formReason.trim(),
       }
       if (formNote.trim()) body.note = formNote.trim()
@@ -144,7 +144,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
       }
       toast.success("Action de modération créée")
       setShowForm(false)
-      setFormTargetId("")
+      setFormTargetUser(null)
       setFormReason("")
       setFormNote("")
       fetchActions(1)
@@ -228,12 +228,12 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
               </Select>
             </div>
             <div className="flex-1 min-w-[200px]">
-              <Label className="text-xs mb-1 block">ID Utilisateur cible</Label>
-              <Input
-                className="h-9"
-                placeholder="ID utilisateur..."
-                value={filterTarget}
-                onChange={(e) => setFilterTarget(e.target.value)}
+              <Label className="text-xs mb-1 block">Utilisateur cible</Label>
+              <UserSearchInput
+                value={filterTargetUser}
+                onChange={setFilterTargetUser}
+                placeholder="Rechercher par nom..."
+                forMod={mode === "nexus"}
               />
             </div>
             <Button variant="outline" className="h-9" onClick={() => fetchActions(1)} disabled={loading}>
@@ -363,15 +363,15 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
               </Select>
             </div>
             <div>
-              <Label>ID de l&apos;utilisateur ciblé</Label>
-              <Input
-                className="mt-1"
-                placeholder="ID utilisateur..."
-                value={formTargetId}
-                onChange={(e) => setFormTargetId(e.target.value)}
-                required
-              />
-              <p className="text-xs text-muted-foreground mt-1">Visible sur le profil de l&apos;utilisateur</p>
+              <Label>Utilisateur ciblé</Label>
+              <div className="mt-1">
+                <UserSearchInput
+                  value={formTargetUser}
+                  onChange={setFormTargetUser}
+                  placeholder="Rechercher par nom..."
+                  forMod={mode === "nexus"}
+                />
+              </div>
             </div>
             <div>
               <Label>Raison <span className="text-destructive">*</span></Label>
@@ -398,7 +398,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Annuler</Button>
-              <Button type="submit" disabled={submitting || !formTargetId.trim() || !formReason.trim()}>
+              <Button type="submit" disabled={submitting || !formTargetUser || !formReason.trim()}>
                 {submitting ? "Enregistrement..." : "Confirmer"}
               </Button>
             </DialogFooter>
