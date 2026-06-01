@@ -5,7 +5,6 @@ import { ModerationPanel } from "@/components/moderation/moderation-panel"
 import { LogsPanel } from "@/components/logs/logs-panel"
 import { NexusNav } from "@/components/nexus/nexus-nav"
 import { checkNexusPermission } from "@/lib/nexus-auth"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Modération — NEXUS" }
@@ -22,28 +21,14 @@ export default async function NexusModerationPage() {
   if (!canModerate && !canViewLogs) redirect("/nexus/team")
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-10 max-w-4xl">
       <div>
         <h1 className="text-2xl font-bold">NEXUS Team</h1>
         <p className="text-sm text-muted-foreground">Gestion du staff de la plateforme</p>
       </div>
       <NexusNav />
-      <Tabs defaultValue={canModerate ? "moderation" : "logs"}>
-        <TabsList>
-          {canModerate && <TabsTrigger value="moderation">Modération</TabsTrigger>}
-          {canViewLogs && <TabsTrigger value="logs">Logs</TabsTrigger>}
-        </TabsList>
-        {canModerate && (
-          <TabsContent value="moderation" className="mt-6">
-            <ModerationPanel mode="nexus" isNexusTeam={true} />
-          </TabsContent>
-        )}
-        {canViewLogs && (
-          <TabsContent value="logs" className="mt-6">
-            <LogsPanel mode="nexus" />
-          </TabsContent>
-        )}
-      </Tabs>
+      {canModerate && <ModerationPanel mode="nexus" isNexusTeam={true} />}
+      {canViewLogs && <LogsPanel mode="nexus" />}
     </div>
   )
 }
