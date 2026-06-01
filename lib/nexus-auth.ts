@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { hasNexusPermission, type NexusPermission } from "@/lib/permissions"
+import type { NexusPermission } from "@/lib/permissions"
 
 export async function getNexusActor(userId: string) {
   const user = await prisma.user.findUnique({
