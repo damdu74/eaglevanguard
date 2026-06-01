@@ -18,7 +18,7 @@ const createSchema = z.object({
 async function getModerateMembership(userId: string, communityId: string) {
   return prisma.membership.findFirst({
     where: { userId, communityId },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
 }
 

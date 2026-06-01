@@ -9,7 +9,7 @@ async function getStaffAccess(slug: string, userId: string) {
   if (!community) return { community: null, ok: false }
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   return { community, ok: isStaffHelper(membership) }
 }

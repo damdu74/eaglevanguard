@@ -13,7 +13,7 @@ async function checkRanksPermission(slug: string, userId: string) {
   if (!community) return null
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   return hasCommunityPermission(membership, "MANAGE_RANKS") ? community : null
 }
@@ -31,13 +31,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!rank) return NextResponse.json({ error: "Grade introuvable" }, { status: 404 })
   if (rank.isPermanent) return NextResponse.json({ error: "Le grade Fondateur ne peut pas être modifié" }, { status: 403 })
 
-  const { name, order, color } = await req.json()
+  const { name, order, color, permissions } = await req.json()
   const updated = await prisma.rank.update({
     where: { id: rank.id },
     data: {
       ...(name?.trim() ? { name: name.trim() } : {}),
       ...(order !== undefined ? { order } : {}),
       ...(color ? { color } : {}),
+      ...(Array.isArray(permissions) ? { permissions } : {}),
     },
   })
   return NextResponse.json(updated)

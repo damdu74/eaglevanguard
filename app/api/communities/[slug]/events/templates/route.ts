@@ -17,7 +17,7 @@ async function getStaffMembership(slug: string, userId: string) {
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   return { community, membership }
 }

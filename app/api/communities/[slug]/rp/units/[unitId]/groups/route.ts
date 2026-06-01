@@ -13,7 +13,7 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   if (!isStaffHelper(membership)) return NextResponse.json({ error: "Droits insuffisants" }, { status: 403 })
 

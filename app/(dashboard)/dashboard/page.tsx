@@ -72,7 +72,7 @@ export default async function DashboardPage() {
               userId,
               OR: [
                 { role: "OWNER" },
-                { communityRole: { permissions: { has: "MANAGE_APPLICATIONS" } } },
+                { rank: { permissions: { has: "MANAGE_APPLICATIONS" } } },
               ],
             },
           },

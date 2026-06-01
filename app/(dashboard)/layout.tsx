@@ -24,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                   userId,
                   OR: [
                     { role: "OWNER" },
-                    { communityRole: { permissions: { has: "MANAGE_APPLICATIONS" } } },
+                    { rank: { permissions: { has: "MANAGE_APPLICATIONS" } } },
                   ],
                 },
               },

@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
                 userId,
                 OR: [
                   { role: "OWNER" },
-                  { communityRole: { permissions: { has: "MANAGE_APPLICATIONS" } } },
+                  { rank: { permissions: { has: "MANAGE_APPLICATIONS" } } },
                 ],
               },
               select: { communityId: true },

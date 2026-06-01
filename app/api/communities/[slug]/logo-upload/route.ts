@@ -16,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
       userId: session.user.id as string,
       community: { slug: params.slug },
     },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   if (!hasCommunityPermission(membership, "MANAGE_SETTINGS")) {
     return NextResponse.json({ error: "Permissions insuffisantes" }, { status: 403 })

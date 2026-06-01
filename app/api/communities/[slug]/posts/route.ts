@@ -56,7 +56,7 @@ export async function POST(req: Request, { params }: { params: { slug: string } 
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   if (!hasCommunityPermission(membership, "MANAGE_POSTS")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })

@@ -48,7 +48,7 @@ async function getEventWithAccess(slug: string, eventId: string, userId?: string
   const membership = userId
     ? await prisma.membership.findFirst({
         where: { communityId: event.community.id, userId },
-        include: { communityRole: { select: { permissions: true } } },
+        include: { rank: { select: { permissions: true } } },
       })
     : null
 

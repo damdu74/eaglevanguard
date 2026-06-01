@@ -16,7 +16,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { slug: st
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   const isStaff = isStaffHelper(membership)
   const isOwner = character.userId === (session.user.id as string)
@@ -39,7 +39,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { slug: stri
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   const isStaff = isStaffHelper(membership)
   const isOwner = character.userId === (session.user.id as string)

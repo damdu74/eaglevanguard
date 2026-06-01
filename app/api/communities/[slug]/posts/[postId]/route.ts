@@ -29,7 +29,7 @@ export async function PATCH(
     prisma.communityPost.findFirst({ where: { id: params.postId, communityId: community.id } }),
     prisma.membership.findFirst({
       where: { communityId: community.id, userId: session.user.id as string },
-      include: { communityRole: { select: { permissions: true } } },
+      include: { rank: { select: { permissions: true } } },
     }),
   ])
   if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 })
@@ -72,7 +72,7 @@ export async function DELETE(
     prisma.communityPost.findFirst({ where: { id: params.postId, communityId: community.id } }),
     prisma.membership.findFirst({
       where: { communityId: community.id, userId: session.user.id as string },
-      include: { communityRole: { select: { permissions: true } } },
+      include: { rank: { select: { permissions: true } } },
     }),
   ])
   if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 })

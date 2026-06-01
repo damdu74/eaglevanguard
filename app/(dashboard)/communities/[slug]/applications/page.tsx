@@ -46,7 +46,7 @@ export default async function ApplicationsPage({ params }: PageProps) {
 
   const myMembership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   const { hasCommunityPermission } = await import("@/lib/permissions")
   if (!hasCommunityPermission(myMembership, "MANAGE_APPLICATIONS")) redirect(`/communities/${params.slug}`)

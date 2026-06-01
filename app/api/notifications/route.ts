@@ -22,7 +22,7 @@ export async function GET() {
               userId,
               OR: [
                 { role: "OWNER" },
-                { communityRole: { permissions: { has: "MANAGE_APPLICATIONS" } } },
+                { rank: { permissions: { has: "MANAGE_APPLICATIONS" } } },
               ],
             },
           },

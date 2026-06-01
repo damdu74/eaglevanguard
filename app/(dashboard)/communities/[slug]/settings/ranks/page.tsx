@@ -27,7 +27,7 @@ export default async function RanksPage({ params }: PageProps) {
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   const { hasCommunityPermission } = await import("@/lib/permissions")
   if (!hasCommunityPermission(membership, "MANAGE_RANKS")) redirect(`/communities/${params.slug}`)

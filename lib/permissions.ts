@@ -26,7 +26,7 @@ export const PERMISSION_LABELS: Record<CommunityPermission, string> = {
 
 interface MembershipLike {
   role: MemberRole
-  communityRole?: { permissions: string[] } | null
+  rank?: { permissions: string[] } | null
 }
 
 export function hasCommunityPermission(
@@ -35,13 +35,13 @@ export function hasCommunityPermission(
 ): boolean {
   if (!membership) return false
   if (membership.role === "OWNER") return true
-  return membership.communityRole?.permissions.includes(permission) ?? false
+  return membership.rank?.permissions.includes(permission) ?? false
 }
 
 export function isStaff(membership: MembershipLike | null | undefined): boolean {
   if (!membership) return false
   if (membership.role === "OWNER") return true
-  return (membership.communityRole?.permissions.length ?? 0) > 0
+  return (membership.rank?.permissions.length ?? 0) > 0
 }
 
 export const ROLE_LABELS: Record<MemberRole, string> = {

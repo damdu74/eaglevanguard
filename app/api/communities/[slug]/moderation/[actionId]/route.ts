@@ -18,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { slug: stri
 
   const staff = await prisma.membership.findFirst({
     where: { userId: session.user.id, communityId: community.id },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   if (!hasCommunityPermission(staff, "MODERATE")) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
 
@@ -49,7 +49,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { slug: st
 
   const membership = await prisma.membership.findFirst({
     where: { userId: session.user.id, communityId: community.id },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
 
   // DELETE : OWNER ou MANAGE_MEMBERS

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { MemberActions } from "@/components/community/member-actions"
 import Link from "next/link"
 import { ChevronLeft, Crown } from "lucide-react"
+import { hasCommunityPermission, isStaff, ROLE_LABELS } from "@/lib/permissions"
 
 export const dynamic = "force-dynamic"
 
@@ -21,13 +22,7 @@ export async function generateMetadata({ params }: PageProps) {
   return { title: community ? `Membres — ${community.name}` : "Membres" }
 }
 
-import { hasCommunityPermission, isStaff, ROLE_LABELS } from "@/lib/permissions"
-
-const ROLE_ORDER: Record<string, number> = {
-  OWNER: 0,
-  MEMBER: 1,
-  RECRUIT: 2,
-}
+const ROLE_ORDER: Record<string, number> = { OWNER: 0, MEMBER: 1, RECRUIT: 2 }
 
 export default async function CommunityMembersPage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
@@ -41,7 +36,7 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
   const myMembership = session?.user?.id
     ? await prisma.membership.findFirst({
         where: { communityId: community.id, userId: session.user.id as string },
-        include: { communityRole: { select: { permissions: true } } },
+        include: { rank: { select: { permissions: true } } },
       })
     : null
 
@@ -52,32 +47,19 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
     include: {
       user: {
         select: {
-          id: true,
-          steamName: true,
-          discordName: true,
-          name: true,
-          customAvatar: true,
-          steamAvatar: true,
-          discordAvatar: true,
+          id: true, steamName: true, discordName: true, name: true,
+          customAvatar: true, steamAvatar: true, discordAvatar: true,
         },
       },
-      rank: { select: { id: true, name: true } },
-      communityRole: { select: { name: true, color: true, permissions: true } },
+      rank: { select: { id: true, name: true, color: true, permissions: true, isPermanent: true } },
     },
   })
 
-  const [ranks, communityRoles] = await Promise.all([
-    prisma.rank.findMany({
-      where: { communityId: community.id },
-      orderBy: { order: "asc" },
-      select: { id: true, name: true, isPermanent: true },
-    }),
-    prisma.communityRole.findMany({
-      where: { communityId: community.id },
-      orderBy: { order: "asc" },
-      select: { id: true, name: true, color: true },
-    }),
-  ])
+  const ranks = await prisma.rank.findMany({
+    where: { communityId: community.id },
+    orderBy: { order: "asc" },
+    select: { id: true, name: true, isPermanent: true },
+  })
 
   const sorted = [...memberships].sort(
     (a, b) => (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99)
@@ -112,7 +94,6 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
         </div>
       </div>
 
-      {/* Staff */}
       {staffList.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
@@ -122,22 +103,18 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
           <Card>
             <CardContent className="p-0">
               <div className="divide-y">
-                {staffList.map(({ user, role, rank, communityRole, communityRoleId }) => (
+                {staffList.map(({ user, role, rank }) => (
                   <MemberRow
                     key={user.id}
                     user={user}
                     role={role}
-                    customRoleName={communityRole?.name ?? null}
-                    customRoleColor={communityRole?.color ?? null}
-                    currentCommunityRoleId={communityRoleId ?? null}
                     rank={rank ?? null}
                     isMe={user.id === session?.user?.id}
                     isCreator={user.id === community.creatorId}
                     canActOnTarget={canManage && user.id !== session?.user?.id && myRole === "OWNER"}
                     communitySlug={params.slug}
                     ranks={ranks}
-                    communityRoles={communityRoles}
-                    myRole={myRole}
+
                     membersUrl={membersUrl}
                   />
                 ))}
@@ -147,7 +124,6 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
         </section>
       )}
 
-      {/* Membres */}
       {regular.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
@@ -157,22 +133,18 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
           <Card>
             <CardContent className="p-0">
               <div className="divide-y">
-                {regular.map(({ user, role, rank, communityRole, communityRoleId }) => (
+                {regular.map(({ user, role, rank }) => (
                   <MemberRow
                     key={user.id}
                     user={user}
                     role={role}
-                    customRoleName={communityRole?.name ?? null}
-                    customRoleColor={communityRole?.color ?? null}
-                    currentCommunityRoleId={communityRoleId ?? null}
                     rank={rank ?? null}
                     isMe={user.id === session?.user?.id}
                     isCreator={user.id === community.creatorId}
                     canActOnTarget={canManage && user.id !== session?.user?.id}
                     communitySlug={params.slug}
                     ranks={ranks}
-                    communityRoles={communityRoles}
-                    myRole={myRole}
+
                     membersUrl={membersUrl}
                   />
                 ))}
@@ -197,25 +169,27 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
 }
 
 function MemberRow({
-  user, role, customRoleName, customRoleColor, currentCommunityRoleId, rank, isMe, isCreator, canActOnTarget, communitySlug, ranks, communityRoles, myRole, membersUrl,
+  user, role, rank, isMe, isCreator, canActOnTarget, communitySlug, ranks, membersUrl,
 }: {
   user: { id: string; steamName: string | null; discordName: string | null; name: string | null; customAvatar: string | null; steamAvatar: string | null; discordAvatar: string | null }
   role: string
-  customRoleName: string | null
-  customRoleColor: string | null
-  currentCommunityRoleId: string | null
-  rank: { id: string; name: string } | null
+  rank: { id: string; name: string; color: string; isPermanent: boolean } | null
   isMe: boolean
   isCreator: boolean
   canActOnTarget: boolean
   communitySlug: string
   ranks: { id: string; name: string; isPermanent: boolean }[]
-  communityRoles: { id: string; name: string; color: string }[]
-  myRole: string | null
   membersUrl: string
 }) {
   const displayName = user.steamName ?? user.discordName ?? user.name ?? "Joueur"
   const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar
+
+  const badgeLabel = isCreator ? "Fondateur" : rank?.isPermanent ? rank.name : (rank?.name ?? (ROLE_LABELS[role as keyof typeof ROLE_LABELS] ?? role))
+  const badgeStyle = isCreator
+    ? { backgroundColor: "#5865F2", borderColor: "#5865F2", color: "#fff" }
+    : rank && !rank.isPermanent
+    ? { backgroundColor: `${rank.color}20`, borderColor: rank.color, color: rank.color }
+    : undefined
 
   return (
     <div className="flex items-center justify-between px-4 py-3 gap-3">
@@ -225,43 +199,26 @@ function MemberRow({
       >
         <Avatar className="h-9 w-9 shrink-0">
           <AvatarImage src={avatar ?? undefined} />
-          <AvatarFallback className="text-xs">
-            {displayName.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
+          <AvatarFallback className="text-xs">{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="min-w-0">
           <p className="text-sm font-medium leading-none truncate flex items-center gap-1.5">
             {displayName}
             {isCreator && <Crown className="h-3.5 w-3.5 text-yellow-500 shrink-0" />}
           </p>
-          {rank && <p className="text-xs text-muted-foreground mt-0.5">{rank.name}</p>}
         </div>
       </Link>
 
       <div className="flex items-center gap-2 shrink-0">
-        <Badge
-          variant="outline"
-          className="text-xs"
-          style={
-            isCreator
-              ? { backgroundColor: "#5865F2", borderColor: "#5865F2", color: "#fff" }
-              : customRoleColor
-              ? { backgroundColor: `${customRoleColor}20`, borderColor: customRoleColor, color: customRoleColor }
-              : undefined
-          }
-        >
-          {isCreator ? "Fondateur" : customRoleName ?? (ROLE_LABELS[role as keyof typeof ROLE_LABELS] ?? role)}
+        <Badge variant="outline" className="text-xs" style={badgeStyle}>
+          {badgeLabel}
         </Badge>
         {canActOnTarget && (
           <MemberActions
             communitySlug={communitySlug}
             userId={user.id}
-            currentRole={role}
-            currentCommunityRoleId={currentCommunityRoleId}
             currentRankId={rank?.id ?? null}
             ranks={ranks}
-            communityRoles={communityRoles}
-            myRole={myRole!}
           />
         )}
       </div>

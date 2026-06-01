@@ -23,7 +23,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       communityId: community.id,
       userId: session.user.id,
     },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   if (!hasCommunityPermission(membership, "MANAGE_EVENTS")) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
 

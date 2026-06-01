@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       userId: session.user.id,
       community: { slug: params.slug },
     },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
 
   if (!hasCommunityPermission(membership, "MANAGE_SETTINGS")) {

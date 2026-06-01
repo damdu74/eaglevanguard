@@ -9,7 +9,7 @@ async function getStaffContext(slug: string, userId: string) {
   if (!community) return null
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId },
-    include: { communityRole: { select: { permissions: true } } },
+    include: { rank: { select: { permissions: true } } },
   })
   return isStaffHelper(membership) ? community : null
 }

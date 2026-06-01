@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   const [membership, nexusUser] = await Promise.all([
     prisma.membership.findFirst({
       where: { userId: session.user.id, communityId: community.id },
-      include: { communityRole: { select: { permissions: true } } },
+      include: { rank: { select: { permissions: true } } },
     }),
     prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } }),
   ])
