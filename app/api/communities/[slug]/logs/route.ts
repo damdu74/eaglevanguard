@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { MemberRole } from "@prisma/client"
-
-const STAFF_ROLES: MemberRole[] = ["OWNER", "ADMIN", "MODERATOR"]
+import { hasCommunityPermission } from "@/lib/permissions"
 
 export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
   const session = await getServerSession(authOptions)
@@ -14,10 +12,15 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
   const [membership, nexusUser] = await Promise.all([
-    prisma.membership.findFirst({ where: { userId: session.user.id, communityId: community.id, role: { in: STAFF_ROLES } } }),
+    prisma.membership.findFirst({
+      where: { userId: session.user.id, communityId: community.id },
+      include: { communityRole: { select: { permissions: true } } },
+    }),
     prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } }),
   ])
-  if (!membership && !nexusUser?.isNexusTeam) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  if (!hasCommunityPermission(membership, "VIEW_LOGS") && !nexusUser?.isNexusTeam) {
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  }
 
   const { searchParams } = new URL(req.url)
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"))

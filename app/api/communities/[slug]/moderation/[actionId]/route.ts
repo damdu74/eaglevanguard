@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { MemberRole } from "@prisma/client"
 import { z } from "zod"
-
-const STAFF_ROLES: MemberRole[] = ["OWNER", "ADMIN", "MODERATOR"]
+import { hasCommunityPermission } from "@/lib/permissions"
 
 const resolveSchema = z.object({
   note: z.string().max(500).optional(),
@@ -19,9 +17,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { slug: stri
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
   const staff = await prisma.membership.findFirst({
-    where: { userId: session.user.id, communityId: community.id, role: { in: STAFF_ROLES } },
+    where: { userId: session.user.id, communityId: community.id },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  if (!staff) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  if (!hasCommunityPermission(staff, "MODERATE")) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
 
   const action = await prisma.moderationAction.findFirst({
     where: { id: params.actionId, communityId: community.id },
@@ -48,10 +47,15 @@ export async function DELETE(_req: NextRequest, { params }: { params: { slug: st
   const community = await prisma.community.findUnique({ where: { slug: params.slug }, select: { id: true } })
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
-  const staff = await prisma.membership.findFirst({
-    where: { userId: session.user.id, communityId: community.id, role: { in: ["OWNER", "ADMIN"] as MemberRole[] } },
+  const membership = await prisma.membership.findFirst({
+    where: { userId: session.user.id, communityId: community.id },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  if (!staff) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+
+  // DELETE : OWNER ou MANAGE_MEMBERS
+  const canDelete =
+    membership?.role === "OWNER" || hasCommunityPermission(membership, "MANAGE_MEMBERS")
+  if (!canDelete) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
 
   const action = await prisma.moderationAction.findFirst({
     where: { id: params.actionId, communityId: community.id },

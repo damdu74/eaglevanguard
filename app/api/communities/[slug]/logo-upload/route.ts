@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { put } from "@vercel/blob"
+import { hasCommunityPermission } from "@/lib/permissions"
 
 export const dynamic = "force-dynamic"
 
@@ -14,10 +15,12 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     where: {
       userId: session.user.id as string,
       community: { slug: params.slug },
-      role: { in: ["OWNER", "ADMIN"] },
     },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  if (!membership) return NextResponse.json({ error: "Permissions insuffisantes" }, { status: 403 })
+  if (!hasCommunityPermission(membership, "MANAGE_SETTINGS")) {
+    return NextResponse.json({ error: "Permissions insuffisantes" }, { status: 403 })
+  }
 
   const community = await prisma.community.findUnique({
     where: { slug: params.slug },

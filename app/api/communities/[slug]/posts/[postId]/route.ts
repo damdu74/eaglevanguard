@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { createAuditLog } from "@/lib/audit"
+import { hasCommunityPermission } from "@/lib/permissions"
 
 const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
@@ -26,13 +27,16 @@ export async function PATCH(
 
   const [post, membership] = await Promise.all([
     prisma.communityPost.findFirst({ where: { id: params.postId, communityId: community.id } }),
-    prisma.membership.findFirst({ where: { communityId: community.id, userId: session.user.id as string } }),
+    prisma.membership.findFirst({
+      where: { communityId: community.id, userId: session.user.id as string },
+      include: { communityRole: { select: { permissions: true } } },
+    }),
   ])
   if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
-  const isStaff = membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
+  const canManage = hasCommunityPermission(membership, "MANAGE_POSTS")
   const isAuthor = post.authorId === (session.user.id as string)
-  if (!isStaff && !isAuthor) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  if (!canManage && !isAuthor) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   const body = await req.json()
   const parsed = updateSchema.safeParse(body)
@@ -66,13 +70,16 @@ export async function DELETE(
 
   const [post, membership] = await Promise.all([
     prisma.communityPost.findFirst({ where: { id: params.postId, communityId: community.id } }),
-    prisma.membership.findFirst({ where: { communityId: community.id, userId: session.user.id as string } }),
+    prisma.membership.findFirst({
+      where: { communityId: community.id, userId: session.user.id as string },
+      include: { communityRole: { select: { permissions: true } } },
+    }),
   ])
   if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
-  const isStaff = membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
+  const canManage = hasCommunityPermission(membership, "MANAGE_POSTS")
   const isAuthor = post.authorId === (session.user.id as string)
-  if (!isStaff && !isAuthor) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  if (!canManage && !isAuthor) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   await createAuditLog({
     action: "POST_DELETED",

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { createAuditLog } from "@/lib/audit"
+import { hasCommunityPermission } from "@/lib/permissions"
 
 const createSchema = z.object({
   title: z.string().min(1).max(200),
@@ -55,8 +56,9 @@ export async function POST(req: Request, { params }: { params: { slug: string } 
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  if (!membership || !["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)) {
+  if (!hasCommunityPermission(membership, "MANAGE_POSTS")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 

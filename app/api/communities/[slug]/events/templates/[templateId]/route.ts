@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { hasCommunityPermission } from "@/lib/permissions"
 
 export const dynamic = "force-dynamic"
 
@@ -21,10 +22,10 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     where: {
       communityId: community.id,
       userId: session.user.id,
-      role: { in: ["OWNER", "ADMIN", "MODERATOR"] },
     },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  if (!membership) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  if (!hasCommunityPermission(membership, "MANAGE_EVENTS")) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
 
   const template = await prisma.eventTemplate.findFirst({
     where: { id: params.templateId, communityId: community.id },

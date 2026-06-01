@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { hasCommunityPermission } from "@/lib/permissions"
 
 interface Params {
   params: { slug: string }
@@ -29,10 +30,12 @@ export async function POST(req: NextRequest, { params }: Params) {
     where: {
       communityId: community.id,
       userId: session.user.id as string,
-      role: { in: ["OWNER", "ADMIN"] },
     },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  if (!adminMembership) return NextResponse.json({ error: "Permissions insuffisantes" }, { status: 403 })
+  if (!hasCommunityPermission(adminMembership, "MANAGE_RANKS")) {
+    return NextResponse.json({ error: "Permissions insuffisantes" }, { status: 403 })
+  }
 
   const { name, abbreviation, order, color } = await req.json()
   if (!name?.trim() || !abbreviation?.trim()) {

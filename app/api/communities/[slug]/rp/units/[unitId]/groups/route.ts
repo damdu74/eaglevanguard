@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { isStaff as isStaffHelper } from "@/lib/permissions"
 
 export async function POST(req: NextRequest, { params }: { params: { slug: string; unitId: string } }) {
   const session = await getServerSession(authOptions)
@@ -12,9 +13,9 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  const isStaff = !!membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
-  if (!isStaff) return NextResponse.json({ error: "Droits insuffisants" }, { status: 403 })
+  if (!isStaffHelper(membership)) return NextResponse.json({ error: "Droits insuffisants" }, { status: 403 })
 
   const unit = await prisma.rpUnit.findUnique({ where: { id: params.unitId } })
   if (!unit || unit.communityId !== community.id) return NextResponse.json({ error: "Introuvable" }, { status: 404 })

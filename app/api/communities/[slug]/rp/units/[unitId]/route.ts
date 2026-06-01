@@ -2,15 +2,16 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { isStaff as isStaffHelper } from "@/lib/permissions"
 
 async function getStaffAccess(slug: string, userId: string) {
   const community = await prisma.community.findUnique({ where: { slug } })
   if (!community) return { community: null, ok: false }
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  const ok = !!membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
-  return { community, ok }
+  return { community, ok: isStaffHelper(membership) }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { slug: string; unitId: string } }) {

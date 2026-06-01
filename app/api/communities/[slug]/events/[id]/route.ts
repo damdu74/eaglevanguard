@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import type { EventStatus } from "@prisma/client"
 import { createAuditLog } from "@/lib/audit"
+import { hasCommunityPermission, isStaff as isStaffHelper } from "@/lib/permissions"
 
 const VALID_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
   DRAFT:      ["PUBLISHED", "CANCELLED"],
@@ -47,6 +48,7 @@ async function getEventWithAccess(slug: string, eventId: string, userId?: string
   const membership = userId
     ? await prisma.membership.findFirst({
         where: { communityId: event.community.id, userId },
+        include: { communityRole: { select: { permissions: true } } },
       })
     : null
 
@@ -64,7 +66,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
   }
 
-  const isStaff = membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
+  const isStaff = isStaffHelper(membership)
   if (event.status === "DRAFT" && !isStaff) {
     return NextResponse.json({ error: "Événement introuvable" }, { status: 404 })
   }
@@ -83,7 +85,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { event, membership } = await getEventWithAccess(params.slug, params.id, session.user.id)
   if (!event) return NextResponse.json({ error: "Événement introuvable" }, { status: 404 })
 
-  if (!membership || !["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)) {
+  if (!hasCommunityPermission(membership, "MANAGE_EVENTS")) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
   }
 
@@ -150,7 +152,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   const { event, membership } = await getEventWithAccess(params.slug, params.id, session.user.id)
   if (!event) return NextResponse.json({ error: "Événement introuvable" }, { status: 404 })
 
-  if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
+  if (!hasCommunityPermission(membership, "MANAGE_EVENTS")) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
   }
 

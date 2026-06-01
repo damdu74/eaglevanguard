@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { hasCommunityPermission } from "@/lib/permissions"
 
 export const dynamic = "force-dynamic"
 
@@ -15,7 +16,8 @@ async function getStaffMembership(slug: string, userId: string) {
   if (!community) return { community: null, membership: null }
 
   const membership = await prisma.membership.findFirst({
-    where: { communityId: community.id, userId, role: { in: ["OWNER", "ADMIN", "MODERATOR"] } },
+    where: { communityId: community.id, userId },
+    include: { communityRole: { select: { permissions: true } } },
   })
   return { community, membership }
 }
@@ -26,7 +28,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   const { community, membership } = await getStaffMembership(params.slug, session.user.id)
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
-  if (!membership) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  if (!hasCommunityPermission(membership, "MANAGE_EVENTS")) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
 
   const templates = await prisma.eventTemplate.findMany({
     where: { communityId: community.id },
@@ -42,7 +44,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const { community, membership } = await getStaffMembership(params.slug, session.user.id)
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
-  if (!membership) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  if (!hasCommunityPermission(membership, "MANAGE_EVENTS")) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
 
   const body = await req.json()
   const { name, title, type, description, maxSlots } = body

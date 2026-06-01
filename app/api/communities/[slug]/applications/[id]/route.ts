@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
+import { hasCommunityPermission } from "@/lib/permissions"
 
 interface Params {
   params: { slug: string; id: string }
@@ -19,10 +20,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     where: {
       communityId: community.id,
       userId: session.user.id as string,
-      role: { in: ["OWNER", "ADMIN"] },
     },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  if (!adminMembership) return NextResponse.json({ error: "Permissions insuffisantes" }, { status: 403 })
+  if (!hasCommunityPermission(adminMembership, "MANAGE_APPLICATIONS")) {
+    return NextResponse.json({ error: "Permissions insuffisantes" }, { status: 403 })
+  }
 
   const application = await prisma.application.findFirst({
     where: { id: params.id, communityId: community.id },

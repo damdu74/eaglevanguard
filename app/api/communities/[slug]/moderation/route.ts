@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { MemberRole, ModerationActionType, Prisma } from "@prisma/client"
+import { ModerationActionType, Prisma } from "@prisma/client"
 import { z } from "zod"
 import { createAuditLog } from "@/lib/audit"
-
-const STAFF_ROLES: MemberRole[] = ["OWNER", "ADMIN", "MODERATOR"]
+import { hasCommunityPermission } from "@/lib/permissions"
 
 const createSchema = z.object({
   type: z.enum(["WARN", "KICK", "BAN_COMMUNITY", "UNBAN"]),
@@ -16,9 +15,10 @@ const createSchema = z.object({
   expiresAt: z.string().datetime().optional(),
 })
 
-async function getStaffMembership(userId: string, communityId: string) {
+async function getModerateMembership(userId: string, communityId: string) {
   return prisma.membership.findFirst({
-    where: { userId, communityId, role: { in: STAFF_ROLES } },
+    where: { userId, communityId },
+    include: { communityRole: { select: { permissions: true } } },
   })
 }
 
@@ -29,9 +29,11 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   const community = await prisma.community.findUnique({ where: { slug: params.slug }, select: { id: true } })
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
-  const staff = await getStaffMembership(session.user.id, community.id)
+  const staff = await getModerateMembership(session.user.id, community.id)
   const nexusUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } })
-  if (!staff && !nexusUser?.isNexusTeam) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  if (!hasCommunityPermission(staff, "MODERATE") && !nexusUser?.isNexusTeam) {
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  }
 
   const { searchParams } = new URL(req.url)
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"))
@@ -70,8 +72,8 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
   const community = await prisma.community.findUnique({ where: { slug: params.slug }, select: { id: true, name: true } })
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
-  const staff = await getStaffMembership(session.user.id, community.id)
-  if (!staff) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  const staff = await getModerateMembership(session.user.id, community.id)
+  if (!hasCommunityPermission(staff, "MODERATE")) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
 
   const body = await req.json()
   const parsed = createSchema.safeParse(body)
@@ -85,8 +87,8 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     where: { userId_communityId: { userId: targetId, communityId: community.id } },
   })
 
-  const roleOrder: Record<string, number> = { OWNER: 0, ADMIN: 1, MODERATOR: 2, MEMBER: 3, RECRUIT: 4 }
-  if (targetMembership && roleOrder[targetMembership.role] <= roleOrder[staff.role]) {
+  // Un non-OWNER ne peut pas sanctionner un autre OWNER
+  if (targetMembership?.role === "OWNER" && staff?.role !== "OWNER") {
     return NextResponse.json({ error: "Hiérarchie insuffisante" }, { status: 403 })
   }
 

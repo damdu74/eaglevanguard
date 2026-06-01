@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { rateLimit } from "@/lib/rate-limit"
 import { z } from "zod"
+import { hasCommunityPermission } from "@/lib/permissions"
 
 const patchSchema = z.object({
   name: z.string().min(1).max(50).optional(),
@@ -44,11 +45,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     where: {
       userId: session.user.id,
       community: { slug: params.slug },
-      role: { in: ["OWNER", "ADMIN"] },
     },
+    include: { communityRole: { select: { permissions: true } } },
   })
 
-  if (!membership) {
+  if (!hasCommunityPermission(membership, "MANAGE_SETTINGS")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 

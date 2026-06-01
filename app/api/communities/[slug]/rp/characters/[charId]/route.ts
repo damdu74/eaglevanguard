@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { isStaff as isStaffHelper } from "@/lib/permissions"
 
 export async function DELETE(_req: NextRequest, { params }: { params: { slug: string; charId: string } }) {
   const session = await getServerSession(authOptions)
@@ -15,8 +16,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: { slug: st
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  const isStaff = membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
+  const isStaff = isStaffHelper(membership)
   const isOwner = character.userId === (session.user.id as string)
 
   if (!isOwner && !isStaff) return NextResponse.json({ error: "Droits insuffisants" }, { status: 403 })
@@ -37,8 +39,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { slug: stri
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  const isStaff = !!membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
+  const isStaff = isStaffHelper(membership)
   const isOwner = character.userId === (session.user.id as string)
 
   if (!isOwner && !isStaff) return NextResponse.json({ error: "Droits insuffisants" }, { status: 403 })
