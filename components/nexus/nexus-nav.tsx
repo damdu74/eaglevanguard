@@ -3,12 +3,11 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Users, ShieldAlert, ClipboardList } from "lucide-react"
+import { Users, ShieldAlert } from "lucide-react"
 
 const links = [
   { href: "/nexus/team", label: "Équipe", icon: Users },
-  { href: "/nexus/moderation", label: "Modération", icon: ShieldAlert },
-  { href: "/nexus/logs", label: "Logs", icon: ClipboardList },
+  { href: "/nexus/moderation", label: "Modération & Logs", icon: ShieldAlert },
 ]
 
 export function NexusNav() {
