@@ -3,7 +3,6 @@ import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { SettingsForm } from "@/components/settings/settings-form"
-import { MySanctions } from "@/components/settings/my-sanctions"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 
@@ -30,7 +29,6 @@ export default async function SettingsPage() {
         <h1 className="text-2xl font-bold">Paramètres</h1>
       </div>
       <SettingsForm theme={user.theme} />
-      <MySanctions />
     </div>
   )
 }
