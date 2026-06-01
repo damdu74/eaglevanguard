@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react"
 import { toast } from "sonner"
 import { format, formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
-import { Shield, AlertTriangle, Ban, UserX, Plus, RotateCcw, Trash2, ClipboardList } from "lucide-react"
+import { Shield, AlertTriangle, Ban, UserX, RotateCcw, Trash2, ClipboardList } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -116,13 +116,6 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
       .catch(() => {})
   }, [mode])
 
-  const [showForm, setShowForm] = useState(false)
-  const [formType, setFormType] = useState<ActionType>("WARN")
-  const [formTargetUser, setFormTargetUser] = useState<SelectedUser | null>(null)
-  const [formReason, setFormReason] = useState("")
-  const [formNote, setFormNote] = useState("")
-  const [submitting, setSubmitting] = useState(false)
-
   const [resolveAction, setResolveAction] = useState<ModerationAction | null>(null)
   const [resolveNote, setResolveNote] = useState("")
   const [resolving, setResolving] = useState(false)
@@ -157,37 +150,6 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
   const availableTypes: ActionType[] = mode === "nexus"
     ? ["WARN", "KICK", "BAN_COMMUNITY", "BAN_PLATFORM", "UNBAN"]
     : ["WARN", "KICK", "BAN_COMMUNITY", "UNBAN"]
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!formTargetUser || !formReason.trim()) return
-    setSubmitting(true)
-    try {
-      const body: Record<string, string> = {
-        type: formType,
-        targetId: formTargetUser.id,
-        reason: formReason.trim(),
-      }
-      if (formNote.trim()) body.note = formNote.trim()
-      if (communitySlug && formType !== "BAN_PLATFORM") body.communityId = ""
-
-      const res = await fetch(apiBase, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error ?? "Erreur")
-      }
-      toast.success("Action de modération créée")
-      setShowForm(false)
-      setFormTargetUser(null)
-      setFormReason("")
-      setFormNote("")
-      fetchActions(1)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erreur lors de la création")
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   async function handleResolve() {
     if (!resolveAction) return
@@ -234,20 +196,14 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Modération{communityName ? ` — ${communityName}` : " Plateforme"}
-          </h2>
-          <p className="text-muted-foreground text-sm mt-0.5">
-            {total > 0 ? `${total} action${total > 1 ? "s" : ""}` : "Aucune action"}
-          </p>
-        </div>
-        <Button size="sm" onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-1.5" />
-          Nouvelle action
-        </Button>
+      <div>
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Shield className="h-5 w-5" />
+          Historique des sanctions{communityName ? ` — ${communityName}` : ""}
+        </h2>
+        <p className="text-muted-foreground text-sm mt-0.5">
+          {total > 0 ? `${total} action${total > 1 ? "s" : ""}` : "Aucune action enregistrée"}
+        </p>
       </div>
 
       {/* Filtres compacts */}
@@ -405,75 +361,6 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
           </div>
         </>
       )}
-
-      {/* Dialog nouvelle action */}
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Nouvelle action de modération</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label>Type d&apos;action</Label>
-              <Select value={formType} onValueChange={(v) => setFormType(v as ActionType)}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableTypes.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      <span className="flex items-center gap-2">
-                        {ACTION_ICONS[t]}
-                        {ACTION_LABELS[t]}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Utilisateur ciblé</Label>
-              <div className="mt-1">
-                <UserSearchInput
-                  value={formTargetUser}
-                  onChange={setFormTargetUser}
-                  placeholder="Rechercher par nom..."
-                  forMod={mode === "nexus"}
-                />
-              </div>
-            </div>
-            <div>
-              <Label>Raison <span className="text-destructive">*</span></Label>
-              <Textarea
-                className="mt-1 resize-none"
-                rows={3}
-                placeholder="Motif de la sanction..."
-                value={formReason}
-                onChange={(e) => setFormReason(e.target.value)}
-                required
-                maxLength={500}
-              />
-            </div>
-            <div>
-              <Label>Note interne <span className="text-muted-foreground text-xs">(optionnelle)</span></Label>
-              <Textarea
-                className="mt-1 resize-none"
-                rows={2}
-                placeholder="Note visible uniquement par le staff..."
-                value={formNote}
-                onChange={(e) => setFormNote(e.target.value)}
-                maxLength={500}
-              />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Annuler</Button>
-              <Button type="submit" disabled={submitting || !formTargetUser || !formReason.trim()}>
-                {submitting ? "Enregistrement..." : "Confirmer"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       {/* Dialog résolution */}
       <Dialog open={!!resolveAction} onOpenChange={(o) => !o && setResolveAction(null)}>
