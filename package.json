@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && node scripts/wake-db.mjs && prisma migrate deploy && next build",
+    "build": "prisma generate && node scripts/wake-db.mjs && next build",
     "migrate": "prisma migrate deploy",
     "start": "next start",
     "lint": "next lint"

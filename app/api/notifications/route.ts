@@ -11,33 +11,38 @@ export async function GET() {
 
   const userId = session.user.id
 
-  const [friendRequests, pendingApplications, notifications, unreadCount] = await Promise.all([
-    prisma.friendship.count({ where: { receiverId: userId, status: "PENDING" } }),
-    prisma.application.count({
-      where: {
-        status: "PENDING",
-        community: {
-          memberships: {
-            some: {
-              userId,
-              OR: [
-                { role: "OWNER" },
-                { rank: { permissions: { has: "MANAGE_APPLICATIONS" } } },
-              ],
+  try {
+    const [friendRequests, pendingApplications, notifications, unreadCount] = await Promise.all([
+      prisma.friendship.count({ where: { receiverId: userId, status: "PENDING" } }),
+      prisma.application.count({
+        where: {
+          status: "PENDING",
+          community: {
+            memberships: {
+              some: {
+                userId,
+                OR: [
+                  { role: "OWNER" },
+                  { rank: { permissions: { has: "MANAGE_APPLICATIONS" } } },
+                ],
+              },
             },
           },
         },
-      },
-    }),
-    prisma.notification.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-    prisma.notification.count({ where: { userId, read: false } }),
-  ])
+      }),
+      prisma.notification.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      prisma.notification.count({ where: { userId, read: false } }),
+    ])
 
-  return NextResponse.json({ friendRequests, pendingApplications, notifications, unreadCount })
+    return NextResponse.json({ friendRequests, pendingApplications, notifications, unreadCount })
+  } catch {
+    // DB temporairement indisponible (réveil Neon) — retourner des valeurs vides
+    return NextResponse.json({ friendRequests: 0, pendingApplications: 0, notifications: [], unreadCount: 0 })
+  }
 }
 
 export async function PATCH() {
