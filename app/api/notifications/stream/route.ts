@@ -27,7 +27,13 @@ export async function GET(req: NextRequest) {
             prisma.notification.count({ where: { userId, read: false } }),
             prisma.friendship.count({ where: { receiverId: userId, status: "PENDING" } }),
             prisma.membership.findMany({
-              where: { userId, role: { in: ["OWNER", "ADMIN", "MODERATOR"] } },
+              where: {
+                userId,
+                OR: [
+                  { role: "OWNER" },
+                  { communityRole: { permissions: { has: "MANAGE_APPLICATIONS" } } },
+                ],
+              },
               select: { communityId: true },
             }),
           ])

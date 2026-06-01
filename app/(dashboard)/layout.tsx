@@ -18,7 +18,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
         prisma.application.count({
           where: {
             status: "PENDING",
-            community: { memberships: { some: { userId, role: { in: ["OWNER", "ADMIN"] } } } },
+            community: {
+              memberships: {
+                some: {
+                  userId,
+                  OR: [
+                    { role: "OWNER" },
+                    { communityRole: { permissions: { has: "MANAGE_APPLICATIONS" } } },
+                  ],
+                },
+              },
+            },
           },
         }),
       ])

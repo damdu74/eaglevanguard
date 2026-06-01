@@ -24,13 +24,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
   if (!community) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
   const membership = await prisma.membership.findFirst({
-    where: {
-      userId: session.user.id as string,
-      communityId: community.id,
-      role: { in: ["OWNER", "ADMIN", "MODERATOR"] },
-    },
+    where: { userId: session.user.id as string, communityId: community.id },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  const { isStaff } = await import("@/lib/permissions")
+  if (!isStaff(membership)) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   const { nodes, edges } = await req.json()
 

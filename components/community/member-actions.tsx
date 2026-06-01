@@ -16,21 +16,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, Shield, Star, UserMinus } from "lucide-react"
+import { ROLE_LABELS } from "@/lib/permissions"
 
-const ROLE_LABELS: Record<string, string> = {
-  OWNER: "Propriétaire",
-  ADMIN: "Administrateur",
-  MODERATOR: "Modérateur",
-  MEMBER: "Membre",
-  RECRUIT: "Nouveau",
+interface CommunityRole {
+  id: string
+  name: string
+  color: string
 }
 
 interface Props {
   communitySlug: string
   userId: string
   currentRole: string
+  currentCommunityRoleId: string | null
   currentRankId: string | null
   ranks: { id: string; name: string; abbreviation: string; isPermanent: boolean }[]
+  communityRoles: CommunityRole[]
   myRole: string
 }
 
@@ -38,18 +39,15 @@ export function MemberActions({
   communitySlug,
   userId,
   currentRole,
+  currentCommunityRoleId,
   currentRankId,
   ranks,
+  communityRoles,
   myRole,
 }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-
-  const availableRoles = (() => {
-    if (myRole === "OWNER") return ["ADMIN", "MODERATOR", "MEMBER"]
-    if (myRole === "ADMIN") return ["MODERATOR", "MEMBER"]
-    return ["MEMBER"]
-  })()
+  const isOwner = myRole === "OWNER"
 
   async function patch(body: object) {
     setLoading(true)
@@ -75,9 +73,7 @@ export function MemberActions({
   async function kick() {
     setLoading(true)
     try {
-      const res = await fetch(`/api/communities/${communitySlug}/members/${userId}`, {
-        method: "DELETE",
-      })
+      const res = await fetch(`/api/communities/${communitySlug}/members/${userId}`, { method: "DELETE" })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? "Erreur")
@@ -101,25 +97,38 @@ export function MemberActions({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
 
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <Shield className="mr-2 h-4 w-4" />
-            Changer le rôle
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            {availableRoles.map((role) => (
+        {/* Rôles personnalisés (OWNER uniquement) */}
+        {isOwner && (
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Shield className="mr-2 h-4 w-4" />
+              Assigner un rôle
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
               <DropdownMenuItem
-                key={role}
-                disabled={role === currentRole}
-                onClick={() => patch({ role })}
+                disabled={currentCommunityRoleId === null && currentRole === "MEMBER"}
+                onClick={() => patch({ role: "MEMBER", communityRoleId: null })}
               >
-                {ROLE_LABELS[role]}
-                {role === currentRole && " ✓"}
+                {ROLE_LABELS.MEMBER}
+                {currentCommunityRoleId === null && currentRole === "MEMBER" && " ✓"}
               </DropdownMenuItem>
-            ))}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+              {communityRoles.length > 0 && <DropdownMenuSeparator />}
+              {communityRoles.map((role) => (
+                <DropdownMenuItem
+                  key={role.id}
+                  disabled={currentCommunityRoleId === role.id}
+                  onClick={() => patch({ role: "MEMBER", communityRoleId: role.id })}
+                >
+                  <span className="mr-2 h-2 w-2 rounded-full inline-block shrink-0" style={{ backgroundColor: role.color }} />
+                  {role.name}
+                  {currentCommunityRoleId === role.id && " ✓"}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        )}
 
+        {/* Grades */}
         {ranks.length > 0 && (
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
@@ -127,12 +136,8 @@ export function MemberActions({
               Attribuer un grade
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-              <DropdownMenuItem
-                disabled={currentRankId === null}
-                onClick={() => patch({ rankId: null })}
-              >
-                Aucun grade
-                {currentRankId === null && " ✓"}
+              <DropdownMenuItem disabled={currentRankId === null} onClick={() => patch({ rankId: null })}>
+                Aucun grade{currentRankId === null && " ✓"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {ranks
@@ -143,8 +148,7 @@ export function MemberActions({
                     disabled={rank.id === currentRankId || rank.isPermanent}
                     onClick={() => !rank.isPermanent && patch({ rankId: rank.id })}
                   >
-                    [{rank.abbreviation}] {rank.name}
-                    {rank.id === currentRankId && " ✓"}
+                    [{rank.abbreviation}] {rank.name}{rank.id === currentRankId && " ✓"}
                   </DropdownMenuItem>
                 ))}
             </DropdownMenuSubContent>
@@ -152,10 +156,7 @@ export function MemberActions({
         )}
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="text-destructive focus:text-destructive"
-          onClick={kick}
-        >
+        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={kick}>
           <UserMinus className="mr-2 h-4 w-4" />
           Exclure de la communauté
         </DropdownMenuItem>

@@ -6,7 +6,8 @@ import { CommunitySettingsForm } from "@/components/community/community-settings
 import { CommunityLogoUpload } from "@/components/community/community-logo-upload"
 import { TransferOwnershipForm } from "@/components/community/transfer-ownership-form"
 import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, Shield } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface PageProps {
   params: { slug: string }
@@ -28,15 +29,13 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
   if (!community) notFound()
 
   const membership = await prisma.membership.findFirst({
-    where: {
-      communityId: community.id,
-      userId: session.user.id as string,
-      role: { in: ["OWNER", "ADMIN"] },
-    },
+    where: { communityId: community.id, userId: session.user.id as string },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  if (!membership) redirect(`/communities/${params.slug}`)
+  const { hasCommunityPermission } = await import("@/lib/permissions")
+  if (!hasCommunityPermission(membership, "MANAGE_SETTINGS")) redirect(`/communities/${params.slug}`)
 
-  const isOwner = membership.role === "OWNER"
+  const isOwner = membership?.role === "OWNER"
 
   const otherMembers = isOwner
     ? await prisma.membership.findMany({
@@ -65,6 +64,20 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
       </div>
 
       <CommunityLogoUpload slug={params.slug} currentLogoUrl={community.logoUrl} />
+
+      {isOwner && (
+        <Link href={`/communities/${params.slug}/settings/roles`}>
+          <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+            <CardContent className="flex items-center gap-3 py-4">
+              <Shield className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-medium text-sm">Rôles personnalisés</p>
+                <p className="text-xs text-muted-foreground">Créer et gérer les rôles avec permissions</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      )}
 
       <CommunitySettingsForm
         community={community}

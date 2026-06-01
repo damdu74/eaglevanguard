@@ -21,20 +21,12 @@ export async function generateMetadata({ params }: PageProps) {
   return { title: community ? `Membres — ${community.name}` : "Membres" }
 }
 
-const ROLE_LABELS: Record<string, string> = {
-  OWNER: "Propriétaire",
-  ADMIN: "Administrateur",
-  MODERATOR: "Modérateur",
-  MEMBER: "Membre",
-  RECRUIT: "Nouveau",
-}
+import { hasCommunityPermission, isStaff, ROLE_LABELS } from "@/lib/permissions"
 
 const ROLE_ORDER: Record<string, number> = {
   OWNER: 0,
-  ADMIN: 1,
-  MODERATOR: 2,
-  MEMBER: 3,
-  RECRUIT: 4,
+  MEMBER: 1,
+  RECRUIT: 2,
 }
 
 export default async function CommunityMembersPage({ params, searchParams }: PageProps) {
@@ -49,6 +41,7 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
   const myMembership = session?.user?.id
     ? await prisma.membership.findFirst({
         where: { communityId: community.id, userId: session.user.id as string },
+        include: { communityRole: { select: { permissions: true } } },
       })
     : null
 
@@ -69,26 +62,32 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
         },
       },
       rank: { select: { id: true, name: true } },
+      communityRole: { select: { name: true, color: true, permissions: true } },
     },
   })
 
-  const ranks = await prisma.rank.findMany({
-    where: { communityId: community.id },
-    orderBy: { order: "asc" },
-    select: { id: true, name: true, abbreviation: true, isPermanent: true },
-  })
+  const [ranks, communityRoles] = await Promise.all([
+    prisma.rank.findMany({
+      where: { communityId: community.id },
+      orderBy: { order: "asc" },
+      select: { id: true, name: true, abbreviation: true, isPermanent: true },
+    }),
+    prisma.communityRole.findMany({
+      where: { communityId: community.id },
+      orderBy: { order: "asc" },
+      select: { id: true, name: true, color: true },
+    }),
+  ])
 
   const sorted = [...memberships].sort(
     (a, b) => (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99)
   )
 
-  const staff = sorted.filter((m) => ["OWNER", "ADMIN", "MODERATOR"].includes(m.role))
-  const regular = sorted.filter((m) => ["MEMBER", "RECRUIT"].includes(m.role))
+  const staffList = sorted.filter((m) => m.role === "OWNER" || isStaff(m))
+  const regular = sorted.filter((m) => m.role !== "OWNER" && !isStaff(m))
 
   const myRole = myMembership?.role ?? null
-  const isAdmin = myRole === "OWNER" || myRole === "ADMIN"
-  const isModerator = myRole === "MODERATOR"
-  const canManage = isAdmin || isModerator
+  const canManage = myMembership ? isStaff(myMembership) : false
 
   const membersUrl = `/communities/${params.slug}/members${searchParams?.back ? `?back=${encodeURIComponent(searchParams.back)}` : ""}`
 
@@ -114,32 +113,30 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
       </div>
 
       {/* Staff */}
-      {staff.length > 0 && (
+      {staffList.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide">
-              Staff
-            </h2>
-            <span className="text-xs text-muted-foreground">{staff.length} membre{staff.length > 1 ? "s" : ""}</span>
+            <h2 className="text-sm font-semibold uppercase tracking-wide">Staff</h2>
+            <span className="text-xs text-muted-foreground">{staffList.length} membre{staffList.length > 1 ? "s" : ""}</span>
           </div>
           <Card>
             <CardContent className="p-0">
               <div className="divide-y">
-                {staff.map(({ user, role, rank }) => (
+                {staffList.map(({ user, role, rank, communityRole, communityRoleId }) => (
                   <MemberRow
                     key={user.id}
                     user={user}
                     role={role}
+                    customRoleName={communityRole?.name ?? null}
+                    customRoleColor={communityRole?.color ?? null}
+                    currentCommunityRoleId={communityRoleId ?? null}
                     rank={rank ?? null}
                     isMe={user.id === session?.user?.id}
                     isCreator={user.id === community.creatorId}
-                    canActOnTarget={canManage && user.id !== session?.user?.id && (() => {
-                      if (myRole === "OWNER") return role !== "OWNER" || user.id !== community.creatorId
-                      if (myRole === "ADMIN") return !["OWNER", "ADMIN"].includes(role)
-                      return false
-                    })()}
+                    canActOnTarget={canManage && user.id !== session?.user?.id && myRole === "OWNER"}
                     communitySlug={params.slug}
                     ranks={ranks}
+                    communityRoles={communityRoles}
                     myRole={myRole}
                     membersUrl={membersUrl}
                   />
@@ -154,30 +151,27 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
       {regular.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide">
-              Membres
-            </h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wide">Membres</h2>
             <span className="text-xs text-muted-foreground">{regular.length} membre{regular.length > 1 ? "s" : ""}</span>
           </div>
           <Card>
             <CardContent className="p-0">
               <div className="divide-y">
-                {regular.map(({ user, role, rank }) => (
+                {regular.map(({ user, role, rank, communityRole, communityRoleId }) => (
                   <MemberRow
                     key={user.id}
                     user={user}
                     role={role}
+                    customRoleName={communityRole?.name ?? null}
+                    customRoleColor={communityRole?.color ?? null}
+                    currentCommunityRoleId={communityRoleId ?? null}
                     rank={rank ?? null}
                     isMe={user.id === session?.user?.id}
                     isCreator={user.id === community.creatorId}
-                    canActOnTarget={canManage && user.id !== session?.user?.id && (() => {
-                      if (myRole === "OWNER") return true
-                      if (myRole === "ADMIN") return true
-                      if (myRole === "MODERATOR") return true
-                      return false
-                    })()}
+                    canActOnTarget={canManage && user.id !== session?.user?.id}
                     communitySlug={params.slug}
                     ranks={ranks}
+                    communityRoles={communityRoles}
                     myRole={myRole}
                     membersUrl={membersUrl}
                   />
@@ -188,7 +182,7 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
         </section>
       )}
 
-      {isAdmin && (
+      {hasCommunityPermission(myMembership, "MANAGE_APPLICATIONS") && (
         <div className="flex justify-end">
           <Link
             href={`/communities/${params.slug}/applications`}
@@ -203,16 +197,20 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
 }
 
 function MemberRow({
-  user, role, rank, isMe, isCreator, canActOnTarget, communitySlug, ranks, myRole, membersUrl,
+  user, role, customRoleName, customRoleColor, currentCommunityRoleId, rank, isMe, isCreator, canActOnTarget, communitySlug, ranks, communityRoles, myRole, membersUrl,
 }: {
   user: { id: string; steamName: string | null; discordName: string | null; name: string | null; customAvatar: string | null; steamAvatar: string | null; discordAvatar: string | null }
   role: string
+  customRoleName: string | null
+  customRoleColor: string | null
+  currentCommunityRoleId: string | null
   rank: { id: string; name: string } | null
   isMe: boolean
   isCreator: boolean
   canActOnTarget: boolean
   communitySlug: string
   ranks: { id: string; name: string; abbreviation: string; isPermanent: boolean }[]
+  communityRoles: { id: string; name: string; color: string }[]
   myRole: string | null
   membersUrl: string
 }) {
@@ -244,17 +242,25 @@ function MemberRow({
         <Badge
           variant="outline"
           className="text-xs"
-          style={isCreator ? { backgroundColor: "#5865F2", borderColor: "#5865F2", color: "#fff" } : undefined}
+          style={
+            isCreator
+              ? { backgroundColor: "#5865F2", borderColor: "#5865F2", color: "#fff" }
+              : customRoleColor
+              ? { backgroundColor: `${customRoleColor}20`, borderColor: customRoleColor, color: customRoleColor }
+              : undefined
+          }
         >
-          {isCreator ? "Fondateur" : (ROLE_LABELS[role] ?? role)}
+          {isCreator ? "Fondateur" : customRoleName ?? (ROLE_LABELS[role as keyof typeof ROLE_LABELS] ?? role)}
         </Badge>
         {canActOnTarget && (
           <MemberActions
             communitySlug={communitySlug}
             userId={user.id}
             currentRole={role}
+            currentCommunityRoleId={currentCommunityRoleId}
             currentRankId={rank?.id ?? null}
             ranks={ranks}
+            communityRoles={communityRoles}
             myRole={myRole!}
           />
         )}

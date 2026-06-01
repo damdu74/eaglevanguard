@@ -68,7 +68,13 @@ export default async function DashboardPage() {
         status: "PENDING",
         community: {
           memberships: {
-            some: { userId, role: { in: ["OWNER", "ADMIN"] } },
+            some: {
+              userId,
+              OR: [
+                { role: "OWNER" },
+                { communityRole: { permissions: { has: "MANAGE_APPLICATIONS" } } },
+              ],
+            },
           },
         },
       },

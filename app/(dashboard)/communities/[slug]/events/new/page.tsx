@@ -23,13 +23,11 @@ export default async function NewEventPage({ params }: PageProps) {
   if (!community) notFound()
 
   const membership = await prisma.membership.findFirst({
-    where: {
-      communityId: community.id,
-      userId: session.user.id,
-      role: { in: ["OWNER", "ADMIN", "MODERATOR"] },
-    },
+    where: { communityId: community.id, userId: session.user.id },
+    include: { communityRole: { select: { permissions: true } } },
   })
-  if (!membership) redirect(`/communities/${params.slug}`)
+  const { hasCommunityPermission } = await import("@/lib/permissions")
+  if (!hasCommunityPermission(membership, "MANAGE_EVENTS")) redirect(`/communities/${params.slug}`)
 
   const templates = await prisma.eventTemplate.findMany({
     where: { communityId: community.id },

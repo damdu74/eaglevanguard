@@ -76,6 +76,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
     hasUpdate = true
   }
+  if ("communityRoleId" in body) {
+    if (!isOwner) return NextResponse.json({ error: "Seul le propriétaire peut assigner des rôles personnalisés" }, { status: 403 })
+    if (body.communityRoleId) {
+      const roleExists = await prisma.communityRole.findFirst({ where: { id: body.communityRoleId, communityId: result.community.id } })
+      if (!roleExists) return NextResponse.json({ error: "Rôle introuvable" }, { status: 404 })
+    }
+    hasUpdate = true
+  }
 
   if (!hasUpdate) {
     return NextResponse.json({ error: "Aucune modification" }, { status: 400 })
@@ -86,6 +94,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     data: {
       ...(body.role !== undefined ? { role: body.role } : {}),
       ...("rankId" in body ? { rankId: body.rankId ?? null } : {}),
+      ...("communityRoleId" in body ? { communityRoleId: body.communityRoleId ?? null } : {}),
     },
   })
 

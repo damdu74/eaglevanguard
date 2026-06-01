@@ -2,8 +2,8 @@ import { notFound, redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { MemberRole } from "@prisma/client"
 import { ModerationPanel } from "@/components/moderation/moderation-panel"
+import { hasCommunityPermission } from "@/lib/permissions"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 
@@ -18,8 +18,6 @@ export async function generateMetadata({ params }: PageProps) {
   return { title: community ? `Modération — ${community.name}` : "Modération" }
 }
 
-const STAFF_ROLES: MemberRole[] = ["OWNER", "ADMIN", "MODERATOR"]
-
 export default async function CommunityModerationPage({ params }: PageProps) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) redirect("/auth/signin")
@@ -32,12 +30,13 @@ export default async function CommunityModerationPage({ params }: PageProps) {
 
   const [membership, nexusUser] = await Promise.all([
     prisma.membership.findFirst({
-      where: { userId: session.user.id, communityId: community.id, role: { in: STAFF_ROLES } },
+      where: { userId: session.user.id, communityId: community.id },
+      include: { communityRole: { select: { permissions: true } } },
     }),
     prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } }),
   ])
 
-  if (!membership && !nexusUser?.isNexusTeam) redirect(`/communities/${params.slug}`)
+  if (!hasCommunityPermission(membership, "MODERATE") && !nexusUser?.isNexusTeam) redirect(`/communities/${params.slug}`)
 
   return (
     <div className="space-y-4">
