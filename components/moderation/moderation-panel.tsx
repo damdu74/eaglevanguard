@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { toast } from "sonner"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
@@ -86,6 +86,20 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
   const [filterType, setFilterType] = useState<string>("all")
   const [filterTargetUser, setFilterTargetUser] = useState<SelectedUser | null>(null)
   const [filterModeratorUser, setFilterModeratorUser] = useState<SelectedUser | null>(null)
+  const [staffList, setStaffList] = useState<SelectedUser[]>([])
+
+  useEffect(() => {
+    if (mode !== "nexus") return
+    fetch("/api/nexus/members")
+      .then((r) => r.json())
+      .then((members: Array<{ id: string; steamName: string | null; discordName: string | null; name: string | null }>) => {
+        setStaffList(members.map((m) => ({
+          id: m.id,
+          displayName: m.steamName ?? m.discordName ?? m.name ?? "Membre",
+        })))
+      })
+      .catch(() => {})
+  }, [mode])
 
   const [showForm, setShowForm] = useState(false)
   const [formType, setFormType] = useState<ActionType>("WARN")
@@ -238,15 +252,35 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
                 forMod={mode === "nexus"}
               />
             </div>
-            <div className="flex-1 min-w-[200px]">
-              <Label className="text-xs mb-1 block">Modérateur</Label>
-              <UserSearchInput
-                value={filterModeratorUser}
-                onChange={setFilterModeratorUser}
-                placeholder="Rechercher par nom..."
-                forMod={mode === "nexus"}
-              />
-            </div>
+            {mode === "nexus" ? (
+              <div className="flex-1 min-w-[200px]">
+                <Label className="text-xs mb-1 block">Modérateur</Label>
+                <Select
+                  value={filterModeratorUser?.id ?? "all"}
+                  onValueChange={(v) => setFilterModeratorUser(v === "all" ? null : (staffList.find((s) => s.id === v) ?? null))}
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Tous les modérateurs" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les modérateurs</SelectItem>
+                    {staffList.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.displayName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="flex-1 min-w-[200px]">
+                <Label className="text-xs mb-1 block">Modérateur</Label>
+                <UserSearchInput
+                  value={filterModeratorUser}
+                  onChange={setFilterModeratorUser}
+                  placeholder="Rechercher par nom..."
+                  forMod={false}
+                />
+              </div>
+            )}
             <Button variant="outline" className="h-9" onClick={() => fetchActions(1)} disabled={loading}>
               <Search className="h-4 w-4 mr-2" />
               Rechercher
