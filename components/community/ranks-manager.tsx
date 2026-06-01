@@ -12,7 +12,6 @@ import { Loader2, Plus, Trash2, Pencil, Check, X, Crown } from "lucide-react"
 interface Rank {
   id: string
   name: string
-  abbreviation: string
   order: number
   color: string
   isPermanent: boolean
@@ -26,16 +25,12 @@ interface Props {
 export function RanksManager({ communitySlug, initialRanks }: Props) {
   const [ranks, setRanks] = useState<Rank[]>(initialRanks)
 
-  // Création
   const [newName, setNewName] = useState("")
-  const [newAbbr, setNewAbbr] = useState("")
   const [newColor, setNewColor] = useState("#6366f1")
   const [adding, setAdding] = useState(false)
 
-  // Édition inline
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState("")
-  const [editAbbr, setEditAbbr] = useState("")
   const [editColor, setEditColor] = useState("")
   const [editOrder, setEditOrder] = useState(0)
   const [saving, setSaving] = useState(false)
@@ -49,18 +44,18 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
   })
 
   async function addRank() {
-    if (!newName.trim() || !newAbbr.trim()) return
+    if (!newName.trim()) return
     setAdding(true)
     try {
       const res = await fetch(`/api/communities/${communitySlug}/ranks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName.trim(), abbreviation: newAbbr.trim(), color: newColor }),
+        body: JSON.stringify({ name: newName.trim(), color: newColor }),
       })
       if (!res.ok) throw new Error()
       const rank = await res.json()
       setRanks(prev => [...prev, rank])
-      setNewName(""); setNewAbbr(""); setNewColor("#6366f1")
+      setNewName(""); setNewColor("#6366f1")
       toast.success("Grade ajouté")
     } catch { toast.error("Erreur lors de l'ajout") }
     finally { setAdding(false) }
@@ -68,7 +63,7 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
 
   function startEdit(rank: Rank) {
     setEditingId(rank.id); setEditName(rank.name)
-    setEditAbbr(rank.abbreviation); setEditColor(rank.color); setEditOrder(rank.order)
+    setEditColor(rank.color); setEditOrder(rank.order)
   }
 
   async function saveEdit(id: string) {
@@ -77,7 +72,7 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
       const res = await fetch(`/api/communities/${communitySlug}/ranks/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName.trim(), abbreviation: editAbbr.trim(), color: editColor, order: editOrder }),
+        body: JSON.stringify({ name: editName.trim(), color: editColor, order: editOrder }),
       })
       if (!res.ok) throw new Error()
       const updated = await res.json()
@@ -114,8 +109,7 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
           <div key={rank.id}>
             {!rank.isPermanent && editingId === rank.id ? (
               <div className="flex items-center gap-2 flex-wrap">
-                <Input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Nom" className="w-40 h-8 text-sm" />
-                <Input value={editAbbr} onChange={e => setEditAbbr(e.target.value)} placeholder="Abrév." className="w-20 h-8 text-sm" maxLength={10} />
+                <Input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Nom" className="flex-1 h-8 text-sm" />
                 <Input type="number" value={editOrder} onChange={e => setEditOrder(Number(e.target.value))} placeholder="Ordre" className="w-20 h-8 text-sm" />
                 <input type="color" value={editColor} onChange={e => setEditColor(e.target.value)} className="h-8 w-10 cursor-pointer rounded border border-border" />
                 <Button size="sm" className="h-8" onClick={() => saveEdit(rank.id)} disabled={saving}>
@@ -128,16 +122,11 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
             ) : (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {rank.isPermanent
-                    ? <Crown className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
-                    : null
-                  }
+                  {rank.isPermanent && <Crown className="h-3.5 w-3.5 text-yellow-500 shrink-0" />}
                   <span
-                    className="text-xs font-mono px-2 py-0.5 rounded font-bold text-white"
+                    className="h-2.5 w-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: rank.color }}
-                  >
-                    {rank.abbreviation}
-                  </span>
+                  />
                   <span className="text-sm font-medium">{rank.name}</span>
                   {!rank.isPermanent && (
                     <span className="text-xs text-muted-foreground">#{rank.order}</span>
@@ -152,16 +141,12 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
                       <Button
-                        size="sm"
-                        variant="ghost"
+                        size="sm" variant="ghost"
                         className="h-7 w-7 p-0 text-destructive hover:text-destructive"
                         onClick={() => deleteRank(rank.id)}
                         disabled={deletingId === rank.id}
                       >
-                        {deletingId === rank.id
-                          ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          : <Trash2 className="h-3.5 w-3.5" />
-                        }
+                        {deletingId === rank.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                       </Button>
                     </>
                   )}
@@ -176,10 +161,9 @@ export function RanksManager({ communitySlug, initialRanks }: Props) {
         <div className="space-y-2">
           <Label className="text-xs text-muted-foreground">Nouveau grade</Label>
           <div className="flex items-center gap-2 flex-wrap">
-            <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nom du grade" className="w-44 h-8 text-sm" maxLength={50} />
-            <Input value={newAbbr} onChange={e => setNewAbbr(e.target.value)} placeholder="Abrév." className="w-20 h-8 text-sm" maxLength={10} />
+            <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nom du grade" className="flex-1 h-8 text-sm" maxLength={50} />
             <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="h-8 w-10 cursor-pointer rounded border border-border" title="Couleur" />
-            <Button size="sm" className="h-8" onClick={addRank} disabled={adding || !newName.trim() || !newAbbr.trim()}>
+            <Button size="sm" className="h-8" onClick={addRank} disabled={adding || !newName.trim()}>
               {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Plus className="h-3.5 w-3.5 mr-1" />Créer</>}
             </Button>
           </div>

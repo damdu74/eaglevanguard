@@ -30,7 +30,7 @@ interface Props {
   currentRole: string
   currentCommunityRoleId: string | null
   currentRankId: string | null
-  ranks: { id: string; name: string; abbreviation: string; isPermanent: boolean }[]
+  ranks: { id: string; name: string; isPermanent: boolean }[]
   communityRoles: CommunityRole[]
   myRole: string
 }
@@ -148,7 +148,7 @@ export function MemberActions({
                     disabled={rank.id === currentRankId || rank.isPermanent}
                     onClick={() => !rank.isPermanent && patch({ rankId: rank.id })}
                   >
-                    [{rank.abbreviation}] {rank.name}{rank.id === currentRankId && " ✓"}
+                    {rank.name}{rank.id === currentRankId && " ✓"}
                   </DropdownMenuItem>
                 ))}
             </DropdownMenuSubContent>

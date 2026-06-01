@@ -31,12 +31,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!rank) return NextResponse.json({ error: "Grade introuvable" }, { status: 404 })
   if (rank.isPermanent) return NextResponse.json({ error: "Le grade Fondateur ne peut pas être modifié" }, { status: 403 })
 
-  const { name, abbreviation, order, color } = await req.json()
+  const { name, order, color } = await req.json()
   const updated = await prisma.rank.update({
     where: { id: rank.id },
     data: {
       ...(name?.trim() ? { name: name.trim() } : {}),
-      ...(abbreviation?.trim() ? { abbreviation: abbreviation.trim() } : {}),
       ...(order !== undefined ? { order } : {}),
       ...(color ? { color } : {}),
     },

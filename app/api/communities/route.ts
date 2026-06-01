@@ -87,7 +87,6 @@ export async function POST(req: NextRequest) {
       data: {
         communityId: created.id,
         name: "Fondateur",
-        abbreviation: "FDT",
         order: 0,
         isPermanent: true,
       },

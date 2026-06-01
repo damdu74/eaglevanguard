@@ -37,9 +37,9 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Permissions insuffisantes" }, { status: 403 })
   }
 
-  const { name, abbreviation, order, color } = await req.json()
-  if (!name?.trim() || !abbreviation?.trim()) {
-    return NextResponse.json({ error: "Nom et abréviation requis" }, { status: 400 })
+  const { name, order, color } = await req.json()
+  if (!name?.trim()) {
+    return NextResponse.json({ error: "Nom requis" }, { status: 400 })
   }
 
   const maxOrder = await prisma.rank.aggregate({
@@ -51,7 +51,6 @@ export async function POST(req: NextRequest, { params }: Params) {
     data: {
       communityId: community.id,
       name: name.trim(),
-      abbreviation: abbreviation.trim(),
       order: order ?? (maxOrder._max.order ?? 0) + 1,
       color: color ?? "#6366f1",
     },

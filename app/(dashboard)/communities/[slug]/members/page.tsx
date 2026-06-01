@@ -70,7 +70,7 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
     prisma.rank.findMany({
       where: { communityId: community.id },
       orderBy: { order: "asc" },
-      select: { id: true, name: true, abbreviation: true, isPermanent: true },
+      select: { id: true, name: true, isPermanent: true },
     }),
     prisma.communityRole.findMany({
       where: { communityId: community.id },
@@ -209,7 +209,7 @@ function MemberRow({
   isCreator: boolean
   canActOnTarget: boolean
   communitySlug: string
-  ranks: { id: string; name: string; abbreviation: string; isPermanent: boolean }[]
+  ranks: { id: string; name: string; isPermanent: boolean }[]
   communityRoles: { id: string; name: string; color: string }[]
   myRole: string | null
   membersUrl: string
