@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Loader2, UserPlus, UserMinus, Search, Lock, X } from "lucide-react"
@@ -166,7 +165,53 @@ export function NexusMembersManager({ initialRanks, initialMembers, currentUserI
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label className="text-xs text-muted-foreground">Ajouter un membre</Label>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            value={searchQ}
+            onChange={e => setSearchQ(e.target.value)}
+            placeholder="Rechercher un utilisateur..."
+            className="pl-8 h-8 text-sm"
+          />
+          {searching && <Loader2 className="absolute right-2.5 top-2 h-4 w-4 animate-spin text-muted-foreground" />}
+        </div>
+        {searchResults.length > 0 && (
+          <div className="rounded-md border bg-background shadow-sm divide-y overflow-hidden">
+            {searchResults.map(user => {
+              const name = user.steamName ?? user.discordName ?? user.name ?? "Utilisateur"
+              const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar ?? user.image
+              return (
+                <div key={user.id} className="flex items-center justify-between px-3 py-2 hover:bg-muted/40 transition-colors">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Avatar className="h-6 w-6 shrink-0">
+                      <AvatarImage src={avatar ?? undefined} />
+                      <AvatarFallback className="text-xs">{name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <p className="text-sm truncate">{name}</p>
+                  </div>
+                  <Button
+                    size="sm" variant="ghost"
+                    className="h-7 text-xs gap-1 shrink-0"
+                    onClick={() => promoteMember(user)}
+                    disabled={promotingId === user.id}
+                  >
+                    {promotingId === user.id
+                      ? <Loader2 className="h-3 w-3 animate-spin" />
+                      : <><UserPlus className="h-3 w-3" />Promouvoir</>}
+                  </Button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {searchQ.trim().length >= 2 && !searching && searchResults.length === 0 && (
+          <p className="text-xs text-muted-foreground">Aucun utilisateur trouvé.</p>
+        )}
+      </div>
+
       <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
@@ -301,53 +346,6 @@ export function NexusMembersManager({ initialRanks, initialMembers, currentUserI
         </Table>
       </div>
 
-      <Separator />
-
-      <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Ajouter un membre</Label>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
-            value={searchQ}
-            onChange={e => setSearchQ(e.target.value)}
-            placeholder="Rechercher un utilisateur..."
-            className="pl-8 h-8 text-sm"
-          />
-          {searching && <Loader2 className="absolute right-2.5 top-2 h-4 w-4 animate-spin text-muted-foreground" />}
-        </div>
-        {searchResults.length > 0 && (
-          <div className="rounded-md border bg-background shadow-sm divide-y overflow-hidden">
-            {searchResults.map(user => {
-              const name = user.steamName ?? user.discordName ?? user.name ?? "Utilisateur"
-              const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar ?? user.image
-              return (
-                <div key={user.id} className="flex items-center justify-between px-3 py-2 hover:bg-muted/40 transition-colors">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Avatar className="h-6 w-6 shrink-0">
-                      <AvatarImage src={avatar ?? undefined} />
-                      <AvatarFallback className="text-xs">{name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm truncate">{name}</p>
-                  </div>
-                  <Button
-                    size="sm" variant="ghost"
-                    className="h-7 text-xs gap-1 shrink-0"
-                    onClick={() => promoteMember(user)}
-                    disabled={promotingId === user.id}
-                  >
-                    {promotingId === user.id
-                      ? <Loader2 className="h-3 w-3 animate-spin" />
-                      : <><UserPlus className="h-3 w-3" />Promouvoir</>}
-                  </Button>
-                </div>
-              )
-            })}
-          </div>
-        )}
-        {searchQ.trim().length >= 2 && !searching && searchResults.length === 0 && (
-          <p className="text-xs text-muted-foreground">Aucun utilisateur trouvé.</p>
-        )}
-      </div>
     </div>
   )
 }
