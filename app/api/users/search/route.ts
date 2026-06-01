@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
   const users = await prisma.user.findMany({
     where: {
-      id: { not: session.user.id },
+      ...(!skipVisibilityFilter && { id: { not: session.user.id } }),
       ...(!skipVisibilityFilter && { visibility: { not: "PRIVATE" } }),
       OR: [
         { steamName: { contains: q, mode: "insensitive" } },
