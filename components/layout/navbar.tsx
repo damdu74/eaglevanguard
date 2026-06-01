@@ -28,16 +28,6 @@ export function Navbar({ user, pendingFriendsCount = 0, pendingApplicationsCount
         <Image src="/icon.png" alt="NEXUS" width={36} height={36} priority />
       </Link>
 
-      <nav className="hidden md:flex items-center gap-2 ml-4">
-        {user?.isNexusTeam && (
-          <Link
-            href="/nexus/team"
-            className="inline-flex items-center rounded-md border border-indigo-500/50 bg-indigo-500/10 px-3 py-1.5 text-sm font-medium hover:bg-indigo-500/20 transition-colors text-indigo-400"
-          >
-            NEXUS Team
-          </Link>
-        )}
-      </nav>
 
       <div className="ml-auto flex items-center gap-2">
         <NotificationBell initialFriendRequests={pendingFriendsCount} initialPendingApplications={pendingApplicationsCount} />

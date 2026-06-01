@@ -45,7 +45,9 @@ interface SidebarProps {
 export function Sidebar({ isNexusTeam }: SidebarProps) {
   const pathname = usePathname()
 
-  const sections = isNexusTeam ? [...navSections, ...nexusSections] : navSections
+  const sections = isNexusTeam
+    ? [navSections[0], ...nexusSections, ...navSections.slice(1)]
+    : navSections
 
   return (
     <aside className="hidden w-56 shrink-0 border-r bg-muted/30 md:flex flex-col p-3 gap-4">
