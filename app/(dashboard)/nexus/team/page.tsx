@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { NexusTeamManager } from "@/components/nexus/nexus-team-manager"
+import { NexusNav } from "@/components/nexus/nexus-nav"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "NEXUS Team" }
@@ -40,6 +41,7 @@ export default async function NexusTeamPage() {
         <h1 className="text-2xl font-bold">NEXUS Team</h1>
         <p className="text-sm text-muted-foreground">Gestion du staff de la plateforme</p>
       </div>
+      <NexusNav />
       <NexusTeamManager
         initialRanks={ranks}
         initialMembers={members}
