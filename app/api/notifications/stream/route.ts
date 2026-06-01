@@ -63,11 +63,16 @@ export async function GET(req: NextRequest) {
       await send()
       const interval = setInterval(send, 8000)
 
+      // Fermer proprement avant le timeout Vercel (300s) — le client EventSource reconnecte
+      const closeTimer = setTimeout(() => {
+        clearInterval(interval)
+        try { controller.close() } catch {}
+      }, 270_000)
+
       req.signal.addEventListener("abort", () => {
         clearInterval(interval)
-        try {
-          controller.close()
-        } catch {}
+        clearTimeout(closeTimer)
+        try { controller.close() } catch {}
       })
     },
   })

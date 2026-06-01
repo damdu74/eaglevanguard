@@ -17,7 +17,7 @@ export async function checkNexusPermission(userId: string, permission: NexusPerm
   if (!user?.isNexusTeam) return false
   // Rang protégé → tous les droits
   if (user.nexusRank?.isProtected) return true
-  // Pas de rang assigné → accès complet (état bootstrap, permissions non encore configurées)
-  if (!user.nexusRank) return true
+  // Pas de rang ou rang sans aucune permission → accès complet (bootstrap)
+  if (!user.nexusRank || user.nexusRank.permissions.length === 0) return true
   return user.nexusRank.permissions.includes(permission)
 }
