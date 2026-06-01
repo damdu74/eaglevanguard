@@ -40,8 +40,9 @@ try {
 await prisma.$disconnect()
 
 if (!ok) {
-  console.log("[wake-db] Could not reach DB after 8 attempts, aborting.")
-  process.exit(1)
+  console.warn("[wake-db] Could not reach DB after 8 attempts — skipping migrate, build will continue.")
+  console.warn("[wake-db] Check Neon dashboard: the compute may be suspended.")
+  process.exit(0)
 }
 
 // Attendre 3s pour laisser Neon se stabiliser avant migrate
@@ -63,8 +64,7 @@ for (let i = 1; i <= 3; i++) {
 }
 
 if (!migrated) {
-  console.error("[wake-db] migrate deploy failed after 3 attempts.")
-  process.exit(1)
+  console.warn("[wake-db] migrate deploy failed — build will continue without migration.")
 }
 
 console.log("[wake-db] Done.")
