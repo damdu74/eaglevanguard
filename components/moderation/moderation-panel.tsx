@@ -6,7 +6,6 @@ import { format, formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 import { Shield, AlertTriangle, Ban, UserX, Plus, RotateCcw, Trash2, ClipboardList } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -79,10 +78,6 @@ const ACTION_ICONS: Record<ActionType, React.ReactNode> = {
 
 function getUserDisplayName(u: { name: string | null; steamName: string | null }) {
   return u.steamName ?? u.name ?? "Utilisateur"
-}
-
-function getUserAvatar(u: { steamAvatar?: string | null; customAvatar?: string | null; image?: string | null }) {
-  return u.customAvatar ?? u.steamAvatar ?? u.image ?? undefined
 }
 
 function getDateLabel(dateStr: string): string {
