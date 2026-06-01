@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { MemberRole } from "@prisma/client"
 import { LogsPanel } from "@/components/logs/logs-panel"
+import Link from "next/link"
+import { ChevronLeft } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -37,6 +39,13 @@ export default async function CommunityLogsPage({ params }: PageProps) {
 
   return (
     <div className="space-y-4">
+      <Link
+        href={`/communities/${community.slug}`}
+        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        {community.name}
+      </Link>
       <div>
         <h1 className="text-2xl font-bold">Logs d&apos;activité</h1>
         <p className="text-sm text-muted-foreground">Historique des actions dans {community.name}</p>

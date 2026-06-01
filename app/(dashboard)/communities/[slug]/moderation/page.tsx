@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { MemberRole } from "@prisma/client"
 import { ModerationPanel } from "@/components/moderation/moderation-panel"
+import Link from "next/link"
+import { ChevronLeft } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -38,11 +40,20 @@ export default async function CommunityModerationPage({ params }: PageProps) {
   if (!membership && !nexusUser?.isNexusTeam) redirect(`/communities/${params.slug}`)
 
   return (
-    <ModerationPanel
-      mode="community"
-      communitySlug={community.slug}
-      communityName={community.name}
-      isNexusTeam={nexusUser?.isNexusTeam ?? false}
-    />
+    <div className="space-y-4">
+      <Link
+        href={`/communities/${community.slug}`}
+        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        {community.name}
+      </Link>
+      <ModerationPanel
+        mode="community"
+        communitySlug={community.slug}
+        communityName={community.name}
+        isNexusTeam={nexusUser?.isNexusTeam ?? false}
+      />
+    </div>
   )
 }
