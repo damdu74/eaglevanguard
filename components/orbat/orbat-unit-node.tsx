@@ -128,7 +128,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
       {!data.readOnly && data.onAddChild && (
         <button
           onClick={(e) => { e.stopPropagation(); data.onAddChild!(id) }}
-          className="absolute -bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+          className="absolute -bottom-3 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
           title="Ajouter un subordonné"
         >
           <Plus className="h-3.5 w-3.5" />
