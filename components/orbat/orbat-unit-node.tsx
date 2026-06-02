@@ -129,9 +129,6 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
             {data.callsign && (
               <p className="text-[10px] text-muted-foreground leading-none mt-0.5">{data.callsign}</p>
             )}
-            {data.isRoot && (
-              <p className="text-[9px] text-violet-500 font-semibold uppercase tracking-wide mt-0.5">Commandement</p>
-            )}
           </div>
 
           {/* Symbole OTAN (droite) */}
