@@ -34,7 +34,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
   return (
     <div className="relative group">
       {!data.isRoot && (
-        <Handle type="target" position={Position.Top} className="!bg-primary" />
+        <Handle type="target" position={Position.Top} className="!bg-primary !w-3 !h-3 !border-2 !border-background" />
       )}
 
       {!data.readOnly && !data.isRoot && (
