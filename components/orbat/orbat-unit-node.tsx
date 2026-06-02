@@ -44,8 +44,8 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
           className={cn(
             "absolute -top-2.5 -right-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full shadow-md border transition-opacity",
             data.locked
-              ? "bg-amber-500 border-amber-600 text-white opacity-100"
-              : "bg-background border-border text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground"
+              ? "bg-red-500 border-red-600 text-white opacity-100"
+              : "bg-green-500 border-green-600 text-white opacity-0 group-hover:opacity-100"
           )}
           title={data.locked ? "Déverrouiller" : "Verrouiller"}
         >
@@ -59,7 +59,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
       <div
         className={cn(
           "w-[300px] rounded-lg border-2 bg-background shadow-sm overflow-hidden transition-colors",
-          selected ? "border-primary" : data.isRoot ? "border-violet-500" : data.locked ? "border-amber-500/60" : "border-border",
+          selected ? "border-primary" : data.isRoot ? "border-violet-500" : data.locked ? "border-red-500/60" : "border-border",
           data.isRoot && "bg-violet-50 dark:bg-violet-950/30"
         )}
       >
