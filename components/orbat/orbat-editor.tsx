@@ -98,7 +98,8 @@ export function OrbatEditor({
     : `/api/communities/${communitySlug}/orbat`
 
   const hasRoot = initialNodes.some((n) => n.id === ROOT_ID)
-  const baseNodes = hasRoot ? initialNodes : [makeRootNode(rootLabel), ...initialNodes]
+  const baseNodes = (hasRoot ? initialNodes : [makeRootNode(rootLabel), ...initialNodes])
+    .map((n) => rootLabel && n.id === ROOT_ID ? { ...n, data: { ...n.data, label: rootLabel } } : n)
 
   const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
