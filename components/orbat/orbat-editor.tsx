@@ -271,10 +271,26 @@ export function OrbatEditor({
   const save = async () => {
     setSaving(true)
     try {
+      const cleanNodes = nodesRef.current.map((n) => ({
+        id: n.id,
+        type: n.type,
+        position: n.position,
+        data: {
+          label:    n.data?.label    ?? "",
+          type:     n.data?.type     ?? "infantry",
+          size:     n.data?.size     ?? "",
+          callsign: n.data?.callsign ?? "",
+          imageUrl: n.data?.imageUrl ?? "",
+          modifier: n.data?.modifier ?? "",
+          roles:    n.data?.roles    ?? [],
+          isRoot:   n.data?.isRoot   ?? false,
+          locked:   n.data?.locked   ?? false,
+        },
+      }))
       const res = await fetch(`/api/communities/${communitySlug}/orbat`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nodes, edges }),
+        body: JSON.stringify({ nodes: cleanNodes, edges }),
       })
       if (!res.ok) throw new Error("Save failed")
       toast.success("ORBAT sauvegardé")
