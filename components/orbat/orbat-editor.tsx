@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import ReactFlow, {
+  addEdge,
   Background,
   Controls,
   MiniMap,
   useNodesState,
   useEdgesState,
+  type Connection,
   type Edge,
   type Node,
   Panel,
@@ -268,6 +270,10 @@ export function OrbatEditor({
     }
   }
 
+  const onConnect = useCallback((params: Connection) => {
+    setEdges((eds) => addEdge({ ...params, type: "smoothstep" }, eds))
+  }, [setEdges])
+
   const save = async () => {
     setSaving(true)
     try {
@@ -310,11 +316,12 @@ export function OrbatEditor({
           onNodesChange={readOnly ? undefined : onNodesChange}
           onEdgesChange={readOnly ? undefined : onEdgesChange}
           onNodeDoubleClick={onNodeDoubleClick}
+          onConnect={readOnly ? undefined : onConnect}
           nodeTypes={nodeTypes}
           fitView
           proOptions={{ hideAttribution: true }}
           defaultEdgeOptions={{ type: "smoothstep" }}
-          nodesConnectable={false}
+          nodesConnectable={!readOnly}
           snapToGrid={!readOnly}
           snapGrid={SNAP_GRID}
         >

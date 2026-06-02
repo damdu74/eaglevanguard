@@ -135,7 +135,11 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
         </button>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="!bg-primary opacity-0" />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className={cn("!bg-primary !w-3 !h-3 !border-2 !border-background transition-opacity", data.readOnly ? "opacity-0" : "opacity-0 group-hover:opacity-100")}
+      />
     </div>
   )
 })
