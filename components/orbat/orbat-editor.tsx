@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import ReactFlow, {
   addEdge,
   Background,
+  ConnectionMode,
   Controls,
   getSmoothStepPath,
   MiniMap,
@@ -47,14 +48,22 @@ interface CommunityMember {
   role: string
 }
 
-function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd }: EdgeProps) {
+function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd, selected }: EdgeProps) {
   const dx = Math.abs(targetX - sourceX)
   const dy = Math.abs(targetY - sourceY)
   const horizontal = dx > dy
   const resolvedSrc = horizontal ? (sourceX < targetX ? Position.Right : Position.Left) : sourcePosition
   const resolvedTgt = horizontal ? (sourceX < targetX ? Position.Left : Position.Right) : targetPosition
   const [path] = getSmoothStepPath({ sourceX, sourceY, sourcePosition: resolvedSrc, targetX, targetY, targetPosition: resolvedTgt, borderRadius: 8 })
-  return <path id={id} d={path} className="react-flow__edge-path" style={style} markerEnd={markerEnd} />
+  return (
+    <path
+      id={id}
+      d={path}
+      className="react-flow__edge-path"
+      style={{ stroke: selected ? "hsl(var(--primary))" : "hsl(var(--border))", strokeWidth: selected ? 2 : 1.5, fill: "none", ...style }}
+      markerEnd={markerEnd}
+    />
+  )
 }
 
 const ROOT_ID = "root"
@@ -342,6 +351,7 @@ export function OrbatEditor({
           proOptions={{ hideAttribution: true }}
           defaultEdgeOptions={{ type: "orbat" }}
           nodesConnectable={!readOnly}
+          connectionMode={ConnectionMode.Loose}
           snapToGrid={!readOnly}
           snapGrid={SNAP_GRID}
         >
