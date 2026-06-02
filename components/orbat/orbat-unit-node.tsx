@@ -2,7 +2,7 @@
 
 import { memo } from "react"
 import { Handle, Position, type NodeProps } from "reactflow"
-import { ImageIcon, Plus } from "lucide-react"
+import { ImageIcon, Lock, LockOpen, Plus } from "lucide-react"
 import { NatoSymbol } from "./nato-symbol"
 import { cn } from "@/lib/utils"
 
@@ -22,8 +22,10 @@ interface UnitNodeData {
   modifier?: string
   isRoot?: boolean
   readOnly?: boolean
+  locked?: boolean
   roles?: OrbatRole[]
   onAddChild?: (id: string) => void
+  onToggleLock?: (id: string) => void
 }
 
 export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }: NodeProps<UnitNodeData>) {
@@ -35,10 +37,29 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
         <Handle type="target" position={Position.Top} className="!bg-primary" />
       )}
 
+      {!data.readOnly && !data.isRoot && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); data.onToggleLock?.(id) }}
+          className={cn(
+            "absolute -top-2.5 -right-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full shadow-md border transition-opacity",
+            data.locked
+              ? "bg-amber-500 border-amber-600 text-white opacity-100"
+              : "bg-background border-border text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground"
+          )}
+          title={data.locked ? "Déverrouiller" : "Verrouiller"}
+        >
+          {data.locked
+            ? <Lock className="h-3 w-3" />
+            : <LockOpen className="h-3 w-3" />
+          }
+        </button>
+      )}
+
       <div
         className={cn(
           "w-[300px] rounded-lg border-2 bg-background shadow-sm overflow-hidden transition-colors",
-          selected ? "border-primary" : data.isRoot ? "border-violet-500" : "border-border",
+          selected ? "border-primary" : data.isRoot ? "border-violet-500" : data.locked ? "border-amber-500/60" : "border-border",
           data.isRoot && "bg-violet-50 dark:bg-violet-950/30"
         )}
       >

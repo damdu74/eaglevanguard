@@ -165,14 +165,22 @@ export function OrbatEditor({
     setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [] })
   }, [setNodes, setEdges])
 
+  const toggleLock = useCallback((nodeId: string) => {
+    setNodes((nds) =>
+      nds.map((n) => n.id === nodeId ? { ...n, data: { ...n.data, locked: !n.data.locked } } : n)
+    )
+  }, [setNodes])
+
   const nodesWithCallbacks = useMemo(
     () =>
       nodes.map((n) => ({
         ...n,
+        draggable: n.id === ROOT_ID ? false : !n.data.locked,
         data: {
           ...n.data,
           readOnly,
           onAddChild: readOnly ? undefined : addChildNode,
+          onToggleLock: readOnly ? undefined : toggleLock,
         },
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
