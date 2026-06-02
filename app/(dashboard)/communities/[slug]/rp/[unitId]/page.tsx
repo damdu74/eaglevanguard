@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { RpUnitDetail } from "@/components/community/rp-unit-detail"
 import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, Network } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 export const dynamic = "force-dynamic"
@@ -65,6 +65,13 @@ export default async function RpUnitPage({ params }: PageProps) {
         <div className="flex items-center gap-2 flex-wrap">
           <h1 className="text-2xl font-bold">{unit.name}</h1>
           {unit.era && <Badge variant="outline">{unit.era}</Badge>}
+          <Link
+            href={`/communities/${params.slug}/rp/${unit.id}/orbat`}
+            className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border rounded-md px-2.5 py-1.5 transition-colors"
+          >
+            <Network className="h-3.5 w-3.5" />
+            ORBAT de l&apos;unité
+          </Link>
         </div>
         {unit.description && (
           <p className="text-sm text-muted-foreground mt-0.5">{unit.description}</p>

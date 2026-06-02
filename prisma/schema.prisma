@@ -279,6 +279,37 @@ model OrbatEdge {
   @@unique([communityId, edgeId])
 }
 
+// ─── ORBAT PAR UNITÉ RP ───────────────────────────────────────────────────────
+
+model RpUnitOrbatNode {
+  id        String  @id @default(cuid())
+  rpUnitId  String
+  nodeId    String
+  type      String
+  label     String
+  positionX Float
+  positionY Float
+  locked    Boolean @default(false)
+  data      Json?
+
+  rpUnit RpUnit @relation(fields: [rpUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([rpUnitId, nodeId])
+}
+
+model RpUnitOrbatEdge {
+  id       String @id @default(cuid())
+  rpUnitId String
+  edgeId   String
+  source   String
+  target   String
+  data     Json?
+
+  rpUnit RpUnit @relation(fields: [rpUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([rpUnitId, edgeId])
+}
+
 // ─── EVENTS ───────────────────────────────────────────────────────────────────
 
 enum EventStatus {
@@ -341,9 +372,11 @@ model RpUnit {
   columnConfig Json?
   createdAt    DateTime      @default(now())
 
-  community   Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  community   Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
   characters  RpCharacter[]
   rpGroups    RpGroup[]
+  orbatNodes  RpUnitOrbatNode[]
+  orbatEdges  RpUnitOrbatEdge[]
 
   @@index([communityId])
 }

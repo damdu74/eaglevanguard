@@ -51,19 +51,21 @@ function snapVal(v: number) {
   return Math.round(v / SNAP_GRID[0]) * SNAP_GRID[0]
 }
 
-function makeRootNode(): Node {
+function makeRootNode(label = "Commandement"): Node {
   return {
     id: ROOT_ID,
     type: "unit",
     position: { x: 0, y: 0 },
     draggable: false,
     deletable: false,
-    data: { label: "Commandement", type: "hq", size: "", isRoot: true, callsign: "", imageUrl: "", roles: [] },
+    data: { label, type: "hq", size: "", isRoot: true, callsign: "", imageUrl: "", roles: [] },
   }
 }
 
 interface OrbatEditorProps {
   communitySlug: string
+  unitId?: string
+  rootLabel?: string
   initialNodes?: Node[]
   initialEdges?: Edge[]
   readOnly?: boolean
@@ -82,12 +84,18 @@ interface EditState {
 
 export function OrbatEditor({
   communitySlug,
+  unitId,
+  rootLabel,
   initialNodes = [],
   initialEdges = [],
   readOnly = false,
 }: OrbatEditorProps) {
+  const apiBase = unitId
+    ? `/api/communities/${communitySlug}/rp/units/${unitId}/orbat`
+    : `/api/communities/${communitySlug}/orbat`
+
   const hasRoot = initialNodes.some((n) => n.id === ROOT_ID)
-  const baseNodes = hasRoot ? initialNodes : [makeRootNode(), ...initialNodes]
+  const baseNodes = hasRoot ? initialNodes : [makeRootNode(rootLabel), ...initialNodes]
 
   const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
@@ -293,7 +301,7 @@ export function OrbatEditor({
           locked:   n.data?.locked   ?? false,
         },
       }))
-      const res = await fetch(`/api/communities/${communitySlug}/orbat`, {
+      const res = await fetch(apiBase, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nodes: cleanNodes, edges }),
