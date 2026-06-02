@@ -291,24 +291,22 @@ export function OrbatEditor({
           <Controls />
           <MiniMap />
 
-          <Panel position="top-right" className="flex gap-2">
-            {!readOnly && (
-              <>
-                <Button size="sm" variant="outline" onClick={removeSelected}>
-                  <Trash2 className="mr-1 h-4 w-4" />
-                  Supprimer la sélection
-                </Button>
-                <Button size="sm" onClick={save} disabled={saving}>
-                  <Save className="mr-1 h-4 w-4" />
-                  {saving ? "Sauvegarde..." : "Sauvegarder"}
-                </Button>
-              </>
-            )}
-            <Button size="sm" variant="outline" onClick={exportPng} disabled={exporting}>
-              <Download className="mr-1 h-4 w-4" />
-              {exporting ? "Export..." : "Exporter PNG"}
-            </Button>
-          </Panel>
+          {!readOnly && (
+            <Panel position="top-right" className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={removeSelected}>
+                <Trash2 className="mr-1 h-4 w-4" />
+                Supprimer la sélection
+              </Button>
+              <Button size="sm" onClick={save} disabled={saving}>
+                <Save className="mr-1 h-4 w-4" />
+                {saving ? "Sauvegarde..." : "Sauvegarder"}
+              </Button>
+              <Button size="sm" variant="outline" onClick={exportPng} disabled={exporting}>
+                <Download className="mr-1 h-4 w-4" />
+                {exporting ? "Export..." : "Exporter PNG"}
+              </Button>
+            </Panel>
+          )}
 
           {!readOnly && (
             <Panel position="bottom-center">
