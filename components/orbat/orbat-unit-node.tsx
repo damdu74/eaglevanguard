@@ -54,12 +54,20 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
 
   return (
     <div ref={rootRef} className="relative group">
-      {/* Handles sur les 4 côtés — absents sur la case racine */}
+      {/* 4 handles source sur toutes les cases (ConnectionMode.Loose = reçoit aussi) */}
       {!data.isRoot && (
         <>
-          <Handle type="target" position={Position.Top}   id="top"   className={handleCls} />
+          <Handle type="source" position={Position.Top}   id="top"   className={handleCls} />
           <Handle type="source" position={Position.Left}  id="left"  className={handleCls} />
           <Handle type="source" position={Position.Right} id="right" className={handleCls} />
+        </>
+      )}
+      {/* Case racine : tous les côtés aussi */}
+      {data.isRoot && (
+        <>
+          <Handle type="source" position={Position.Left}  id="left"  className={handleCls} />
+          <Handle type="source" position={Position.Right} id="right" className={handleCls} />
+          <Handle type="source" position={Position.Top}   id="top"   className={handleCls} />
         </>
       )}
 
