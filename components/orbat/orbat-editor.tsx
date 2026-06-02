@@ -66,6 +66,7 @@ interface OrbatEditorProps {
   communitySlug: string
   unitId?: string
   rootLabel?: string
+  communityUnits?: { id: string; name: string }[]
   initialNodes?: Node[]
   initialEdges?: Edge[]
   readOnly?: boolean
@@ -80,12 +81,14 @@ interface EditState {
   imageUrl: string
   modifier: string
   roles: OrbatRole[]
+  rpUnitId: string
 }
 
 export function OrbatEditor({
   communitySlug,
   unitId,
   rootLabel,
+  communityUnits,
   initialNodes = [],
   initialEdges = [],
   readOnly = false,
@@ -172,7 +175,7 @@ export function OrbatEditor({
       },
     ])
 
-    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [] })
+    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
   }, [setNodes, setEdges])
 
   const toggleLock = useCallback((nodeId: string) => {
@@ -193,6 +196,7 @@ export function OrbatEditor({
       imageUrl: node.data.imageUrl ?? "",
       modifier: node.data.modifier ?? "",
       roles: node.data.roles ?? [],
+      rpUnitId: node.data.rpUnitId ?? "",
     })
   }, [])
 
@@ -205,6 +209,7 @@ export function OrbatEditor({
         data: {
           ...n.data,
           readOnly,
+          communitySlug,
           onAddChild: readOnly ? undefined : addChildNode,
           onToggleLock: readOnly ? undefined : toggleLock,
           onEdit: readOnly ? undefined : openEdit,
@@ -237,6 +242,7 @@ export function OrbatEditor({
                 imageUrl: editState.imageUrl,
                 modifier: editState.modifier,
                 roles: editState.roles,
+                rpUnitId: editState.rpUnitId || null,
               },
             }
           : n
@@ -302,6 +308,7 @@ export function OrbatEditor({
           roles:    n.data?.roles    ?? [],
           isRoot:   n.data?.isRoot   ?? false,
           locked:   n.data?.locked   ?? false,
+          rpUnitId: n.data?.rpUnitId ?? null,
         },
       }))
       const res = await fetch(apiBase, {
@@ -428,6 +435,36 @@ export function OrbatEditor({
                     />
                 </div>
               </div>
+
+              {/* Unité liée — ORBAT général uniquement, hors racine */}
+              {communityUnits && communityUnits.length > 0 && editState.nodeId !== ROOT_ID && (
+                <div className="space-y-1.5">
+                  <Label>Unité liée <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                  <Select
+                    value={editState.rpUnitId || "__none__"}
+                    onValueChange={(v) => {
+                      if (v === "__none__") {
+                        setEditState({ ...editState, rpUnitId: "" })
+                      } else {
+                        const unit = communityUnits.find((u) => u.id === v)
+                        setEditState({
+                          ...editState,
+                          rpUnitId: v,
+                          label: (!editState.label || editState.label === "Nouvelle unité") && unit ? unit.name : editState.label,
+                        })
+                      }
+                    }}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Aucune" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">Aucune</SelectItem>
+                      {communityUnits.map((u) => (
+                        <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* Nom */}
               <div className="space-y-1.5">

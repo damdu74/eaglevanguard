@@ -70,14 +70,16 @@
   /* Thème clair → curseur sombre */
   html,
   html .react-flow__pane,
-  html .react-flow__pane.dragging {
+  html .react-flow__pane.dragging,
+  html .react-flow__node {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='18' viewBox='0 0 12 18'%3E%3Cpath d='M0 0 L0 14 L4 10 L6 16 L8 15 L6 9 L11 9 Z' fill='%23111111' stroke='white' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E") 0 0, auto;
   }
 
   /* Thème sombre → curseur clair */
   html.dark,
   html.dark .react-flow__pane,
-  html.dark .react-flow__pane.dragging {
+  html.dark .react-flow__pane.dragging,
+  html.dark .react-flow__node {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='18' viewBox='0 0 12 18'%3E%3Cpath d='M0 0 L0 14 L4 10 L6 16 L8 15 L6 9 L11 9 Z' fill='white' stroke='%23111111' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E") 0 0, auto;
   }
 }

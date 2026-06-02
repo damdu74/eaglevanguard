@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef } from "react"
 import { Handle, Position, type NodeProps } from "reactflow"
-import { ImageIcon, Lock, LockOpen, Plus } from "lucide-react"
+import { ImageIcon, Lock, LockOpen, Network, Plus } from "lucide-react"
 import { NatoSymbol } from "./nato-symbol"
 import { cn } from "@/lib/utils"
 
@@ -23,6 +23,8 @@ interface UnitNodeData {
   isRoot?: boolean
   readOnly?: boolean
   locked?: boolean
+  communitySlug?: string
+  rpUnitId?: string
   roles?: OrbatRole[]
   onAddChild?: (id: string) => void
   onToggleLock?: (id: string) => void
@@ -62,6 +64,17 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
           <Handle type="source" position={Position.Right} id="right-source" className={handleCls} />
           <Handle type="target" position={Position.Right} id="right-target" className={handleCls} />
         </>
+      )}
+
+      {data.rpUnitId && data.communitySlug && (
+        <a
+          href={`/communities/${data.communitySlug}/rp/${data.rpUnitId}/orbat`}
+          onClick={(e) => e.stopPropagation()}
+          title="Voir l'ORBAT de l'unité"
+          className="absolute -top-2.5 left-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 border border-violet-600 text-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <Network className="h-3 w-3" />
+        </a>
       )}
 
       {!data.readOnly && !data.isRoot && (

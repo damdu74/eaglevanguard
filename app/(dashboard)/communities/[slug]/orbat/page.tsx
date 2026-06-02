@@ -21,16 +21,23 @@ export default async function OrbatPage({ params }: PageProps) {
 
   if (!session?.user?.isNexusTeam) redirect(`/communities/${params.slug}`)
 
-  const community = await prisma.community.findUnique({
-    where: { slug: params.slug },
-    include: {
-      orbat: true,
-      orbatEdges: true,
-      memberships: session?.user?.id
-        ? { where: { userId: session.user.id as string } }
-        : false,
-    },
-  })
+  const [community, rpUnits] = await Promise.all([
+    prisma.community.findUnique({
+      where: { slug: params.slug },
+      include: {
+        orbat: true,
+        orbatEdges: true,
+        memberships: session?.user?.id
+          ? { where: { userId: session.user.id as string } }
+          : false,
+      },
+    }),
+    prisma.rpUnit.findMany({
+      where: { community: { slug: params.slug } },
+      select: { id: true, name: true },
+      orderBy: { createdAt: "asc" },
+    }),
+  ])
 
   if (!community) notFound()
 
@@ -66,6 +73,8 @@ export default async function OrbatPage({ params }: PageProps) {
       </div>
       <OrbatEditor
         communitySlug={params.slug}
+        rootLabel={community.name}
+        communityUnits={rpUnits}
         initialNodes={nodes}
         initialEdges={edges}
         readOnly={!canEdit}
