@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef } from "react"
 import { Handle, Position, type NodeProps } from "reactflow"
-import { Lock, LockOpen, Network, Plus } from "lucide-react"
+import { Lock, LockOpen, Network } from "lucide-react"
 import { NatoSymbol } from "./nato-symbol"
 import { cn } from "@/lib/utils"
 
@@ -26,7 +26,6 @@ interface UnitNodeData {
   communitySlug?: string
   rpUnitId?: string
   roles?: OrbatRole[]
-  onAddChild?: (id: string) => void
   onToggleLock?: (id: string) => void
   onEdit?: (id: string) => void
 }
@@ -158,15 +157,6 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
         )}
       </div>
 
-      {!data.readOnly && data.onAddChild && (
-        <button
-          onClick={(e) => { e.stopPropagation(); data.onAddChild!(id) }}
-          className="absolute -bottom-3 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
-          title="Ajouter un subordonné"
-        >
-          <Plus className="h-3.5 w-3.5" />
-        </button>
-      )}
 
       <Handle type="source" position={Position.Bottom} id="bottom" className={handleCls} />
     </div>

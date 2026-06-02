@@ -160,41 +160,25 @@ export function OrbatEditor({
   nodesRef.current = nodes
   edgesRef.current = edges
 
-  const addChildNode = useCallback((parentId: string) => {
-    const parentNode = nodesRef.current.find((n) => n.id === parentId)
-    if (!parentNode) return
-
-    const siblingCount = edgesRef.current.filter((e) => e.source === parentId).length
-    const offset = (siblingCount % 2 === 0 ? 1 : -1) * Math.ceil(siblingCount / 2) * 320
-    const childId = `unit-${Date.now()}`
+  const addNode = useCallback(() => {
+    const newId = `unit-${Date.now()}`
+    const selected = nodesRef.current.find((n) => n.selected && n.id !== ROOT_ID)
+    const base = selected ?? nodesRef.current[nodesRef.current.length - 1]
+    const position = base
+      ? { x: snapVal(base.position.x + 340), y: snapVal(base.position.y) }
+      : { x: snapVal(340), y: snapVal(0) }
 
     setNodes((nds) => [
       ...nds,
       {
-        id: childId,
+        id: newId,
         type: "unit",
-        position: {
-          x: snapVal(parentNode.position.x + offset),
-          y: snapVal(parentNode.position.y + 200),
-        },
-        data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [] },
+        position,
+        data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: null },
       },
     ])
-
-    setEdges((eds) => [
-      ...eds,
-      {
-        id: `edge-${Date.now()}`,
-        source: parentId,
-        sourceHandle: "bottom",
-        target: childId,
-        targetHandle: "top",
-        type: "orbat",
-      },
-    ])
-
-    setEditState({ nodeId: childId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
-  }, [setNodes, setEdges])
+    setEditState({ nodeId: newId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
+  }, [setNodes])
 
   const toggleLock = useCallback((nodeId: string) => {
     setNodes((nds) =>
@@ -228,7 +212,6 @@ export function OrbatEditor({
           ...n.data,
           readOnly,
           communitySlug,
-          onAddChild: readOnly ? undefined : addChildNode,
           onToggleLock: readOnly ? undefined : toggleLock,
           onEdit: readOnly ? undefined : openEdit,
         },
@@ -368,6 +351,10 @@ export function OrbatEditor({
 
           {!readOnly && (
             <Panel position="top-right" className="flex gap-2">
+              <Button size="sm" onClick={addNode} className="bg-green-600 hover:bg-green-700 text-white border-0">
+                <Plus className="mr-1 h-4 w-4" />
+                Ajouter
+              </Button>
               <Button size="sm" variant="outline" onClick={removeSelected}>
                 <Trash2 className="mr-1 h-4 w-4" />
                 Supprimer la sélection
