@@ -251,13 +251,14 @@ model Unit {
 }
 
 model OrbatNode {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   communityId String
   nodeId      String
   type        String
   label       String
   positionX   Float
   positionY   Float
+  locked      Boolean @default(false)
   data        Json?
 
   community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)

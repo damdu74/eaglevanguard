@@ -44,6 +44,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
             label: String(n.data?.label ?? "Unité"),
             positionX: n.position.x,
             positionY: n.position.y,
+            locked: Boolean(n.data?.locked ?? false),
             data: n.data,
           })),
         })]

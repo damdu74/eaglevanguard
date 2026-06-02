@@ -41,7 +41,10 @@ export default async function OrbatPage({ params }: PageProps) {
     id: n.nodeId,
     type: n.type,
     position: { x: n.positionX, y: n.positionY },
-    data: n.data ?? { label: n.label },
+    data: {
+      ...((n.data as Record<string, unknown>) ?? { label: n.label }),
+      locked: n.locked,
+    },
   }))
 
   const edges = community.orbatEdges.map((e) => ({
