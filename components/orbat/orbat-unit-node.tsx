@@ -26,6 +26,7 @@ interface UnitNodeData {
   roles?: OrbatRole[]
   onAddChild?: (id: string) => void
   onToggleLock?: (id: string) => void
+  onEdit?: (id: string) => void
 }
 
 export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }: NodeProps<UnitNodeData>) {
@@ -37,7 +38,10 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
   )
 
   return (
-    <div className="relative group">
+    <div
+      className="relative group"
+      onDoubleClick={data.onEdit ? (e) => { e.stopPropagation(); data.onEdit!(id) } : undefined}
+    >
       {/* Handles haut/gauche/droite — absents sur la case racine */}
       {!data.isRoot && (
         <>

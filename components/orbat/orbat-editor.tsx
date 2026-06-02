@@ -181,6 +181,21 @@ export function OrbatEditor({
     )
   }, [setNodes])
 
+  const openEdit = useCallback((nodeId: string) => {
+    const node = nodesRef.current.find((n) => n.id === nodeId)
+    if (!node) return
+    setEditState({
+      nodeId,
+      label: node.data.label ?? "",
+      type: node.data.type ?? "infantry",
+      size: node.data.size ?? "",
+      callsign: node.data.callsign ?? "",
+      imageUrl: node.data.imageUrl ?? "",
+      modifier: node.data.modifier ?? "",
+      roles: node.data.roles ?? [],
+    })
+  }, [])
+
   const nodesWithCallbacks = useMemo(
     () =>
       nodes.map((n) => ({
@@ -192,6 +207,7 @@ export function OrbatEditor({
           readOnly,
           onAddChild: readOnly ? undefined : addChildNode,
           onToggleLock: readOnly ? undefined : toggleLock,
+          onEdit: readOnly ? undefined : openEdit,
         },
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -204,20 +220,6 @@ export function OrbatEditor({
     setNodes((nds) => nds.filter((n) => !n.selected || n.id === ROOT_ID))
     setEdges((eds) => eds.filter((e) => !e.selected))
   }, [setNodes, setEdges])
-
-  const onNodeDoubleClick = useCallback((_: React.MouseEvent, node: Node) => {
-    if (readOnly) return
-    setEditState({
-      nodeId: node.id,
-      label: node.data.label ?? "",
-      type: node.data.type ?? "infantry",
-      size: node.data.size ?? "",
-      callsign: node.data.callsign ?? "",
-      imageUrl: node.data.imageUrl ?? "",
-      modifier: node.data.modifier ?? "",
-      roles: node.data.roles ?? [],
-    })
-  }, [readOnly])
 
   const applyEdit = useCallback(() => {
     if (!editState) return
@@ -324,7 +326,6 @@ export function OrbatEditor({
           edges={edges}
           onNodesChange={readOnly ? undefined : onNodesChange}
           onEdgesChange={readOnly ? undefined : onEdgesChange}
-          onNodeDoubleClick={onNodeDoubleClick}
           onConnect={readOnly ? undefined : onConnect}
           nodeTypes={nodeTypes}
           fitView
