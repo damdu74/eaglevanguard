@@ -172,7 +172,7 @@ export function OrbatEditor({
         id: `edge-${Date.now()}`,
         source: parentId,
         target: childId,
-        type: "straight",
+        type: "smoothstep",
       },
     ])
 
@@ -289,7 +289,7 @@ export function OrbatEditor({
   }
 
   const onConnect = useCallback((params: Connection) => {
-    setEdges((eds) => addEdge({ ...params, type: "straight" }, eds))
+    setEdges((eds) => addEdge({ ...params, type: "smoothstep" }, eds))
   }, [setEdges])
 
   const save = async () => {
@@ -338,7 +338,7 @@ export function OrbatEditor({
           nodeTypes={nodeTypes}
           fitView
           proOptions={{ hideAttribution: true }}
-          defaultEdgeOptions={{ type: "straight" }}
+          defaultEdgeOptions={{ type: "smoothstep" }}
           nodesConnectable={!readOnly}
           snapToGrid={!readOnly}
           snapGrid={SNAP_GRID}
