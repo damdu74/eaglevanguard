@@ -31,10 +31,22 @@ interface UnitNodeData {
 export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }: NodeProps<UnitNodeData>) {
   const roles = data.roles ?? []
 
+  const handleCls = cn(
+    "!bg-primary !w-3 !h-3 !border-2 !border-background transition-opacity",
+    data.readOnly ? "opacity-0" : "opacity-0 group-hover:opacity-100"
+  )
+
   return (
     <div className="relative group">
+      {/* Handles haut/gauche/droite — absents sur la case racine */}
       {!data.isRoot && (
-        <Handle type="target" position={Position.Top} className="!bg-primary !w-3 !h-3 !border-2 !border-background" />
+        <>
+          <Handle type="target" position={Position.Top}   id="top"          className={handleCls} />
+          <Handle type="source" position={Position.Left}  id="left-source"  className={handleCls} />
+          <Handle type="target" position={Position.Left}  id="left-target"  className={handleCls} />
+          <Handle type="source" position={Position.Right} id="right-source" className={handleCls} />
+          <Handle type="target" position={Position.Right} id="right-target" className={handleCls} />
+        </>
       )}
 
       {!data.readOnly && !data.isRoot && (
@@ -135,11 +147,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
         </button>
       )}
 
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className={cn("!bg-primary !w-3 !h-3 !border-2 !border-background transition-opacity", data.readOnly ? "opacity-0" : "opacity-0 group-hover:opacity-100")}
-      />
+      <Handle type="source" position={Position.Bottom} id="bottom" className={handleCls} />
     </div>
   )
 })
