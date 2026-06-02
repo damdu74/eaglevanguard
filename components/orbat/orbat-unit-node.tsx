@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef } from "react"
 import { Handle, Position, type NodeProps } from "reactflow"
-import { ImageIcon, Lock, LockOpen, Network, Plus } from "lucide-react"
+import { Lock, LockOpen, Network, Plus } from "lucide-react"
 import { NatoSymbol } from "./nato-symbol"
 import { cn } from "@/lib/utils"
 
@@ -103,11 +103,11 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
           data.isRoot && "bg-violet-50 dark:bg-violet-950/30"
         )}
       >
-        {/* En-tête 3 colonnes : image | nom | symbole OTAN */}
-        <div className="grid grid-cols-[72px_1fr_60px] items-center gap-1 px-2 py-2">
-          {/* Image (gauche) */}
-          <div className="flex items-center justify-center">
-            {data.imageUrl ? (
+        {/* En-tête : image (si présente) | nom | symbole OTAN */}
+        <div className={cn("grid items-center gap-1 px-2 py-2", data.imageUrl ? "grid-cols-[72px_1fr_60px]" : "grid-cols-[1fr_60px]")}>
+          {/* Image (gauche) — masquée si absente */}
+          {data.imageUrl && (
+            <div className="flex items-center justify-center">
               <div style={{ width: 56, height: 56, borderRadius: 8, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -116,12 +116,8 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
                   style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }}
                 />
               </div>
-            ) : (
-              <div style={{ width: 56, height: 56, borderRadius: 8, flexShrink: 0 }} className="border border-dashed border-border/60 bg-muted/30 flex items-center justify-center">
-                <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Nom (centre) */}
           <div className="text-center min-w-0 px-1">
