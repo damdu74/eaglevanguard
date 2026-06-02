@@ -5,11 +5,14 @@ import ReactFlow, {
   addEdge,
   Background,
   Controls,
+  getSmoothStepPath,
   MiniMap,
+  Position,
   useNodesState,
   useEdgesState,
   type Connection,
   type Edge,
+  type EdgeProps,
   type Node,
   Panel,
 } from "reactflow"
@@ -42,6 +45,16 @@ interface CommunityMember {
   name: string
   image?: string | null
   role: string
+}
+
+function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd }: EdgeProps) {
+  const dx = Math.abs(targetX - sourceX)
+  const dy = Math.abs(targetY - sourceY)
+  const horizontal = dx > dy
+  const resolvedSrc = horizontal ? (sourceX < targetX ? Position.Right : Position.Left) : sourcePosition
+  const resolvedTgt = horizontal ? (sourceX < targetX ? Position.Left : Position.Right) : targetPosition
+  const [path] = getSmoothStepPath({ sourceX, sourceY, sourcePosition: resolvedSrc, targetX, targetY, targetPosition: resolvedTgt, borderRadius: 8 })
+  return <path id={id} d={path} className="react-flow__edge-path" style={style} markerEnd={markerEnd} />
 }
 
 const ROOT_ID = "root"
@@ -102,7 +115,9 @@ export function OrbatEditor({
     .map((n) => rootLabel && n.id === ROOT_ID ? { ...n, data: { ...n.data, label: rootLabel } } : n)
 
   const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(
+    initialEdges.map((e) => ({ ...e, type: "orbat" }))
+  )
   const [saving, setSaving] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [editState, setEditState] = useState<EditState | null>(null)
@@ -172,7 +187,7 @@ export function OrbatEditor({
         id: `edge-${Date.now()}`,
         source: parentId,
         target: childId,
-        type: "smoothstep",
+        type: "orbat",
       },
     ])
 
@@ -221,6 +236,7 @@ export function OrbatEditor({
   )
 
   const nodeTypes = useMemo(() => ({ unit: OrbatUnitNode }), [])
+  const edgeTypes = useMemo(() => ({ orbat: OrbatEdge }), [])
 
   const removeSelected = useCallback(() => {
     setNodes((nds) => nds.filter((n) => !n.selected || n.id === ROOT_ID))
@@ -289,7 +305,7 @@ export function OrbatEditor({
   }
 
   const onConnect = useCallback((params: Connection) => {
-    setEdges((eds) => addEdge({ ...params, type: "smoothstep" }, eds))
+    setEdges((eds) => addEdge({ ...params, type: "orbat" }, eds))
   }, [setEdges])
 
   const save = async () => {
@@ -336,9 +352,10 @@ export function OrbatEditor({
           onEdgesChange={readOnly ? undefined : onEdgesChange}
           onConnect={readOnly ? undefined : onConnect}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           proOptions={{ hideAttribution: true }}
-          defaultEdgeOptions={{ type: "smoothstep" }}
+          defaultEdgeOptions={{ type: "orbat" }}
           nodesConnectable={!readOnly}
           snapToGrid={!readOnly}
           snapGrid={SNAP_GRID}
