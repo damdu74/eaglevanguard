@@ -377,7 +377,7 @@ export function OrbatEditor({
             <div className="space-y-4">
               {/* Image */}
               <div className="space-y-2">
-                <Label>Image de l'unité</Label>
+                <Label>{"Image de l'unité"}</Label>
                 {/* Aperçu centré au-dessus */}
                 <div className="flex justify-center">
                   {editState.imageUrl ? (
