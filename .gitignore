@@ -36,6 +36,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# claude code local settings
+.claude/settings.local.json
+
 /lib/generated/prisma
 
 .vercel
