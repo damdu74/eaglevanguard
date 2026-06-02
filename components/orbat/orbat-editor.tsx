@@ -43,6 +43,11 @@ interface CommunityMember {
 }
 
 const ROOT_ID = "root"
+const SNAP_GRID: [number, number] = [20, 20]
+
+function snapVal(v: number) {
+  return Math.round(v / SNAP_GRID[0]) * SNAP_GRID[0]
+}
 
 function makeRootNode(): Node {
   return {
@@ -131,7 +136,7 @@ export function OrbatEditor({
     if (!parentNode) return
 
     const siblingCount = edgesRef.current.filter((e) => e.source === parentId).length
-    const offset = (siblingCount % 2 === 0 ? 1 : -1) * Math.ceil(siblingCount / 2) * 300
+    const offset = (siblingCount % 2 === 0 ? 1 : -1) * Math.ceil(siblingCount / 2) * 320
     const childId = `unit-${Date.now()}`
 
     setNodes((nds) => [
@@ -140,8 +145,8 @@ export function OrbatEditor({
         id: childId,
         type: "unit",
         position: {
-          x: parentNode.position.x + offset,
-          y: parentNode.position.y + 180,
+          x: snapVal(parentNode.position.x + offset),
+          y: snapVal(parentNode.position.y + 200),
         },
         data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [] },
       },
@@ -286,8 +291,10 @@ export function OrbatEditor({
           proOptions={{ hideAttribution: true }}
           defaultEdgeOptions={{ type: "smoothstep" }}
           nodesConnectable={false}
+          snapToGrid={!readOnly}
+          snapGrid={SNAP_GRID}
         >
-          <Background />
+          <Background gap={SNAP_GRID[0]} />
           <Controls />
           <MiniMap />
 
