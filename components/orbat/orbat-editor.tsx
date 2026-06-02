@@ -370,14 +370,14 @@ export function OrbatEditor({
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editState?.nodeId === ROOT_ID ? "Modifier le commandement" : "Modifier l&apos;unité"}
+              {editState?.nodeId === ROOT_ID ? "Modifier le commandement" : "Modifier l'unité"}
             </DialogTitle>
           </DialogHeader>
           {editState && (
             <div className="space-y-4">
               {/* Image */}
               <div className="space-y-2">
-                <Label>Image de l&apos;unité</Label>
+                <Label>Image de l'unité</Label>
                 {/* Aperçu centré au-dessus */}
                 <div className="flex justify-center">
                   {editState.imageUrl ? (

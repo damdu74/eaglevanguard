@@ -1,6 +1,6 @@
 "use client"
 
-import { memo } from "react"
+import { memo, useEffect, useRef } from "react"
 import { Handle, Position, type NodeProps } from "reactflow"
 import { ImageIcon, Lock, LockOpen, Plus } from "lucide-react"
 import { NatoSymbol } from "./nato-symbol"
@@ -31,6 +31,20 @@ interface UnitNodeData {
 
 export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }: NodeProps<UnitNodeData>) {
   const roles = data.roles ?? []
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  // Listener natif — React synthetic events ne remontent pas fiablement
+  // sur les nœuds non-draggables dans ReactFlow v11.
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el) return
+    const handler = (e: Event) => {
+      e.stopPropagation()
+      data.onEdit?.(id)
+    }
+    el.addEventListener("dblclick", handler)
+    return () => el.removeEventListener("dblclick", handler)
+  })
 
   const handleCls = cn(
     "!bg-primary !w-3 !h-3 !border-2 !border-background transition-opacity",
@@ -38,10 +52,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
   )
 
   return (
-    <div
-      className="relative group"
-      onDoubleClick={data.onEdit ? (e) => { e.stopPropagation(); data.onEdit!(id) } : undefined}
-    >
+    <div ref={rootRef} className="relative group">
       {/* Handles haut/gauche/droite — absents sur la case racine */}
       {!data.isRoot && (
         <>
