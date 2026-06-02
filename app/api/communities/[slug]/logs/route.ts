@@ -26,10 +26,14 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"))
   const limit = 50
   const action = searchParams.get("action") ?? undefined
+  const actorId = searchParams.get("actorId") ?? undefined
+  const targetId = searchParams.get("targetId") ?? undefined
 
   const where = {
     communityId: community.id,
     ...(action && { action }),
+    ...(actorId && { actorId }),
+    ...(targetId && { targetId }),
   }
 
   const [logs, total] = await Promise.all([

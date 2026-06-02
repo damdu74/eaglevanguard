@@ -31,8 +31,9 @@ import {
 } from "@/components/ui/select"
 import { OrbatUnitNode, type OrbatRole } from "./orbat-unit-node"
 import { NATO_TYPES, NATO_SIZES, NATO_MODIFIERS } from "./nato-symbol"
-import { Loader2, Plus, Save, Trash2, Upload } from "lucide-react"
+import { Download, Loader2, Plus, Save, Trash2, Upload } from "lucide-react"
 import { toast } from "sonner"
+import { toPng } from "html-to-image"
 
 interface CommunityMember {
   id: string
@@ -84,6 +85,7 @@ export function OrbatEditor({
   const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [saving, setSaving] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [editState, setEditState] = useState<EditState | null>(null)
   const [members, setMembers] = useState<CommunityMember[]>([])
   const [uploading, setUploading] = useState(false)
@@ -236,6 +238,23 @@ export function OrbatEditor({
     setEditState({ ...editState, roles: editState.roles.filter((_, i) => i !== index) })
   }
 
+  const exportPng = async () => {
+    const el = document.querySelector<HTMLElement>(".react-flow__viewport")
+    if (!el) return
+    setExporting(true)
+    try {
+      const dataUrl = await toPng(el, { cacheBust: true, backgroundColor: "#09090b" })
+      const link = document.createElement("a")
+      link.download = `orbat-${communitySlug}.png`
+      link.href = dataUrl
+      link.click()
+    } catch {
+      toast.error("Erreur lors de l'export")
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const save = async () => {
     setSaving(true)
     try {
@@ -272,18 +291,24 @@ export function OrbatEditor({
           <Controls />
           <MiniMap />
 
-          {!readOnly && (
-            <Panel position="top-right" className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={removeSelected}>
-                <Trash2 className="mr-1 h-4 w-4" />
-                Supprimer la sélection
-              </Button>
-              <Button size="sm" onClick={save} disabled={saving}>
-                <Save className="mr-1 h-4 w-4" />
-                {saving ? "Sauvegarde..." : "Sauvegarder"}
-              </Button>
-            </Panel>
-          )}
+          <Panel position="top-right" className="flex gap-2">
+            {!readOnly && (
+              <>
+                <Button size="sm" variant="outline" onClick={removeSelected}>
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  Supprimer la sélection
+                </Button>
+                <Button size="sm" onClick={save} disabled={saving}>
+                  <Save className="mr-1 h-4 w-4" />
+                  {saving ? "Sauvegarde..." : "Sauvegarder"}
+                </Button>
+              </>
+            )}
+            <Button size="sm" variant="outline" onClick={exportPng} disabled={exporting}>
+              <Download className="mr-1 h-4 w-4" />
+              {exporting ? "Export..." : "Exporter PNG"}
+            </Button>
+          </Panel>
 
           {!readOnly && (
             <Panel position="bottom-center">

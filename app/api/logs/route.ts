@@ -18,11 +18,13 @@ export async function GET(req: NextRequest) {
   const action = searchParams.get("action") ?? undefined
   const communityId = searchParams.get("communityId") ?? undefined
   const actorId = searchParams.get("actorId") ?? undefined
+  const targetId = searchParams.get("targetId") ?? undefined
 
   const where = {
     ...(action && { action }),
     ...(communityId && { communityId }),
     ...(actorId && { actorId }),
+    ...(targetId && { targetId }),
   }
 
   const [logs, total] = await Promise.all([

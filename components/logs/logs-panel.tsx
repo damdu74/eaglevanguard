@@ -8,6 +8,7 @@ import { ClipboardList, Users, Shield, Calendar, Megaphone, Star, UserPlus, Aler
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { UserSearchInput, type SelectedUser } from "@/components/moderation/user-search-input"
 
 interface AuditLog {
   id: string
@@ -87,6 +88,8 @@ export function LogsPanel({ mode, communitySlug }: Props) {
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
   const [filterCategory, setFilterCategory] = useState("all")
+  const [filterActor, setFilterActor] = useState<SelectedUser | null>(null)
+  const [filterTarget, setFilterTarget] = useState<SelectedUser | null>(null)
 
   const apiBase = mode === "nexus" ? "/api/logs" : `/api/communities/${communitySlug}/logs`
 
@@ -95,6 +98,8 @@ export function LogsPanel({ mode, communitySlug }: Props) {
     try {
       const params = new URLSearchParams({ page: String(p) })
       if (filterCategory !== "all") params.set("action", filterCategory)
+      if (filterActor) params.set("actorId", filterActor.id)
+      if (filterTarget) params.set("targetId", filterTarget.id)
       const res = await fetch(`${apiBase}?${params}`)
       if (!res.ok) throw new Error()
       const data = await res.json()
@@ -107,7 +112,7 @@ export function LogsPanel({ mode, communitySlug }: Props) {
     } finally {
       setLoading(false)
     }
-  }, [apiBase, filterCategory])
+  }, [apiBase, filterCategory, filterActor, filterTarget])
 
   useEffect(() => {
     fetchLogs(1)
@@ -128,11 +133,8 @@ export function LogsPanel({ mode, communitySlug }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Filtres compacts */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {total > 0 ? `${total} entrée${total > 1 ? "s" : ""}` : "Aucune entrée"}
-        </p>
+      {/* Filtres */}
+      <div className="flex flex-wrap items-center gap-2">
         <Select value={filterCategory} onValueChange={setFilterCategory}>
           <SelectTrigger className="h-8 text-xs w-auto min-w-[160px]">
             <SelectValue />
@@ -143,6 +145,25 @@ export function LogsPanel({ mode, communitySlug }: Props) {
             ))}
           </SelectContent>
         </Select>
+        <div className="w-48">
+          <UserSearchInput
+            value={filterActor}
+            onChange={setFilterActor}
+            placeholder="Acteur..."
+            forMod={true}
+          />
+        </div>
+        <div className="w-48">
+          <UserSearchInput
+            value={filterTarget}
+            onChange={setFilterTarget}
+            placeholder="Cible..."
+            forMod={true}
+          />
+        </div>
+        <p className="text-sm text-muted-foreground ml-auto">
+          {total > 0 ? `${total} entrée${total > 1 ? "s" : ""}` : "Aucune entrée"}
+        </p>
       </div>
 
       {/* Liste */}
