@@ -60,7 +60,7 @@ function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, tar
       id={id}
       d={path}
       className="react-flow__edge-path"
-      style={{ stroke: selected ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.5)", strokeWidth: selected ? 2.5 : 2, fill: "none", ...style }}
+      style={{ stroke: selected ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.8)", strokeWidth: selected ? 3 : 2.5, fill: "none", ...style }}
       markerEnd={markerEnd}
     />
   )
