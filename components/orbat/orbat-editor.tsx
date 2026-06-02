@@ -186,7 +186,9 @@ export function OrbatEditor({
       {
         id: `edge-${Date.now()}`,
         source: parentId,
+        sourceHandle: "bottom",
         target: childId,
+        targetHandle: "top",
         type: "orbat",
       },
     ])
