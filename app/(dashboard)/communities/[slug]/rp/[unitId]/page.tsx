@@ -70,7 +70,7 @@ export default async function RpUnitPage({ params }: PageProps) {
             className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border rounded-md px-2.5 py-1.5 transition-colors"
           >
             <Network className="h-3.5 w-3.5" />
-            ORBAT de l&apos;unité
+            {"ORBAT de l'unité"}
           </Link>
         </div>
         {unit.description && (
