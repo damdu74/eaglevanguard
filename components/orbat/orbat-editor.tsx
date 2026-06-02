@@ -186,6 +186,7 @@ export function OrbatEditor({
       nodes.map((n) => ({
         ...n,
         draggable: n.id === ROOT_ID ? false : !n.data.locked,
+        selectable: true,
         data: {
           ...n.data,
           readOnly,
@@ -459,9 +460,13 @@ export function OrbatEditor({
               {/* Type */}
               <div className="space-y-1.5">
                 <Label>Symbole de base</Label>
-                <Select value={editState.type} onValueChange={(v) => setEditState({ ...editState, type: v })}>
+                <Select
+                  value={editState.type || "__none__"}
+                  onValueChange={(v) => setEditState({ ...editState, type: v === "__none__" ? "" : v })}
+                >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent className="max-h-72">
+                    <SelectItem value="__none__">Aucun</SelectItem>
                     {Array.from(new Set(NATO_TYPES.map((t) => t.category))).map((cat) => (
                       <div key={cat}>
                         <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{cat}</div>

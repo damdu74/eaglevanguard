@@ -313,8 +313,9 @@ export function NatoSymbol({ type, size, label, callsign, selected, compact, mod
   const borderColor = "#111111"
   const borderWidth = selected ? 4.5 : 3.5
   const fillColor = "white"
-  // ●/ø sont des glyphes naturellement plus petits — on grossit leur rendu
   const isCircleMarker = /^[●ø]+$/.test(sizeMarker)
+
+  if (!type) return <div className="w-[56px] h-[56px]" />
 
   if (compact) {
     return (
