@@ -56,12 +56,16 @@ export async function PUT(req: NextRequest, { params }: Params) {
       : []),
     ...(edges?.length
       ? [prisma.rpUnitOrbatEdge.createMany({
-          data: edges.map((e: { id: string; source: string; target: string; data?: Record<string, unknown> }) => ({
+          data: edges.map((e: { id: string; source: string; target: string; sourceHandle?: string; targetHandle?: string; data?: Record<string, unknown> }) => ({
             rpUnitId: unit.id,
             edgeId: e.id,
             source: e.source,
             target: e.target,
-            data: e.data ?? null,
+            data: {
+              ...(e.data ?? {}),
+              ...(e.sourceHandle ? { sourceHandle: e.sourceHandle } : {}),
+              ...(e.targetHandle ? { targetHandle: e.targetHandle } : {}),
+            },
           })),
         })]
       : []),
