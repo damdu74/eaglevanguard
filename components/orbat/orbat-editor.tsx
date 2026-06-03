@@ -11,6 +11,7 @@ import ReactFlow, {
   Position,
   useNodesState,
   useEdgesState,
+  useStore,
   type Connection,
   type Edge,
   type EdgeProps,
@@ -48,20 +49,53 @@ interface CommunityMember {
   role: string
 }
 
-function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd, selected }: EdgeProps) {
+function OrbatEdge({ id, source, target, sourceX, sourceY, targetX, targetY, selected }: EdgeProps) {
+  const sourceNode = useStore((s) => s.nodeInternals.get(source))
+  const targetNode = useStore((s) => s.nodeInternals.get(target))
+
   const dx = Math.abs(targetX - sourceX)
   const dy = Math.abs(targetY - sourceY)
   const horizontal = dx > dy
-  const resolvedSrc = horizontal ? (sourceX < targetX ? Position.Right : Position.Left) : sourcePosition
-  const resolvedTgt = horizontal ? (sourceX < targetX ? Position.Left : Position.Right) : targetPosition
-  const [path] = getSmoothStepPath({ sourceX, sourceY, sourcePosition: resolvedSrc, targetX, targetY, targetPosition: resolvedTgt, borderRadius: 8 })
+
+  let finalSourceX = sourceX
+  let finalSourceY = sourceY
+  let finalTargetX = targetX
+  let finalTargetY = targetY
+  let resolvedSrc: Position
+  let resolvedTgt: Position
+
+  if (horizontal) {
+    resolvedSrc = sourceX < targetX ? Position.Right : Position.Left
+    resolvedTgt = sourceX < targetX ? Position.Left : Position.Right
+  } else {
+    resolvedSrc = Position.Bottom
+    resolvedTgt = Position.Top
+    if (sourceNode?.positionAbsolute && sourceNode.width != null && sourceNode.height != null) {
+      finalSourceX = sourceNode.positionAbsolute.x + sourceNode.width / 2
+      finalSourceY = sourceNode.positionAbsolute.y + sourceNode.height
+    }
+    if (targetNode?.positionAbsolute && targetNode.width != null) {
+      finalTargetX = targetNode.positionAbsolute.x + targetNode.width / 2
+      finalTargetY = targetNode.positionAbsolute.y
+    }
+  }
+
+  const [path] = getSmoothStepPath({
+    sourceX: finalSourceX, sourceY: finalSourceY, sourcePosition: resolvedSrc,
+    targetX: finalTargetX, targetY: finalTargetY, targetPosition: resolvedTgt,
+    borderRadius: 0,
+  })
+
   return (
     <path
       id={id}
       d={path}
       className="react-flow__edge-path"
-      style={{ stroke: selected ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.8)", strokeWidth: selected ? 3 : 2.5, fill: "none", ...style }}
-      markerEnd={markerEnd}
+      style={{
+        stroke: selected ? "hsl(var(--primary))" : "hsl(var(--foreground))",
+        strokeWidth: selected ? 2 : 1.5,
+        fill: "none",
+      }}
     />
   )
 }
