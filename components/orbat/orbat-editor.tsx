@@ -8,7 +8,6 @@ import ReactFlow, {
   Controls,
   getSmoothStepPath,
   MiniMap,
-  Position,
   useNodesState,
   useEdgesState,
   type Connection,
