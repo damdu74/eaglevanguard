@@ -45,9 +45,9 @@ interface CommunityMember {
   name: string
   image?: string | null
   role: string
-  rankName?: string | null
-  rankIcon?: string | null
   characterName?: string | null
+  gradeLabel?: string | null
+  gradeIcon?: string | null
 }
 
 function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected }: EdgeProps) {
@@ -605,8 +605,8 @@ export function OrbatEditor({
                             memberId: v,
                             memberName: m?.name ?? "",
                             characterName: m?.characterName ?? m?.name ?? "",
-                            gradeLabel: m?.rankName ?? "",
-                            gradeIcon: m?.rankIcon ?? "",
+                            gradeLabel: m?.gradeLabel ?? "",
+                            gradeIcon: m?.gradeIcon ?? "",
                           })
                         }
                       }}
@@ -616,7 +616,7 @@ export function OrbatEditor({
                         <SelectItem value="__vacant__">Vacant</SelectItem>
                         {members.map((m) => (
                           <SelectItem key={m.id} value={m.id}>
-                            {m.characterName ? `${m.characterName}${m.rankName ? ` (${m.rankName})` : ""}` : m.name}
+                            {m.characterName ? `${m.characterName}${m.gradeLabel ? ` (${m.gradeLabel})` : ""}` : m.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -25,27 +25,51 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
             discordAvatar: true,
           },
         },
-        rank: { select: { name: true, iconUrl: true } },
       },
       orderBy: [{ role: "asc" }, { user: { name: "asc" } }],
     }),
     prisma.rpCharacter.findMany({
       where: { communityId: community.id },
-      select: { userId: true, name: true },
+      select: {
+        userId: true,
+        name: true,
+        grade: true,
+        rpUnit: { select: { columnConfig: true } },
+      },
     }),
   ])
 
-  const charByUser = new Map(rpCharacters.map((c) => [c.userId, c.name]))
+  // Résoudre l'icône de grade depuis la columnConfig de l'unité RP
+  type ColOption = { label: string; icon?: string }
+  type ColEntry  = { key: string; options?: ColOption[] }
 
-  const members = memberships.map((m) => ({
-    id: m.userId,
-    name: m.user.steamName ?? m.user.discordName ?? m.user.name ?? "Inconnu",
-    image: m.user.customAvatar ?? m.user.steamAvatar ?? m.user.discordAvatar ?? null,
-    role: m.role,
-    rankName: m.rank?.name ?? null,
-    rankIcon: m.rank?.iconUrl ?? null,
-    characterName: charByUser.get(m.userId) ?? null,
-  }))
+  function resolveGradeIcon(grade: string | null, columnConfig: unknown): string | null {
+    if (!grade || !columnConfig) return null
+    const cols = columnConfig as ColEntry[]
+    const gradeCol = cols.find((c) => c.key === "grade")
+    return gradeCol?.options?.find((o) => o.label === grade)?.icon ?? null
+  }
+
+  const charByUser = new Map(
+    rpCharacters.map((c) => [c.userId, {
+      name: c.name,
+      grade: c.grade ?? null,
+      gradeIcon: resolveGradeIcon(c.grade, c.rpUnit?.columnConfig),
+    }])
+  )
+
+  const members = memberships.map((m) => {
+    const char = charByUser.get(m.userId)
+    return {
+      id: m.userId,
+      name: m.user.steamName ?? m.user.discordName ?? m.user.name ?? "Inconnu",
+      image: m.user.customAvatar ?? m.user.steamAvatar ?? m.user.discordAvatar ?? null,
+      role: m.role,
+      characterName: char?.name ?? null,
+      gradeLabel: char?.grade ?? null,
+      gradeIcon: char?.gradeIcon ?? null,
+    }
+  })
 
   return NextResponse.json({ members })
 }
