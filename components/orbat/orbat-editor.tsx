@@ -248,28 +248,16 @@ export function OrbatEditor({
     const deltaRoles = editState.roles.length - editState.initialRoleCount
     const shift = deltaRoles * ROLE_ROW_H
 
-    // Collecte récursive de tous les descendants du nœud édité
-    const descendants = new Set<string>()
-    if (shift !== 0) {
-      const queue = [editState.nodeId]
-      while (queue.length > 0) {
-        const cur = queue.shift()!
-        for (const e of edgesRef.current) {
-          if (e.source === cur && !descendants.has(e.target)) {
-            descendants.add(e.target)
-            queue.push(e.target)
-          }
-        }
-      }
-    }
+    // Y du nœud édité : tout ce qui est strictement en dessous doit décaler
+    const editedY = nodesRef.current.find((n) => n.id === editState.nodeId)?.position.y ?? 0
 
     setNodes((nds) =>
       nds.map((n) => {
         const isEdited = n.id === editState.nodeId
-        const isDescendant = descendants.has(n.id)
+        const shouldShift = shift !== 0 && !isEdited && n.position.y > editedY
         return {
           ...n,
-          ...(isDescendant ? { position: { ...n.position, y: snapVal(n.position.y + shift) } } : {}),
+          ...(shouldShift ? { position: { ...n.position, y: snapVal(n.position.y + shift) } } : {}),
           data: isEdited
             ? {
                 ...n.data,
