@@ -183,13 +183,13 @@ export function OrbatEditor({
       if (children.length > 0) {
         // Placer à droite du dernier enfant, au même niveau
         const maxX = Math.max(...children.map((n) => n.position.x))
-        position = { x: snapVal(maxX + 340), y: snapVal(children[0].position.y) }
+        position = { x: snapVal(maxX + 380), y: snapVal(children[0].position.y) }
       } else {
         // Premier enfant : placer directement en dessous du parent
         position = { x: snapVal(parentNode.position.x), y: snapVal(parentNode.position.y + 200) }
       }
     } else {
-      position = { x: snapVal(340), y: snapVal(0) }
+      position = { x: snapVal(380), y: snapVal(0) }
     }
 
     setNodes((nds) => [

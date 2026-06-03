@@ -102,7 +102,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
 
       <div
         className={cn(
-          "w-[300px] rounded-lg border-2 bg-background shadow-sm overflow-hidden transition-colors",
+          "w-[360px] rounded-lg border-2 bg-background shadow-sm overflow-hidden transition-colors",
           selected ? "border-primary" : data.isRoot ? "border-violet-500" : data.locked ? "border-red-500/60" : "border-border",
           data.isRoot && "bg-violet-50 dark:bg-violet-950/30"
         )}
