@@ -98,6 +98,7 @@ interface OrbatEditorProps {
 
 interface EditState {
   nodeId: string
+  initialRoleCount: number
   label: string
   type: string
   size: string
@@ -187,7 +188,7 @@ export function OrbatEditor({
         data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: null },
       },
     ])
-    setEditState({ nodeId: newId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
+    setEditState({ nodeId: newId, initialRoleCount: 0, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
   }, [setNodes])
 
   const toggleLock = useCallback((nodeId: string) => {
@@ -199,15 +200,17 @@ export function OrbatEditor({
   const openEdit = useCallback((nodeId: string) => {
     const node = nodesRef.current.find((n) => n.id === nodeId)
     if (!node) return
+    const roles = node.data.roles ?? []
     setEditState({
       nodeId,
+      initialRoleCount: roles.length,
       label: node.data.label ?? "",
       type: node.data.type ?? "infantry",
       size: node.data.size ?? "",
       callsign: node.data.callsign ?? "",
       imageUrl: node.data.imageUrl ?? "",
       modifier: node.data.modifier ?? "",
-      roles: node.data.roles ?? [],
+      roles,
       rpUnitId: node.data.rpUnitId ?? "",
     })
   }, [])
@@ -242,8 +245,7 @@ export function OrbatEditor({
     if (!editState) return
 
     const ROLE_ROW_H = 28
-    const oldNode = nodesRef.current.find((n) => n.id === editState.nodeId)
-    const deltaRoles = editState.roles.length - (oldNode?.data?.roles?.length ?? 0)
+    const deltaRoles = editState.roles.length - editState.initialRoleCount
     const shift = deltaRoles * ROLE_ROW_H
 
     // Collecte récursive de tous les descendants du nœud édité
