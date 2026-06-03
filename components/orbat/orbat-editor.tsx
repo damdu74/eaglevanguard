@@ -11,6 +11,7 @@ import ReactFlow, {
   Position,
   useNodesState,
   useEdgesState,
+  useStore,
   type Connection,
   type Edge,
   type EdgeProps,
@@ -48,16 +49,47 @@ interface CommunityMember {
   role: string
 }
 
-function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected }: EdgeProps) {
-  const dx = Math.abs(targetX - sourceX)
-  const dy = Math.abs(targetY - sourceY)
-  const horizontal = dx > dy
-  const resolvedSrc = horizontal ? (sourceX < targetX ? Position.Right : Position.Left) : sourcePosition
-  const resolvedTgt = horizontal ? (sourceX < targetX ? Position.Left : Position.Right) : targetPosition
+function OrbatEdge({ id, source, target, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected }: EdgeProps) {
+  const srcNode = useStore((s) => s.nodeInternals.get(source))
+  const tgtNode = useStore((s) => s.nodeInternals.get(target))
+
+  const srcPA = srcNode?.positionAbsolute
+  const tgtPA = tgtNode?.positionAbsolute
+  const srcW = srcNode?.width ?? 0
+  const srcH = srcNode?.height ?? 0
+  const tgtW = tgtNode?.width ?? 0
+  const tgtH = tgtNode?.height ?? 0
+
+  let fSrcX: number, fSrcY: number, fSrcPos: Position
+  let fTgtX: number, fTgtY: number, fTgtPos: Position
+
+  if (srcPA && tgtPA && srcW > 0 && srcH > 0 && tgtW > 0) {
+    // Calcul depuis les centres réels des nœuds
+    const srcCX = srcPA.x + srcW / 2
+    const srcCY = srcPA.y + srcH / 2
+    const tgtCX = tgtPA.x + tgtW / 2
+    const tgtCY = tgtPA.y + tgtH / 2
+
+    if (Math.abs(tgtCY - srcCY) >= Math.abs(tgtCX - srcCX)) {
+      // Connexion verticale : sortie bas-centre → entrée haut-centre
+      const goingDown = tgtCY > srcCY
+      fSrcX = srcCX; fSrcY = goingDown ? srcPA.y + srcH : srcPA.y; fSrcPos = goingDown ? Position.Bottom : Position.Top
+      fTgtX = tgtCX; fTgtY = goingDown ? tgtPA.y : tgtPA.y + tgtH;  fTgtPos = goingDown ? Position.Top : Position.Bottom
+    } else {
+      // Connexion horizontale : sortie côté-centre → entrée côté-centre
+      const goingRight = tgtCX > srcCX
+      fSrcX = goingRight ? srcPA.x + srcW : srcPA.x; fSrcY = srcCY; fSrcPos = goingRight ? Position.Right : Position.Left
+      fTgtX = goingRight ? tgtPA.x : tgtPA.x + tgtW;  fTgtY = tgtCY; fTgtPos = goingRight ? Position.Left : Position.Right
+    }
+  } else {
+    // Fallback : coordonnées des handles ReactFlow
+    fSrcX = sourceX; fSrcY = sourceY; fSrcPos = sourcePosition
+    fTgtX = targetX; fTgtY = targetY; fTgtPos = targetPosition
+  }
 
   const [path] = getSmoothStepPath({
-    sourceX, sourceY, sourcePosition: resolvedSrc,
-    targetX, targetY, targetPosition: resolvedTgt,
+    sourceX: fSrcX, sourceY: fSrcY, sourcePosition: fSrcPos,
+    targetX: fTgtX, targetY: fTgtY, targetPosition: fTgtPos,
     borderRadius: 0,
   })
 
