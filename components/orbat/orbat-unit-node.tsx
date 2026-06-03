@@ -67,7 +67,6 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
         <>
           <Handle type="source" position={Position.Left}  id="left"  className={handleCls} />
           <Handle type="source" position={Position.Right} id="right" className={handleCls} />
-          <Handle type="source" position={Position.Top}   id="top"   className={handleCls} />
         </>
       )}
 
