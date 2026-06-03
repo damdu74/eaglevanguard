@@ -205,11 +205,24 @@ export function OrbatEditor({
 
   const addNode = useCallback(() => {
     const newId = `unit-${Date.now()}`
-    const selected = nodesRef.current.find((n) => n.selected && n.id !== ROOT_ID)
-    const base = selected ?? nodesRef.current[nodesRef.current.length - 1]
-    const position = base
-      ? { x: snapVal(base.position.x + 340), y: snapVal(base.position.y) }
-      : { x: snapVal(340), y: snapVal(0) }
+    // Connecter au nœud sélectionné, ou à la racine par défaut
+    const parentNode = nodesRef.current.find((n) => n.selected) ?? nodesRef.current.find((n) => n.id === ROOT_ID)
+
+    let position: { x: number; y: number }
+    if (parentNode) {
+      const childIds = new Set(edgesRef.current.filter((e) => e.source === parentNode.id).map((e) => e.target))
+      const children = nodesRef.current.filter((n) => childIds.has(n.id))
+      if (children.length > 0) {
+        // Placer à droite du dernier enfant, au même niveau
+        const maxX = Math.max(...children.map((n) => n.position.x))
+        position = { x: snapVal(maxX + 340), y: snapVal(children[0].position.y) }
+      } else {
+        // Premier enfant : placer directement en dessous du parent
+        position = { x: snapVal(parentNode.position.x), y: snapVal(parentNode.position.y + 200) }
+      }
+    } else {
+      position = { x: snapVal(340), y: snapVal(0) }
+    }
 
     setNodes((nds) => [
       ...nds,
@@ -220,8 +233,16 @@ export function OrbatEditor({
         data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: null },
       },
     ])
+
+    if (parentNode) {
+      setEdges((eds) => [
+        ...eds,
+        { id: `e-${parentNode.id}-${newId}`, source: parentNode.id, target: newId, type: "orbat" },
+      ])
+    }
+
     setEditState({ nodeId: newId, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
-  }, [setNodes])
+  }, [setNodes, setEdges])
 
   const toggleLock = useCallback((nodeId: string) => {
     setNodes((nds) =>
