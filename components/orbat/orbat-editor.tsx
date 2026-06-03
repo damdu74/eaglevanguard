@@ -11,7 +11,6 @@ import ReactFlow, {
   Position,
   useNodesState,
   useEdgesState,
-  useStore,
   type Connection,
   type Edge,
   type EdgeProps,
@@ -49,40 +48,16 @@ interface CommunityMember {
   role: string
 }
 
-function OrbatEdge({ id, source, target, sourceX, sourceY, targetX, targetY, selected }: EdgeProps) {
-  const sourceNode = useStore((s) => s.nodeInternals.get(source))
-  const targetNode = useStore((s) => s.nodeInternals.get(target))
-
+function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected }: EdgeProps) {
   const dx = Math.abs(targetX - sourceX)
   const dy = Math.abs(targetY - sourceY)
   const horizontal = dx > dy
-
-  let finalSourceX = sourceX
-  let finalSourceY = sourceY
-  let finalTargetX = targetX
-  let finalTargetY = targetY
-  let resolvedSrc: Position
-  let resolvedTgt: Position
-
-  if (horizontal) {
-    resolvedSrc = sourceX < targetX ? Position.Right : Position.Left
-    resolvedTgt = sourceX < targetX ? Position.Left : Position.Right
-  } else {
-    resolvedSrc = Position.Bottom
-    resolvedTgt = Position.Top
-    if (sourceNode?.positionAbsolute && sourceNode.width != null && sourceNode.height != null) {
-      finalSourceX = sourceNode.positionAbsolute.x + sourceNode.width / 2
-      finalSourceY = sourceNode.positionAbsolute.y + sourceNode.height
-    }
-    if (targetNode?.positionAbsolute && targetNode.width != null) {
-      finalTargetX = targetNode.positionAbsolute.x + targetNode.width / 2
-      finalTargetY = targetNode.positionAbsolute.y
-    }
-  }
+  const resolvedSrc = horizontal ? (sourceX < targetX ? Position.Right : Position.Left) : sourcePosition
+  const resolvedTgt = horizontal ? (sourceX < targetX ? Position.Left : Position.Right) : targetPosition
 
   const [path] = getSmoothStepPath({
-    sourceX: finalSourceX, sourceY: finalSourceY, sourcePosition: resolvedSrc,
-    targetX: finalTargetX, targetY: finalTargetY, targetPosition: resolvedTgt,
+    sourceX, sourceY, sourcePosition: resolvedSrc,
+    targetX, targetY, targetPosition: resolvedTgt,
     borderRadius: 0,
   })
 
@@ -237,7 +212,7 @@ export function OrbatEditor({
     if (parentNode) {
       setEdges((eds) => [
         ...eds,
-        { id: `e-${parentNode.id}-${newId}`, source: parentNode.id, target: newId, type: "orbat" },
+        { id: `e-${parentNode.id}-${newId}`, source: parentNode.id, sourceHandle: "bottom", target: newId, targetHandle: "top", type: "orbat" },
       ])
     }
 
