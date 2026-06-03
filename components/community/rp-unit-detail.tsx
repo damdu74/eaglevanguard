@@ -37,7 +37,11 @@ function parseGradeOptions(opts: unknown[]): GradeOption[] {
   return opts.map((o) => {
     if (typeof o === "string") return { label: o }
     const obj = o as GradeOption
-    return { label: String(obj.label ?? ""), icon: obj.icon ? String(obj.icon) : undefined }
+    return {
+      label: String(obj.label ?? ""),
+      icon: obj.icon ? String(obj.icon) : undefined,
+      abbrev: obj.abbrev ? String(obj.abbrev) : undefined,
+    }
   })
 }
 

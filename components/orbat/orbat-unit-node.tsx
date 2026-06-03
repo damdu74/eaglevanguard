@@ -163,29 +163,31 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
               const assigned = role.characterName || role.memberName
               return (
                 <div key={role.id} className="flex items-center px-2 py-1 gap-1.5">
-                  {/* Poste */}
-                  <span className="text-[9px] text-muted-foreground shrink-0 truncate max-w-[90px]">{role.title}</span>
-                  <span className="text-muted-foreground/30 shrink-0">·</span>
                   {assigned ? (
                     <div className="flex items-center gap-1 flex-1 min-w-0">
-                      {/* Icône de grade */}
-                      {role.gradeIcon && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={role.gradeIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />
-                      )}
-                      {/* Abréviation de grade */}
+                      {/* 1. Abréviation de grade */}
                       {(role.gradeAbbrev || role.gradeLabel) && (
                         <span className="text-[9px] font-bold text-primary shrink-0">
                           {role.gradeAbbrev || gradeAbbrev(role.gradeLabel ?? "")}
                         </span>
                       )}
-                      {/* Nom du personnage RP */}
-                      <span className="text-[10px] font-medium truncate text-foreground">
+                      {/* 2. Nom du personnage RP */}
+                      <span className="text-[10px] font-medium truncate text-foreground flex-1">
                         {role.characterName || role.memberName}
                       </span>
+                      {/* 3. Icône de grade */}
+                      {role.gradeIcon && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={role.gradeIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />
+                      )}
+                      {/* 4. Description du poste */}
+                      <span className="text-[9px] text-muted-foreground shrink-0 truncate max-w-[80px]">{role.title}</span>
                     </div>
                   ) : (
-                    <span className="text-[9px] text-muted-foreground/40 italic flex-1">Vacant</span>
+                    <div className="flex items-center gap-1 flex-1 min-w-0">
+                      <span className="text-[9px] text-muted-foreground shrink-0 truncate max-w-[90px]">{role.title}</span>
+                      <span className="text-[9px] text-muted-foreground/40 italic">— Vacant</span>
+                    </div>
                   )}
                 </div>
               )
