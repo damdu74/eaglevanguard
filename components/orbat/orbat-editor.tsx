@@ -240,25 +240,49 @@ export function OrbatEditor({
 
   const applyEdit = useCallback(() => {
     if (!editState) return
+
+    const ROLE_ROW_H = 28
+    const oldNode = nodesRef.current.find((n) => n.id === editState.nodeId)
+    const deltaRoles = editState.roles.length - (oldNode?.data?.roles?.length ?? 0)
+    const shift = deltaRoles * ROLE_ROW_H
+
+    // Collecte récursive de tous les descendants du nœud édité
+    const descendants = new Set<string>()
+    if (shift !== 0) {
+      const queue = [editState.nodeId]
+      while (queue.length > 0) {
+        const cur = queue.shift()!
+        for (const e of edgesRef.current) {
+          if (e.source === cur && !descendants.has(e.target)) {
+            descendants.add(e.target)
+            queue.push(e.target)
+          }
+        }
+      }
+    }
+
     setNodes((nds) =>
-      nds.map((n) =>
-        n.id === editState.nodeId
-          ? {
-              ...n,
-              data: {
+      nds.map((n) => {
+        const isEdited = n.id === editState.nodeId
+        const isDescendant = descendants.has(n.id)
+        return {
+          ...n,
+          ...(isDescendant ? { position: { ...n.position, y: snapVal(n.position.y + shift) } } : {}),
+          data: isEdited
+            ? {
                 ...n.data,
-                label: editState.label,
-                type: editState.type,
-                size: editState.size,
+                label:    editState.label,
+                type:     editState.type,
+                size:     editState.size,
                 callsign: editState.callsign,
                 imageUrl: editState.imageUrl,
                 modifier: editState.modifier,
-                roles: editState.roles,
+                roles:    editState.roles,
                 rpUnitId: editState.rpUnitId || null,
-              },
-            }
-          : n
-      )
+              }
+            : n.data,
+        }
+      })
     )
     setEditState(null)
   }, [editState, setNodes])
