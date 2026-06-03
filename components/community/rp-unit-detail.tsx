@@ -540,7 +540,7 @@ export function RpUnitDetail({
                                 ? { ...c, options: gradeOptions(c).map((o, i) => i === idx ? { ...o, abbrev: v } : o) }
                                 : c))
                             }}
-                            className="h-8 text-sm w-20 shrink-0 font-mono uppercase"
+                            className="h-8 text-sm w-20 shrink-0 font-mono"
                             placeholder="Abrév."
                             maxLength={15}
                           />
