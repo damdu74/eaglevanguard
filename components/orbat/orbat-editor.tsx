@@ -141,13 +141,16 @@ export function OrbatEditor({
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch community members for role assignment
+  // Fetch members : personnages de l'unité si unitId, sinon tous les membres
   useEffect(() => {
-    fetch(`/api/communities/${communitySlug}/members`)
+    const url = unitId
+      ? `/api/communities/${communitySlug}/rp/units/${unitId}/characters`
+      : `/api/communities/${communitySlug}/members`
+    fetch(url)
       .then((r) => r.json())
       .then((data) => setMembers(data.members ?? []))
       .catch(() => {})
-  }, [communitySlug])
+  }, [communitySlug, unitId])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
