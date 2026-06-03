@@ -11,6 +11,16 @@ export interface OrbatRole {
   title: string
   memberId?: string
   memberName?: string
+  characterName?: string
+  gradeLabel?: string
+  gradeIcon?: string
+}
+
+function gradeAbbrev(label: string): string {
+  if (!label) return ""
+  const words = label.trim().split(/[\s\-]+/).filter(Boolean)
+  if (words.length === 1) return words[0].slice(0, 3).toUpperCase()
+  return words.map((w) => w[0]?.toUpperCase() ?? "").join("").slice(0, 4)
 }
 
 interface UnitNodeData {
@@ -148,16 +158,35 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
         {/* Tableau des postes */}
         {roles.length > 0 && (
           <div className="border-t divide-y divide-border/60">
-            {roles.map((role) => (
-              <div key={role.id} className="flex items-center px-3 py-1 gap-2">
-                <span className="text-[10px] text-muted-foreground flex-1 truncate">{role.title}</span>
-                {role.memberName ? (
-                  <span className="text-[10px] font-medium truncate max-w-[110px] text-foreground">{role.memberName}</span>
-                ) : (
-                  <span className="text-[10px] text-muted-foreground/50 italic">Vacant</span>
-                )}
-              </div>
-            ))}
+            {roles.map((role) => {
+              const assigned = role.characterName || role.memberName
+              return (
+                <div key={role.id} className="flex items-center px-2 py-1 gap-1.5">
+                  {/* Poste */}
+                  <span className="text-[9px] text-muted-foreground shrink-0 truncate max-w-[90px]">{role.title}</span>
+                  <span className="text-muted-foreground/30 shrink-0">·</span>
+                  {assigned ? (
+                    <div className="flex items-center gap-1 flex-1 min-w-0">
+                      {/* Icône de grade */}
+                      {role.gradeIcon && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={role.gradeIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />
+                      )}
+                      {/* Abréviation de grade */}
+                      {role.gradeLabel && (
+                        <span className="text-[9px] font-bold text-primary shrink-0">{gradeAbbrev(role.gradeLabel)}</span>
+                      )}
+                      {/* Nom du personnage RP */}
+                      <span className="text-[10px] font-medium truncate text-foreground">
+                        {role.characterName || role.memberName}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-[9px] text-muted-foreground/40 italic flex-1">Vacant</span>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

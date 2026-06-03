@@ -45,6 +45,9 @@ interface CommunityMember {
   name: string
   image?: string | null
   role: string
+  rankName?: string | null
+  rankIcon?: string | null
+  characterName?: string | null
 }
 
 function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected }: EdgeProps) {
@@ -595,10 +598,16 @@ export function OrbatEditor({
                       value={role.memberId || "__vacant__"}
                       onValueChange={(v) => {
                         if (v === "__vacant__") {
-                          updateRole(i, { memberId: "", memberName: "" })
+                          updateRole(i, { memberId: "", memberName: "", characterName: "", gradeLabel: "", gradeIcon: "" })
                         } else {
                           const m = members.find((m) => m.id === v)
-                          updateRole(i, { memberId: v, memberName: m?.name ?? "" })
+                          updateRole(i, {
+                            memberId: v,
+                            memberName: m?.name ?? "",
+                            characterName: m?.characterName ?? m?.name ?? "",
+                            gradeLabel: m?.rankName ?? "",
+                            gradeIcon: m?.rankIcon ?? "",
+                          })
                         }
                       }}
                     >
@@ -606,7 +615,9 @@ export function OrbatEditor({
                       <SelectContent>
                         <SelectItem value="__vacant__">Vacant</SelectItem>
                         {members.map((m) => (
-                          <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                          <SelectItem key={m.id} value={m.id}>
+                            {m.characterName ? `${m.characterName}${m.rankName ? ` (${m.rankName})` : ""}` : m.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
