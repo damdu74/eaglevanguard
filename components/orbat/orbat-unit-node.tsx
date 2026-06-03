@@ -171,15 +171,15 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
                           {role.gradeAbbrev || gradeAbbrev(role.gradeLabel ?? "")}
                         </span>
                       )}
-                      {/* 2. Icône + Nom du personnage RP (collés) */}
+                      {/* 2. Nom + Icône du personnage RP (collés) */}
                       <div className="flex items-center gap-0.5 flex-1 min-w-0">
+                        <span className="text-[10px] font-medium truncate text-foreground">
+                          {role.characterName || role.memberName}
+                        </span>
                         {role.gradeIcon && (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={role.gradeIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />
                         )}
-                        <span className="text-[10px] font-medium truncate text-foreground">
-                          {role.characterName || role.memberName}
-                        </span>
                       </div>
                       {/* 3. Description du poste */}
                       <span className="text-[9px] text-muted-foreground shrink-0 truncate max-w-[80px]">{role.title}</span>
