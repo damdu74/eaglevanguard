@@ -40,22 +40,26 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
   ])
 
   // Résoudre l'icône de grade depuis la columnConfig de l'unité RP
-  type ColOption = { label: string; icon?: string }
+  type ColOption = { label: string; icon?: string; abbrev?: string }
   type ColEntry  = { key: string; options?: ColOption[] }
 
-  function resolveGradeIcon(grade: string | null, columnConfig: unknown): string | null {
-    if (!grade || !columnConfig) return null
+  function resolveGradeInfo(grade: string | null, columnConfig: unknown) {
+    if (!grade || !columnConfig) return { icon: null, abbrev: null }
     const cols = columnConfig as ColEntry[]
-    const gradeCol = cols.find((c) => c.key === "grade")
-    return gradeCol?.options?.find((o) => o.label === grade)?.icon ?? null
+    const opt = cols.find((c) => c.key === "grade")?.options?.find((o) => o.label === grade)
+    return { icon: opt?.icon ?? null, abbrev: opt?.abbrev ?? null }
   }
 
   const charByUser = new Map(
-    rpCharacters.map((c) => [c.userId, {
-      name: c.name,
-      grade: c.grade ?? null,
-      gradeIcon: resolveGradeIcon(c.grade, c.rpUnit?.columnConfig),
-    }])
+    rpCharacters.map((c) => {
+      const info = resolveGradeInfo(c.grade, c.rpUnit?.columnConfig)
+      return [c.userId, {
+        name: c.name,
+        grade: c.grade ?? null,
+        gradeIcon: info.icon,
+        gradeAbbrev: info.abbrev,
+      }]
+    })
   )
 
   const members = memberships.map((m) => {
@@ -68,6 +72,7 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
       characterName: char?.name ?? null,
       gradeLabel: char?.grade ?? null,
       gradeIcon: char?.gradeIcon ?? null,
+      gradeAbbrev: char?.gradeAbbrev ?? null,
     }
   })
 

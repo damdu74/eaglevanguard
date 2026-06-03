@@ -48,6 +48,7 @@ interface CommunityMember {
   characterName?: string | null
   gradeLabel?: string | null
   gradeIcon?: string | null
+  gradeAbbrev?: string | null
 }
 
 function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected }: EdgeProps) {
@@ -607,6 +608,7 @@ export function OrbatEditor({
                             characterName: m?.characterName ?? m?.name ?? "",
                             gradeLabel: m?.gradeLabel ?? "",
                             gradeIcon: m?.gradeIcon ?? "",
+                            gradeAbbrev: m?.gradeAbbrev ?? "",
                           })
                         }
                       }}

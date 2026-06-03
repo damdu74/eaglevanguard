@@ -21,7 +21,7 @@ import {
   ChevronUp, ChevronDown, FolderPlus, Users, Settings, ImagePlus,
 } from "lucide-react"
 
-type GradeOption = { label: string; icon?: string }
+type GradeOption = { label: string; icon?: string; abbrev?: string }
 type RoleOption = { label: string; color?: string }
 type ColumnDef = {
   key: string; label: string; builtin: boolean
@@ -525,8 +525,20 @@ export function RpUnitDetail({
                             onChange={(e) => setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
                               ? { ...c, options: gradeOptions(c).map((o, i) => i === idx ? { ...o, label: e.target.value } : o) }
                               : c))}
-                            className="h-8 text-sm"
+                            className="h-8 text-sm flex-1"
                             placeholder="Ex: Sergent, Lieutenant…"
+                          />
+                          <Input
+                            value={opt.abbrev ?? ""}
+                            onChange={(e) => {
+                              const v = e.target.value.slice(0, 15)
+                              setSettingsColumns((prev) => prev.map((c) => c.key === "grade"
+                                ? { ...c, options: gradeOptions(c).map((o, i) => i === idx ? { ...o, abbrev: v } : o) }
+                                : c))
+                            }}
+                            className="h-8 text-sm w-20 shrink-0 font-mono uppercase"
+                            placeholder="Abrév."
+                            maxLength={15}
                           />
                           <Button size="icon" variant="ghost"
                             className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"

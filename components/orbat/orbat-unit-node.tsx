@@ -14,6 +14,7 @@ export interface OrbatRole {
   characterName?: string
   gradeLabel?: string
   gradeIcon?: string
+  gradeAbbrev?: string
 }
 
 function gradeAbbrev(label: string): string {
@@ -173,8 +174,10 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
                         <img src={role.gradeIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />
                       )}
                       {/* Abréviation de grade */}
-                      {role.gradeLabel && (
-                        <span className="text-[9px] font-bold text-primary shrink-0">{gradeAbbrev(role.gradeLabel)}</span>
+                      {(role.gradeAbbrev || role.gradeLabel) && (
+                        <span className="text-[9px] font-bold text-primary shrink-0">
+                          {role.gradeAbbrev || gradeAbbrev(role.gradeLabel ?? "")}
+                        </span>
                       )}
                       {/* Nom du personnage RP */}
                       <span className="text-[10px] font-medium truncate text-foreground">
