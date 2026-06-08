@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Ban, Send, ShieldOff } from "lucide-react"
+import { Ban, Send, ShieldOff, Trash2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 import { cn } from "@/lib/utils"
@@ -58,6 +58,7 @@ export function MessageThread({
   const [content, setContent] = useState("")
   const [sending, setSending] = useState(false)
   const [blockLoading, setBlockLoading] = useState(false)
+  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const lastFetchRef = useRef(new Date().toISOString())
 
@@ -104,6 +105,16 @@ export function MessageThread({
       lastFetchRef.current = msg.createdAt
     } finally {
       setSending(false)
+    }
+  }
+
+  async function deleteMessage(messageId: string) {
+    setDeletingMessageId(messageId)
+    try {
+      const res = await fetch(`/api/messages/${conversationId}/${messageId}`, { method: "DELETE" })
+      if (res.ok) setMessages((prev) => prev.filter((m) => m.id !== messageId))
+    } finally {
+      setDeletingMessageId(null)
     }
   }
 
@@ -166,12 +177,22 @@ export function MessageThread({
           messages.map((msg) => {
             const isOwn = msg.sender.id === currentUserId
             return (
-              <div key={msg.id} className={cn("flex gap-2", isOwn ? "justify-end" : "justify-start")}>
+              <div key={msg.id} className={cn("group flex gap-2 items-end", isOwn ? "justify-end" : "justify-start")}>
                 {!isOwn && (
-                  <Avatar className="h-7 w-7 shrink-0 mt-0.5">
+                  <Avatar className="h-7 w-7 shrink-0 mb-4">
                     <AvatarImage src={userAvatar(msg.sender)} />
                     <AvatarFallback>{userName(msg.sender)[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
+                )}
+                {isOwn && (
+                  <button
+                    onClick={() => deleteMessage(msg.id)}
+                    disabled={deletingMessageId === msg.id}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity mb-4 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive shrink-0"
+                    title="Supprimer le message"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 )}
                 <div className={cn("max-w-[70%] space-y-1", isOwn ? "items-end" : "items-start")}>
                   <div
