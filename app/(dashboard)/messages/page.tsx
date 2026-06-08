@@ -25,7 +25,12 @@ export default async function MessagesPage() {
   const userId = session.user.id
 
   const conversations = await prisma.conversation.findMany({
-    where: { OR: [{ user1Id: userId }, { user2Id: userId }] },
+    where: {
+      OR: [
+        { user1Id: userId, deletedByUser1: false },
+        { user2Id: userId, deletedByUser2: false },
+      ],
+    },
     include: {
       user1: { select: userSelect },
       user2: { select: userSelect },

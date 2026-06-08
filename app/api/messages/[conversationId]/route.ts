@@ -73,7 +73,11 @@ export async function DELETE(_req: NextRequest, { params }: { params: { conversa
   const conv = await getConversationForUser(params.conversationId, userId)
   if (!conv) return NextResponse.json({ error: "Conversation introuvable" }, { status: 404 })
 
-  await prisma.conversation.delete({ where: { id: conv.id } })
+  const isUser1 = conv.user1Id === userId
+  await prisma.conversation.update({
+    where: { id: conv.id },
+    data: isUser1 ? { deletedByUser1: true } : { deletedByUser2: true },
+  })
 
   return NextResponse.json({ ok: true })
 }
@@ -102,9 +106,10 @@ export async function POST(req: NextRequest, { params }: { params: { conversatio
       data: { conversationId: conv.id, senderId: userId, content: content.trim() },
       include: { sender: { select: { id: true, steamName: true, discordName: true, name: true, customAvatar: true, steamAvatar: true, discordAvatar: true, image: true } } },
     }),
+    // Réinitialiser les flags de suppression + mettre à jour updatedAt
     prisma.conversation.update({
       where: { id: conv.id },
-      data: { updatedAt: new Date() },
+      data: { updatedAt: new Date(), deletedByUser1: false, deletedByUser2: false },
     }),
     prisma.notification.create({
       data: {

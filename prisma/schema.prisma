@@ -517,11 +517,13 @@ model ModerationAction {
 // ─── MESSAGERIE ───────────────────────────────────────────────────────────────
 
 model Conversation {
-  id        String   @id @default(cuid())
-  user1Id   String
-  user2Id   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  user1Id         String
+  user2Id         String
+  deletedByUser1  Boolean  @default(false)
+  deletedByUser2  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   user1    User      @relation("ConversationUser1", fields: [user1Id], references: [id], onDelete: Cascade)
   user2    User      @relation("ConversationUser2", fields: [user2Id], references: [id], onDelete: Cascade)
