@@ -50,6 +50,14 @@ export function ConversationList({ initialConversations }: Props) {
   const router = useRouter()
   const [conversations, setConversations] = useState(initialConversations)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  // Rafraîchit les conversations à chaque montage pour contourner le cache router Next.js
+  useEffect(() => {
+    fetch("/api/messages")
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setConversations(data) })
+      .catch(() => {})
+  }, [])
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<UserInfo[]>([])
   const [loadingStart, setLoadingStart] = useState<string | null>(null)
