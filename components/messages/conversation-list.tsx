@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { MessageSquarePlus, Search } from "lucide-react"
+import { MessageSquarePlus, Search, Trash2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 import { useDebounce } from "@/lib/hooks/use-debounce"
@@ -48,7 +48,8 @@ interface Props {
 
 export function ConversationList({ initialConversations }: Props) {
   const router = useRouter()
-  const [conversations] = useState(initialConversations)
+  const [conversations, setConversations] = useState(initialConversations)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<UserInfo[]>([])
   const [loadingStart, setLoadingStart] = useState<string | null>(null)
@@ -65,6 +66,17 @@ export function ConversationList({ initialConversations }: Props) {
       .then(setSearchResults)
       .catch(() => {})
   }, [debouncedQuery])
+
+  async function deleteConversation(e: React.MouseEvent, convId: string) {
+    e.preventDefault()
+    setDeletingId(convId)
+    try {
+      const res = await fetch(`/api/messages/${convId}`, { method: "DELETE" })
+      if (res.ok) setConversations((prev) => prev.filter((c) => c.id !== convId))
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   async function startConversation(userId: string) {
     setLoadingStart(userId)
@@ -144,43 +156,46 @@ export function ConversationList({ initialConversations }: Props) {
       ) : (
         <div className="divide-y rounded-md border">
           {conversations.map((conv) => (
-            <Link
-              key={conv.id}
-              href={`/messages/${conv.id}`}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors",
-                conv.unreadCount > 0 && "bg-muted/30"
-              )}
-            >
-              <Avatar className="h-9 w-9 shrink-0">
-                <AvatarImage src={userAvatar(conv.otherUser)} />
-                <AvatarFallback>{userName(conv.otherUser)[0]?.toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <span className={cn("text-sm", conv.unreadCount > 0 ? "font-semibold" : "font-medium")}>
-                    {userName(conv.otherUser)}
-                  </span>
-                  {conv.lastMessage && (
-                    <span className="text-xs text-muted-foreground shrink-0">
-                      {formatDistanceToNow(new Date(conv.lastMessage.createdAt), { addSuffix: true, locale: fr })}
+            <div key={conv.id} className={cn("group flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors", conv.unreadCount > 0 && "bg-muted/30")}>
+              <Link href={`/messages/${conv.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                <Avatar className="h-9 w-9 shrink-0">
+                  <AvatarImage src={userAvatar(conv.otherUser)} />
+                  <AvatarFallback>{userName(conv.otherUser)[0]?.toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={cn("text-sm", conv.unreadCount > 0 ? "font-semibold" : "font-medium")}>
+                      {userName(conv.otherUser)}
                     </span>
+                    {conv.lastMessage && (
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {formatDistanceToNow(new Date(conv.lastMessage.createdAt), { addSuffix: true, locale: fr })}
+                      </span>
+                    )}
+                  </div>
+                  {conv.lastMessage ? (
+                    <p className={cn("text-xs truncate mt-0.5", conv.unreadCount > 0 ? "text-foreground" : "text-muted-foreground")}>
+                      {conv.lastMessage.content}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground mt-0.5">Aucun message</p>
                   )}
                 </div>
-                {conv.lastMessage ? (
-                  <p className={cn("text-xs truncate mt-0.5", conv.unreadCount > 0 ? "text-foreground" : "text-muted-foreground")}>
-                    {conv.lastMessage.content}
-                  </p>
-                ) : (
-                  <p className="text-xs text-muted-foreground mt-0.5">Aucun message</p>
-                )}
-              </div>
+              </Link>
               {conv.unreadCount > 0 && (
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shrink-0">
                   {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
                 </span>
               )}
-            </Link>
+              <button
+                onClick={(e) => deleteConversation(e, conv.id)}
+                disabled={deletingId === conv.id}
+                className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                title="Supprimer la conversation"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
           ))}
         </div>
       )}

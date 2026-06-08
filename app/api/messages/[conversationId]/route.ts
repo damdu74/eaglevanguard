@@ -65,6 +65,19 @@ export async function GET(req: NextRequest, { params }: { params: { conversation
   })
 }
 
+export async function DELETE(_req: NextRequest, { params }: { params: { conversationId: string } }) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+
+  const userId = session.user.id
+  const conv = await getConversationForUser(params.conversationId, userId)
+  if (!conv) return NextResponse.json({ error: "Conversation introuvable" }, { status: 404 })
+
+  await prisma.conversation.delete({ where: { id: conv.id } })
+
+  return NextResponse.json({ ok: true })
+}
+
 export async function POST(req: NextRequest, { params }: { params: { conversationId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
