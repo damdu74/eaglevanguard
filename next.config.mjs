@@ -13,6 +13,9 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
+  experimental: {
+    staleTimes: { dynamic: 0 }, // Désactive le cache router pour les pages force-dynamic
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "avatars.steamstatic.com" },
