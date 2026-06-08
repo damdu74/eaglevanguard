@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     async start(controller) {
       const send = async () => {
         try {
-          const [notifications, unreadCount, friendRequests, staffMemberships] = await Promise.all([
+          const [notifications, unreadCount, friendRequests, staffMemberships, unreadMessages] = await Promise.all([
             prisma.notification.findMany({
               where: { userId },
               orderBy: { createdAt: "desc" },
@@ -35,6 +35,13 @@ export async function GET(req: NextRequest) {
                 ],
               },
               select: { communityId: true },
+            }),
+            prisma.message.count({
+              where: {
+                read: false,
+                senderId: { not: userId },
+                conversation: { OR: [{ user1Id: userId }, { user2Id: userId }] },
+              },
             }),
           ])
 
@@ -53,6 +60,7 @@ export async function GET(req: NextRequest) {
             unreadCount,
             friendRequests,
             pendingApplications,
+            unreadMessages,
           })
           controller.enqueue(encoder.encode(`data: ${payload}\n\n`))
         } catch {

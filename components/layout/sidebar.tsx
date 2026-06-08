@@ -3,13 +3,14 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Shield, UserSearch, UserCheck, BookOpen, Users, ShieldAlert } from "lucide-react"
+import { LayoutDashboard, Shield, UserSearch, UserCheck, BookOpen, Users, ShieldAlert, MessageCircle } from "lucide-react"
 
 const navSections = [
   {
     label: "Navigation",
     items: [
       { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard, exact: true },
+      { href: "/messages", label: "Messages", icon: MessageCircle, exact: false },
     ],
   },
   {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Bell, Users, ClipboardList, CheckCheck, ExternalLink } from "lucide-react"
+import { Bell, Users, ClipboardList, CheckCheck, ExternalLink, MessageCircle } from "lucide-react"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
@@ -20,6 +20,7 @@ interface Notif {
 interface Props {
   initialFriendRequests: number
   initialPendingApplications: number
+  initialUnreadMessages?: number
 }
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
@@ -29,15 +30,16 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   FRIEND_REJECTED: <Users className="h-3.5 w-3.5 text-red-500" />,
 }
 
-export function NotificationBell({ initialFriendRequests, initialPendingApplications }: Props) {
+export function NotificationBell({ initialFriendRequests, initialPendingApplications, initialUnreadMessages = 0 }: Props) {
   const router = useRouter()
   const [friendRequests, setFriendRequests] = useState(initialFriendRequests)
   const [pendingApplications, setPendingApplications] = useState(initialPendingApplications)
   const [notifications, setNotifications] = useState<Notif[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [unreadMessages, setUnreadMessages] = useState(initialUnreadMessages)
   const [open, setOpen] = useState(false)
 
-  const total = friendRequests + pendingApplications + unreadCount
+  const total = friendRequests + pendingApplications + unreadCount + unreadMessages
 
   useEffect(() => {
     let fallbackInterval: ReturnType<typeof setInterval> | null = null
@@ -51,6 +53,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
         setPendingApplications(data.pendingApplications ?? 0)
         setNotifications(data.notifications ?? [])
         setUnreadCount(data.unreadCount ?? 0)
+        setUnreadMessages(data.unreadMessages ?? 0)
         router.refresh()
       } catch {}
     }
@@ -86,6 +89,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
       setPendingApplications(data.pendingApplications ?? 0)
       setNotifications(data.notifications ?? [])
       setUnreadCount(data.unreadCount ?? 0)
+      setUnreadMessages(data.unreadMessages ?? 0)
       router.refresh()
     } catch {}
   }
@@ -130,6 +134,28 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
         </div>
 
         <div className="divide-y max-h-80 overflow-y-auto">
+          {/* Messages non lus */}
+          {unreadMessages > 0 && (
+            <Link
+              href="/messages"
+              className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 shrink-0">
+                <MessageCircle className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">
+                  {unreadMessages} message{unreadMessages > 1 ? "s" : ""} non lu{unreadMessages > 1 ? "s" : ""}
+                </p>
+                <p className="text-xs text-muted-foreground">Voir les messages</p>
+              </div>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shrink-0">
+                {unreadMessages > 9 ? "9+" : unreadMessages}
+              </span>
+            </Link>
+          )}
+
           {/* Actions en attente */}
           {hasActionable && (
             <>

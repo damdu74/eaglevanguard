@@ -99,6 +99,11 @@ model User {
   moderationResolved ModerationAction[] @relation("ModResolver")
   auditLogsAsActor   AuditLog[]         @relation("AuditActor")
   auditLogsAsTarget  AuditLog[]         @relation("AuditTarget")
+  conversations1     Conversation[]     @relation("ConversationUser1")
+  conversations2     Conversation[]     @relation("ConversationUser2")
+  sentMessages       Message[]
+  blocksGiven        Block[]            @relation("BlocksGiven")
+  blocksReceived     Block[]            @relation("BlocksReceived")
 }
 
 // ─── NEXUS TEAM ───────────────────────────────────────────────────────────────
@@ -507,6 +512,53 @@ model ModerationAction {
   @@index([targetId])
   @@index([communityId, createdAt])
   @@index([moderatorId])
+}
+
+// ─── MESSAGERIE ───────────────────────────────────────────────────────────────
+
+model Conversation {
+  id        String   @id @default(cuid())
+  user1Id   String
+  user2Id   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user1    User      @relation("ConversationUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2    User      @relation("ConversationUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([user1Id, user2Id])
+  @@index([user1Id, updatedAt])
+  @@index([user2Id, updatedAt])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String   @db.Text
+  read           Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker User @relation("BlocksGiven", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
 }
 
 // ─── APPLICATIONS ─────────────────────────────────────────────────────────────
