@@ -188,6 +188,32 @@ export function OrbatEditor({
       .catch(() => {})
   }, [communitySlug, unitId])
 
+  // Sync les données de grade dans les rôles existants dès que les membres sont chargés
+  useEffect(() => {
+    if (members.length === 0) return
+    setNodes((nds) =>
+      nds.map((n) => {
+        const roles: OrbatRole[] = n.data.roles ?? []
+        if (roles.length === 0) return n
+        const updated = roles.map((role) => {
+          if (!role.memberId) return role
+          const m = members.find((mb) => mb.id === role.memberId)
+          if (!m) return role
+          return {
+            ...role,
+            memberName:    m.name           ?? role.memberName,
+            characterName: m.characterName  ?? m.name ?? role.characterName,
+            gradeLabel:    m.gradeLabel     ?? "",
+            gradeIcon:     m.gradeIcon      ?? "",
+            gradeAbbrev:   m.gradeAbbrev    ?? "",
+          }
+        })
+        return { ...n, data: { ...n.data, roles: updated } }
+      })
+    )
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [members])
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !editState) return
