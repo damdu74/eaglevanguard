@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { OrbatUnitNode, type OrbatRole } from "./orbat-unit-node"
+import { OrbatGameNode } from "./orbat-game-node"
 import { NATO_TYPES, NATO_SIZES, NATO_MODIFIERS } from "./nato-symbol"
 import { Download, Loader2, Plus, Save, Trash2, Upload } from "lucide-react"
 import { toast } from "sonner"
@@ -123,6 +124,7 @@ function mergeUnitRoot(node: Node, unitRootData?: Record<string, Record<string, 
 
 interface EditState {
   nodeId: string
+  nodeType: string
   initialRoleCount: number
   label: string
   type: string
@@ -271,7 +273,21 @@ export function OrbatEditor({
         data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: null },
       },
     ])
-    setEditState({ nodeId: newId, initialRoleCount: 0, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
+    setEditState({ nodeId: newId, nodeType: "unit", initialRoleCount: 0, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
+  }, [setNodes])
+
+  const addGameGroup = useCallback(() => {
+    const newId = `game-${Date.now()}`
+    const last = nodesRef.current[nodesRef.current.length - 1]
+    const position = last
+      ? { x: snapVal(last.position.x + 380), y: snapVal(last.position.y) }
+      : { x: snapVal(380), y: snapVal(160) }
+
+    setNodes((nds) => [
+      ...nds,
+      { id: newId, type: "game-group", position, data: { label: "Nouveau jeu" } },
+    ])
+    setEditState({ nodeId: newId, nodeType: "game-group", initialRoleCount: 0, label: "Nouveau jeu", type: "", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
   }, [setNodes])
 
   const toggleLock = useCallback((nodeId: string) => {
@@ -283,9 +299,16 @@ export function OrbatEditor({
   const openEdit = useCallback((nodeId: string) => {
     const node = nodesRef.current.find((n) => n.id === nodeId)
     if (!node || node.data?.communityRoot) return
+
+    if (node.type === "game-group") {
+      setEditState({ nodeId, nodeType: "game-group", initialRoleCount: 0, label: node.data.label ?? "", type: "", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
+      return
+    }
+
     const roles = node.data.roles ?? []
     setEditState({
       nodeId,
+      nodeType: "unit",
       initialRoleCount: roles.length,
       label: node.data.label ?? "",
       type: node.data.type ?? "infantry",
@@ -316,7 +339,7 @@ export function OrbatEditor({
     [nodes, readOnly]
   )
 
-  const nodeTypes = useMemo(() => ({ unit: OrbatUnitNode }), [])
+  const nodeTypes = useMemo(() => ({ unit: OrbatUnitNode, "game-group": OrbatGameNode }), [])
   const edgeTypes = useMemo(() => ({ orbat: OrbatEdge }), [])
 
   const removeSelected = useCallback(() => {
@@ -326,6 +349,14 @@ export function OrbatEditor({
 
   const applyEdit = useCallback(() => {
     if (!editState) return
+
+    if (editState.nodeType === "game-group") {
+      setNodes((nds) =>
+        nds.map((n) => n.id === editState.nodeId ? { ...n, data: { ...n.data, label: editState.label } } : n)
+      )
+      setEditState(null)
+      return
+    }
 
     const ROLE_ROW_H = 28
     const deltaRoles = editState.roles.length - editState.initialRoleCount
@@ -461,6 +492,12 @@ export function OrbatEditor({
 
           {!readOnly && (
             <Panel position="top-right" className="flex gap-2">
+              {isCommunityOrbat && (
+                <Button size="sm" variant="outline" onClick={addGameGroup} className="border-violet-500 text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-950/30">
+                  <Plus className="mr-1 h-4 w-4" />
+                  Groupe jeu
+                </Button>
+              )}
               <Button size="sm" onClick={addNode} className="bg-green-600 hover:bg-green-700 text-white border-0">
                 <Plus className="mr-1 h-4 w-4" />
                 Ajouter
@@ -494,12 +531,27 @@ export function OrbatEditor({
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editState?.nodeId === ROOT_ID ? "Modifier le commandement" : "Modifier l'unité"}
+              {editState?.nodeType === "game-group"
+                ? "Groupe jeu"
+                : editState?.nodeId === ROOT_ID
+                ? "Modifier le commandement"
+                : "Modifier l'unité"}
             </DialogTitle>
           </DialogHeader>
           {editState && (
             <div className="space-y-4">
-              {isCommunityOrbat ? (
+              {editState.nodeType === "game-group" ? (
+                <div className="space-y-1.5">
+                  <Label>Nom du jeu</Label>
+                  <Input
+                    value={editState.label}
+                    onChange={(e) => setEditState({ ...editState, label: e.target.value })}
+                    placeholder="Ex: Arma 3, DCS World, Squad…"
+                    autoFocus
+                    onKeyDown={(e) => e.key === "Enter" && applyEdit()}
+                  />
+                </div>
+              ) : isCommunityOrbat ? (
                 /* ORBAT général : sélecteur d'unité uniquement */
                 <div className="space-y-1.5">
                   <Label>Unité liée</Label>
