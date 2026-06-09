@@ -116,7 +116,7 @@ function buildGameLayout(
       position: { x: 0, y: LY_UNIT_Y },
       data: {
         label: rootData?.label ? String(rootData.label) : u.name,
-        type: rootData?.type ? String(rootData.type) : "infantry",
+        type: rootData?.type ? String(rootData.type) : "",
         size: rootData?.size ? String(rootData.size) : "",
         callsign: rootData?.callsign ? String(rootData.callsign) : "",
         imageUrl: rootData?.imageUrl ? String(rootData.imageUrl) : "",
@@ -231,7 +231,7 @@ function mergeUnitRoot(node: Node, unitRootData?: Record<string, Record<string, 
       ...node.data,
       label:    String(root.label    ?? node.data.label ?? ""),
       imageUrl: String(root.imageUrl ?? ""),
-      type:     String(root.type     ?? node.data.type ?? "infantry"),
+      type:     String(root.type     ?? node.data.type ?? ""),
       size:     String(root.size     ?? ""),
       callsign: String(root.callsign ?? ""),
       modifier: String(root.modifier ?? ""),
@@ -496,10 +496,10 @@ export function OrbatEditor({
         id: newId,
         type: "unit",
         position,
-        data: { label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: null },
+        data: { label: "Nouvelle unité", type: "", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: null },
       },
     ])
-    setEditState({ nodeId: newId, nodeType: "unit", initialRoleCount: 0, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
+    setEditState({ nodeId: newId, nodeType: "unit", initialRoleCount: 0, label: "Nouvelle unité", type: "", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
   }, [setNodes])
 
 const toggleLock = useCallback((nodeId: string) => {
@@ -518,7 +518,7 @@ const toggleLock = useCallback((nodeId: string) => {
       nodeType: "unit",
       initialRoleCount: roles.length,
       label: node.data.label ?? "",
-      type: node.data.type ?? "infantry",
+      type: node.data.type ?? "",
       size: node.data.size ?? "",
       callsign: node.data.callsign ?? "",
       imageUrl: node.data.imageUrl ?? "",
@@ -646,7 +646,7 @@ const toggleLock = useCallback((nodeId: string) => {
         position: n.position,
         data: {
           label:    n.data?.label    ?? "",
-          type:     n.data?.type     ?? "infantry",
+          type:     n.data?.type     ?? "",
           size:     n.data?.size     ?? "",
           callsign: n.data?.callsign ?? "",
           imageUrl: n.data?.imageUrl ?? "",
