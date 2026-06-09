@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { CommunitySettingsForm } from "@/components/community/community-settings-form"
 import { CommunityLogoUpload } from "@/components/community/community-logo-upload"
 import { TransferOwnershipForm } from "@/components/community/transfer-ownership-form"
+import { DiscordGuildForm } from "@/components/community/discord-guild-form"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 
@@ -23,7 +24,7 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
 
   const community = await prisma.community.findUnique({
     where: { slug: params.slug },
-    select: { id: true, name: true, slug: true, description: true, game: true, isPublic: true, creatorId: true, logoUrl: true },
+    select: { id: true, name: true, slug: true, description: true, game: true, isPublic: true, creatorId: true, logoUrl: true, discordGuildId: true },
   })
   if (!community) notFound()
 
@@ -63,6 +64,8 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
       </div>
 
       <CommunityLogoUpload slug={params.slug} currentLogoUrl={community.logoUrl} />
+
+      <DiscordGuildForm slug={params.slug} currentGuildId={community.discordGuildId} discordClientId={process.env.DISCORD_CLIENT_ID ?? null} />
 
       <CommunitySettingsForm
         community={community}

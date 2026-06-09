@@ -179,6 +179,8 @@ model Community {
   updatedAt   DateTime @updatedAt
   creatorId   String
 
+  discordGuildId  String?
+
   creator      User          @relation("CommunityCreator", fields: [creatorId], references: [id])
   memberships  Membership[]
   ranks        Rank[]
@@ -327,22 +329,25 @@ enum EventStatus {
 }
 
 model Event {
-  id          String      @id @default(cuid())
-  communityId String
-  title       String
-  description String?     @db.Text
-  type        String
-  status      EventStatus @default(DRAFT)
-  startDate   DateTime
-  endDate     DateTime?
-  maxSlots    Int?
-  imageUrl    String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  communityId    String
+  title          String
+  description    String?     @db.Text
+  type           String
+  status         EventStatus @default(DRAFT)
+  startDate      DateTime
+  endDate        DateTime?
+  maxSlots       Int?
+  imageUrl       String?
+  source         String      @default("NEXUS")
+  discordEventId String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   community    Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
   participants EventParticipant[]
 
+  @@unique([communityId, discordEventId])
   @@index([communityId, status, startDate])
 }
 
