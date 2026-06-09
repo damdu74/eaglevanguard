@@ -169,62 +169,68 @@ export function OrbatEditor({
       return isCommunityOrbat ? mergeUnitRoot(n, unitRootData) : n
     })
 
-  // Injection automatique des nœuds game-group pour l'ORBAT général
-  const baseEdgeList = initialEdges.map((e) => ({ ...e, type: "orbat" }))
-  let augmentedNodes = baseNodes
-  let augmentedEdges = baseEdgeList
-
-  if (isCommunityOrbat) {
-    const units = communityUnits ?? []
-    const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
-    const extraNodes: Node[] = []
-    const extraEdges: Edge[] = []
-
-    for (const game of games) {
-      const gameNodeId = `game-${game}`
-      const unitIdsForGame = new Set(units.filter((u) => u.game === game).map((u) => u.id))
-      const unitNodesForGame = baseNodes.filter((n) => unitIdsForGame.has(n.data?.rpUnitId))
-
-      if (!baseNodes.find((n) => n.id === gameNodeId)) {
-        const avgX = unitNodesForGame.length
-          ? unitNodesForGame.reduce((sum, n) => sum + n.position.x, 0) / unitNodesForGame.length
-          : 380
-        const minY = unitNodesForGame.length
-          ? Math.min(...unitNodesForGame.map((n) => n.position.y))
-          : 200
-        extraNodes.push({
-          id: gameNodeId,
-          type: "game-group",
-          position: { x: snapVal(avgX), y: snapVal(Math.max(minY - 200, 80)) },
-          data: { label: GAME_LABELS[game] ?? game },
-        })
-      }
-
-      // Racine → groupe jeu (bottom → top)
-      if (!baseEdgeList.find((e) => e.source === ROOT_ID && e.target === gameNodeId)) {
-        extraEdges.push({ id: `auto-root-${gameNodeId}`, source: ROOT_ID, sourceHandle: "bottom", target: gameNodeId, targetHandle: "top", type: "orbat" } as Edge)
-      }
-
-      // Groupe jeu → unités (bottom → top)
-      for (const n of unitNodesForGame) {
-        if (!baseEdgeList.find((e) => e.source === gameNodeId && e.target === n.id)) {
-          extraEdges.push({ id: `auto-${gameNodeId}-${n.id}`, source: gameNodeId, sourceHandle: "bottom", target: n.id, targetHandle: "top", type: "orbat" } as Edge)
-        }
-      }
-    }
-
-    augmentedNodes = [...baseNodes, ...extraNodes]
-    augmentedEdges = [...baseEdgeList, ...extraEdges] as typeof baseEdgeList
-  }
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(augmentedNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(augmentedEdges)
+  const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(
+    initialEdges.map((e) => ({ ...e, type: "orbat" }))
+  )
   const [saving, setSaving] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [editState, setEditState] = useState<EditState | null>(null)
   const [members, setMembers] = useState<CommunityMember[]>([])
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Injection automatique des nœuds game-group et de leurs liaisons (ORBAT général uniquement)
+  useEffect(() => {
+    if (!isCommunityOrbat) return
+    const units = communityUnits ?? []
+    const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
+    if (!games.length) return
+
+    setNodes((nds) => {
+      let changed = false
+      const next = [...nds]
+      for (const game of games) {
+        const gameNodeId = `game-${game}`
+        if (nds.find((n) => n.id === gameNodeId)) continue
+        const unitIdsForGame = new Set(units.filter((u) => u.game === game).map((u) => u.id))
+        const unitNodesForGame = nds.filter((n) => unitIdsForGame.has(n.data?.rpUnitId))
+        const avgX = unitNodesForGame.length
+          ? unitNodesForGame.reduce((sum, n) => sum + n.position.x, 0) / unitNodesForGame.length
+          : 380
+        const minY = unitNodesForGame.length
+          ? Math.min(...unitNodesForGame.map((n) => n.position.y))
+          : 200
+        next.push({ id: gameNodeId, type: "game-group", position: { x: snapVal(avgX), y: snapVal(Math.max(minY - 200, 80)) }, data: { label: GAME_LABELS[game] ?? game } })
+        changed = true
+      }
+      return changed ? next : nds
+    })
+
+    setEdges((eds) => {
+      let changed = false
+      const next = [...eds]
+      const currentNodes = nodesRef.current
+      for (const game of games) {
+        const gameNodeId = `game-${game}`
+        // Racine → groupe jeu
+        if (!eds.find((e) => e.source === ROOT_ID && e.target === gameNodeId)) {
+          next.push({ id: `auto-root-${gameNodeId}`, source: ROOT_ID, sourceHandle: "bottom", target: gameNodeId, targetHandle: "top", type: "orbat" } as Edge)
+          changed = true
+        }
+        // Groupe jeu → unités liées
+        const unitIdsForGame = new Set(units.filter((u) => u.game === game).map((u) => u.id))
+        for (const n of currentNodes.filter((n) => unitIdsForGame.has(n.data?.rpUnitId))) {
+          if (!eds.find((e) => e.source === gameNodeId && e.target === n.id)) {
+            next.push({ id: `auto-${gameNodeId}-${n.id}`, source: gameNodeId, sourceHandle: "bottom", target: n.id, targetHandle: "top", type: "orbat" } as Edge)
+            changed = true
+          }
+        }
+      }
+      return changed ? next : eds
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Fetch members : personnages de l'unité si unitId, sinon tous les membres
   // Re-fetch toutes les 15s + dès que l'onglet redevient visible
