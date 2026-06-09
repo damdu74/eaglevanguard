@@ -480,8 +480,9 @@ const toggleLock = useCallback((nodeId: string) => {
 
   const removeSelected = useCallback(() => {
     setNodes((nds) => nds.filter((n) => !n.selected || n.id === ROOT_ID || n.type === "game-group"))
-    setEdges((eds) => eds.filter((e) => !e.selected))
-  }, [setNodes, setEdges])
+    // Dans l'ORBAT général les liens sont gérés automatiquement, on ne les supprime pas manuellement
+    if (!isCommunityOrbat) setEdges((eds) => eds.filter((e) => !e.selected))
+  }, [setNodes, setEdges, isCommunityOrbat])
 
   const applyEdit = useCallback(() => {
     if (!editState) return
@@ -601,14 +602,14 @@ const toggleLock = useCallback((nodeId: string) => {
           nodes={nodesWithCallbacks}
           edges={edges}
           onNodesChange={readOnly ? undefined : onNodesChange}
-          onEdgesChange={readOnly ? undefined : onEdgesChange}
-          onConnect={readOnly ? undefined : onConnect}
+          onEdgesChange={readOnly || isCommunityOrbat ? undefined : onEdgesChange}
+          onConnect={readOnly || isCommunityOrbat ? undefined : onConnect}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
           proOptions={{ hideAttribution: true }}
           defaultEdgeOptions={{ type: "orbat" }}
-          nodesConnectable={!readOnly}
+          nodesConnectable={!readOnly && !isCommunityOrbat}
           connectionMode={ConnectionMode.Loose}
           snapToGrid={!readOnly}
           snapGrid={SNAP_GRID}
@@ -642,7 +643,9 @@ const toggleLock = useCallback((nodeId: string) => {
           {!readOnly && (
             <Panel position="bottom-center">
               <p className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded border">
-                Survolez une unité → <strong>+</strong> pour ajouter un subordonné · Double-clic pour modifier
+                {isCommunityOrbat
+                  ? "Double-clic sur un nœud pour modifier · Les liens sont gérés automatiquement"
+                  : "Survolez une unité → + pour ajouter un subordonné · Double-clic pour modifier"}
               </p>
             </Panel>
           )}
