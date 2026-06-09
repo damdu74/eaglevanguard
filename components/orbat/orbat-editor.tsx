@@ -77,8 +77,125 @@ const ROOT_ID = "root"
 const SNAP_GRID: [number, number] = [20, 20]
 const GAME_LABELS: Record<string, string> = { arma3: "Arma 3" }
 
+// Dimensions du layout hiérarchique (px canvas)
+const LY_NODE_W  = 360
+const LY_H_GAP   = 40
+const LY_SLOT_W  = LY_NODE_W + LY_H_GAP
+const LY_ROOT_H  = 140
+const LY_GAME_H  = 60
+const LY_V_GAP   = 60
+const LY_GAME_Y  = Math.round((LY_ROOT_H + LY_V_GAP) / 20) * 20           // 200
+const LY_UNIT_Y  = Math.round((LY_GAME_Y + LY_GAME_H + LY_V_GAP) / 20) * 20 // 320
+const LY_ROOT_CX = LY_NODE_W / 2                                            // 180
+
+type CommunityUnit = { id: string; name: string; game?: string | null }
+
 function snapVal(v: number) {
   return Math.round(v / SNAP_GRID[0]) * SNAP_GRID[0]
+}
+
+/** Calcule le layout hiérarchique complet et crée les nœuds manquants. */
+function buildGameLayout(
+  nds: Node[],
+  units: CommunityUnit[],
+  unitRootData?: Record<string, Record<string, unknown>>
+): Node[] {
+  const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
+  if (!games.length) return nds
+
+  let result = [...nds]
+
+  // Créer les nœuds pour les nouvelles unités (pas encore dans le graphe)
+  const existingRpIds = new Set(result.filter((n) => n.data?.rpUnitId).map((n) => n.data.rpUnitId as string))
+  for (const u of units.filter((u) => u.game)) {
+    if (existingRpIds.has(u.id)) continue
+    const rootData = unitRootData?.[u.id]
+    result.push({
+      id: `unit-${u.id}`,
+      type: "unit",
+      position: { x: 0, y: LY_UNIT_Y },
+      data: {
+        label: rootData?.label ? String(rootData.label) : u.name,
+        type: rootData?.type ? String(rootData.type) : "infantry",
+        size: rootData?.size ? String(rootData.size) : "",
+        callsign: rootData?.callsign ? String(rootData.callsign) : "",
+        imageUrl: rootData?.imageUrl ? String(rootData.imageUrl) : "",
+        modifier: rootData?.modifier ? String(rootData.modifier) : "",
+        roles: Array.isArray(rootData?.roles) ? rootData.roles : [],
+        rpUnitId: u.id,
+      },
+    })
+  }
+
+  // Calculer les sous-arbres par jeu
+  const gameInfos = games.map((game) => {
+    const unitIds  = new Set(units.filter((u) => u.game === game).map((u) => u.id))
+    const count    = result.filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId)).length
+    const subtreeW = count > 0 ? count * LY_SLOT_W - LY_H_GAP : LY_NODE_W
+    return { game, gameNodeId: `game-${game}`, count, subtreeW }
+  })
+
+  const totalW = gameInfos.reduce((s, g) => s + g.subtreeW, 0) + (gameInfos.length - 1) * LY_H_GAP
+  let curX = LY_ROOT_CX - totalW / 2
+
+  for (const gi of gameInfos) {
+    const centerX = curX + gi.subtreeW / 2
+    curX += gi.subtreeW + LY_H_GAP
+
+    const gameX = snapVal(centerX - LY_NODE_W / 2)
+
+    // Créer ou repositionner le nœud game-group
+    const gameIdx = result.findIndex((n) => n.id === gi.gameNodeId)
+    if (gameIdx >= 0) {
+      result[gameIdx] = { ...result[gameIdx], position: { x: gameX, y: LY_GAME_Y } }
+    } else {
+      result.push({ id: gi.gameNodeId, type: "game-group", position: { x: gameX, y: LY_GAME_Y }, data: { label: GAME_LABELS[gi.game] ?? gi.game } })
+    }
+
+    // Redistribuer les unités liées horizontalement sous le game-group
+    if (gi.count > 0) {
+      const unitIds   = new Set(units.filter((u) => u.game === gi.game).map((u) => u.id))
+      const linked    = result
+        .filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId))
+        .sort((a, b) => a.position.x - b.position.x)
+      const totalUnitsW = linked.length * LY_NODE_W + (linked.length - 1) * LY_H_GAP
+      const startX      = centerX - totalUnitsW / 2
+
+      for (let ui = 0; ui < linked.length; ui++) {
+        const unitX  = snapVal(startX + ui * LY_SLOT_W)
+        const idx    = result.findIndex((n) => n.id === linked[ui].id)
+        if (idx >= 0) result[idx] = { ...result[idx], position: { x: unitX, y: LY_UNIT_Y } }
+      }
+    }
+  }
+
+  return result
+}
+
+/** Ajoute les liens automatiques manquants (racine→jeu→unités). */
+function buildAutoEdges(eds: Edge[], nds: Node[], units: CommunityUnit[]): Edge[] {
+  const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
+  if (!games.length) return eds
+
+  let changed = false
+  const next = [...eds]
+
+  for (const game of games) {
+    const gameNodeId = `game-${game}`
+    if (!next.find((e) => e.source === ROOT_ID && e.target === gameNodeId)) {
+      next.push({ id: `auto-root-${gameNodeId}`, source: ROOT_ID, sourceHandle: "bottom", target: gameNodeId, targetHandle: "top", type: "orbat" } as Edge)
+      changed = true
+    }
+    const unitIds = new Set(units.filter((u) => u.game === game).map((u) => u.id))
+    for (const n of nds.filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId))) {
+      if (!next.find((e) => e.source === gameNodeId && e.target === n.id)) {
+        next.push({ id: `auto-${gameNodeId}-${n.id}`, source: gameNodeId, sourceHandle: "bottom", target: n.id, targetHandle: "top", type: "orbat" } as Edge)
+        changed = true
+      }
+    }
+  }
+
+  return changed ? next : eds
 }
 
 function makeRootNode(label = "Commandement", imageUrl = "", communityRoot = false): Node {
@@ -177,105 +294,19 @@ export function OrbatEditor({
   const [exporting, setExporting] = useState(false)
   const [editState, setEditState] = useState<EditState | null>(null)
   const [members, setMembers] = useState<CommunityMember[]>([])
+  const [liveUnits, setLiveUnits] = useState<CommunityUnit[]>(communityUnits ?? [])
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Layout hiérarchique automatique : racine → game-groups → unités (ORBAT général uniquement)
+  // Layout hiérarchique au montage (ORBAT général uniquement)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!isCommunityOrbat) return
-    const units = communityUnits ?? []
-    const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
-    if (!games.length) return
-
-    // Hauteurs approximatives des nœuds (px canvas)
-    const NODE_W  = 360
-    const H_GAP   = 40          // espace horizontal entre nœuds
-    const SLOT_W  = NODE_W + H_GAP  // 400
-    const ROOT_H  = 140         // hauteur nœud racine
-    const GAME_H  = 60          // hauteur nœud game-group
-    const V_GAP   = 60          // espace vertical entre couches
-
-    // Couches Y fixes dérivées des hauteurs réelles
-    const GAME_Y = snapVal(ROOT_H + V_GAP)            // 200
-    const UNIT_Y = snapVal(GAME_Y + GAME_H + V_GAP)   // 320
-
-    // Centre horizontal de la racine (racine à x=0, largeur 360)
-    const ROOT_CENTER = NODE_W / 2  // 180
-
-    // Sous-arbre de chaque jeu : largeur = max(NODE_W, N * SLOT_W - H_GAP)
-    const gameInfos = games.map((game) => {
-      const unitIds  = new Set(units.filter((u) => u.game === game).map((u) => u.id))
-      const count    = nodesRef.current.filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId)).length
-      const subtreeW = count > 0 ? count * SLOT_W - H_GAP : NODE_W
-      return { game, gameNodeId: `game-${game}`, count, subtreeW }
-    })
-
-    // Largeur totale de tous les sous-arbres + gaps entre jeux
-    const totalW = gameInfos.reduce((s, g) => s + g.subtreeW, 0) + (gameInfos.length - 1) * H_GAP
-
-    // Centres X de chaque jeu (ensemble centré sous la racine)
-    let curX = ROOT_CENTER - totalW / 2
-    const gameCenters = gameInfos.map((gi) => {
-      const center = curX + gi.subtreeW / 2
-      curX += gi.subtreeW + H_GAP
-      return center
-    })
-
-    setNodes((nds) => {
-      const next = [...nds]
-
-      for (let gi = 0; gi < gameInfos.length; gi++) {
-        const { game, gameNodeId, count } = gameInfos[gi]
-        const centerX = gameCenters[gi]
-        const gameX   = snapVal(centerX - NODE_W / 2)
-
-        // Créer ou repositionner le nœud game-group
-        const gameIdx = next.findIndex((n) => n.id === gameNodeId)
-        if (gameIdx >= 0) {
-          next[gameIdx] = { ...next[gameIdx], position: { x: gameX, y: GAME_Y } }
-        } else {
-          next.push({ id: gameNodeId, type: "game-group", position: { x: gameX, y: GAME_Y }, data: { label: GAME_LABELS[game] ?? game } })
-        }
-
-        // Redistribuer les unités liées horizontalement sous le game-group
-        if (count > 0) {
-          const unitIds    = new Set(units.filter((u) => u.game === game).map((u) => u.id))
-          const linked     = next
-            .filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId))
-            .sort((a, b) => a.position.x - b.position.x)  // conserver l'ordre relatif
-          const totalUnitsW = linked.length * NODE_W + (linked.length - 1) * H_GAP
-          const startX      = centerX - totalUnitsW / 2
-
-          for (let ui = 0; ui < linked.length; ui++) {
-            const unitX  = snapVal(startX + ui * SLOT_W)
-            const unitIdx = next.findIndex((n) => n.id === linked[ui].id)
-            if (unitIdx >= 0) next[unitIdx] = { ...next[unitIdx], position: { x: unitX, y: UNIT_Y } }
-          }
-        }
-      }
-      return next
-    })
-
-    setEdges((eds) => {
-      let changed = false
-      const next = [...eds]
-      const currentNodes = nodesRef.current
-      for (const game of games) {
-        const gameNodeId = `game-${game}`
-        if (!eds.find((e) => e.source === ROOT_ID && e.target === gameNodeId)) {
-          next.push({ id: `auto-root-${gameNodeId}`, source: ROOT_ID, sourceHandle: "bottom", target: gameNodeId, targetHandle: "top", type: "orbat" } as Edge)
-          changed = true
-        }
-        const unitIdsForGame = new Set(units.filter((u) => u.game === game).map((u) => u.id))
-        for (const n of currentNodes.filter((n) => n.type === "unit" && unitIdsForGame.has(n.data?.rpUnitId))) {
-          if (!eds.find((e) => e.source === gameNodeId && e.target === n.id)) {
-            next.push({ id: `auto-${gameNodeId}-${n.id}`, source: gameNodeId, sourceHandle: "bottom", target: n.id, targetHandle: "top", type: "orbat" } as Edge)
-            changed = true
-          }
-        }
-      }
-      return changed ? next : eds
-    })
+    const units = liveUnitsRef.current
+    if (!units.some((u) => u.game)) return
+    const newNodes = buildGameLayout(nodesRef.current, units, unitRootData)
+    setNodes(newNodes)
+    setEdges((eds) => buildAutoEdges(eds, newNodes, units))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -304,9 +335,11 @@ export function OrbatEditor({
     }
   }, [communitySlug, unitId])
 
-  // Ref pour accéder aux membres courants dans les callbacks asynchrones
-  const membersRef = useRef<CommunityMember[]>([])
+  // Refs pour accéder aux états courants dans les callbacks asynchrones
+  const membersRef   = useRef<CommunityMember[]>([])
   membersRef.current = members
+  const liveUnitsRef = useRef<CommunityUnit[]>(communityUnits ?? [])
+  liveUnitsRef.current = liveUnits
 
   // Sync les données de grade dans les rôles existants dès que les membres sont chargés
   useEffect(() => {
@@ -380,6 +413,48 @@ export function OrbatEditor({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [communitySlug])
+
+  // Polling des unités de la communauté : détecte les nouvelles unités créées depuis un autre onglet
+  useEffect(() => {
+    if (!isCommunityOrbat) return
+
+    const fetchUnits = () => {
+      fetch(`/api/communities/${communitySlug}/rp/units`)
+        .then((r) => r.json())
+        .then(({ units }: { units: CommunityUnit[] }) => {
+          if (!units) return
+          const currentIds = new Set(liveUnitsRef.current.map((u) => u.id))
+          if (units.some((u) => !currentIds.has(u.id))) {
+            setLiveUnits(units)
+          }
+        })
+        .catch(() => {})
+    }
+
+    const interval = setInterval(fetchUnits, 15000)
+    const onVisibility = () => { if (document.visibilityState === "visible") fetchUnits() }
+    document.addEventListener("visibilitychange", onVisibility)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener("visibilitychange", onVisibility)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [communitySlug])
+
+  // Re-layout automatique quand de nouvelles unités sont détectées
+  useEffect(() => {
+    if (!isCommunityOrbat) return
+    const currentRpIds = new Set(
+      nodesRef.current.filter((n) => n.data?.rpUnitId).map((n) => n.data.rpUnitId as string)
+    )
+    const hasNewUnits = liveUnits.some((u) => u.game && !currentRpIds.has(u.id))
+    if (!hasNewUnits) return
+
+    const newNodes = buildGameLayout(nodesRef.current, liveUnits, unitRootData)
+    setNodes(newNodes)
+    setEdges((eds) => buildAutoEdges(eds, newNodes, liveUnits))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveUnits])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

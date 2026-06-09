@@ -4,6 +4,20 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { isStaff as isStaffHelper } from "@/lib/permissions"
 
+export const dynamic = "force-dynamic"
+
+export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
+  const community = await prisma.community.findUnique({ where: { slug: params.slug }, select: { id: true } })
+  if (!community) return NextResponse.json({ error: "Not found" }, { status: 404 })
+
+  const units = await prisma.rpUnit.findMany({
+    where: { communityId: community.id },
+    select: { id: true, name: true, game: true },
+    orderBy: { createdAt: "asc" },
+  })
+  return NextResponse.json({ units })
+}
+
 export async function POST(req: NextRequest, { params }: { params: { slug: string } }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
