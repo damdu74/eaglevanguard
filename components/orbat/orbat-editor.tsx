@@ -200,9 +200,15 @@ export function OrbatEditor({
         })
       }
 
+      // Racine → groupe jeu (bottom → top)
+      if (!baseEdgeList.find((e) => e.source === ROOT_ID && e.target === gameNodeId)) {
+        extraEdges.push({ id: `auto-root-${gameNodeId}`, source: ROOT_ID, sourceHandle: "bottom", target: gameNodeId, targetHandle: "top", type: "orbat" } as Edge)
+      }
+
+      // Groupe jeu → unités (bottom → top)
       for (const n of unitNodesForGame) {
         if (!baseEdgeList.find((e) => e.source === gameNodeId && e.target === n.id)) {
-          extraEdges.push({ id: `auto-${gameNodeId}-${n.id}`, source: gameNodeId, target: n.id, type: "orbat" } as Edge)
+          extraEdges.push({ id: `auto-${gameNodeId}-${n.id}`, source: gameNodeId, sourceHandle: "bottom", target: n.id, targetHandle: "top", type: "orbat" } as Edge)
         }
       }
     }
