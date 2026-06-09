@@ -92,11 +92,12 @@ export async function POST(req: NextRequest) {
 
   // Enforce ordering: smaller id = user1
   const [user1Id, user2Id] = [userId, targetId].sort()
+  const isUser1 = userId === user1Id
 
   const conversation = await prisma.conversation.upsert({
     where: { user1Id_user2Id: { user1Id, user2Id } },
     create: { user1Id, user2Id },
-    update: {},
+    update: isUser1 ? { deletedByUser1: false } : { deletedByUser2: false },
     select: { id: true },
   })
 
