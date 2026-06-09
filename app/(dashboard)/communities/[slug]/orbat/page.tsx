@@ -74,6 +74,7 @@ export default async function OrbatPage({ params }: PageProps) {
       <OrbatEditor
         communitySlug={params.slug}
         rootLabel={community.name}
+        communityLogoUrl={community.logoUrl}
         communityUnits={rpUnits}
         initialNodes={nodes}
         initialEdges={edges}

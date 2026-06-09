@@ -47,7 +47,9 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
 
   // Listener natif — React synthetic events ne remontent pas fiablement
   // sur les nœuds non-draggables dans ReactFlow v11.
+  // Désactivé pour la case racine (non éditable).
   useEffect(() => {
+    if (data.isRoot) return
     const el = rootRef.current
     if (!el) return
     const handler = (e: Event) => {
@@ -118,82 +120,100 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
           data.isRoot && "bg-violet-50 dark:bg-violet-950/30"
         )}
       >
-        {/* En-tête : image (si présente) | nom | symbole OTAN */}
-        <div className={cn("grid items-center gap-1 px-2 py-2", data.imageUrl ? "grid-cols-[72px_1fr_60px]" : "grid-cols-[1fr_60px]")}>
-          {/* Image (gauche) — masquée si absente */}
-          {data.imageUrl && (
-            <div className="flex items-center justify-center">
-              <div style={{ width: 56, height: 56, borderRadius: 8, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={data.imageUrl}
-                  alt=""
-                  style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }}
+        {/* Case racine : logo centré + nom uniquement */}
+        {data.isRoot ? (
+          <div className="flex flex-col items-center justify-center gap-2 px-4 py-4">
+            {data.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={data.imageUrl}
+                alt=""
+                style={{ width: 72, height: 72, objectFit: "contain", display: "block" }}
+              />
+            ) : (
+              <div className="w-[72px] h-[72px] rounded-lg bg-violet-200/50 dark:bg-violet-900/30 flex items-center justify-center">
+                <span className="text-2xl font-bold text-violet-400">{data.label?.[0]?.toUpperCase()}</span>
+              </div>
+            )}
+            <p className="text-sm font-bold text-center leading-tight">{data.label}</p>
+          </div>
+        ) : (
+          <>
+            {/* En-tête : image (si présente) | nom | symbole OTAN */}
+            <div className={cn("grid items-center gap-1 px-2 py-2", data.imageUrl ? "grid-cols-[72px_1fr_60px]" : "grid-cols-[1fr_60px]")}>
+              {/* Image (gauche) — masquée si absente */}
+              {data.imageUrl && (
+                <div className="flex items-center justify-center">
+                  <div style={{ width: 56, height: 56, borderRadius: 8, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={data.imageUrl}
+                      alt=""
+                      style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Nom (centre) */}
+              <div className="text-center min-w-0 px-1">
+                <p className="text-xs font-bold leading-tight truncate">{data.label}</p>
+                {data.callsign && (
+                  <p className="text-[10px] text-muted-foreground leading-none mt-0.5">{data.callsign}</p>
+                )}
+              </div>
+
+              {/* Symbole OTAN (droite) */}
+              <div className="flex items-center justify-center">
+                <NatoSymbol
+                  type={data.type}
+                  size={data.size}
+                  label={data.label}
+                  isRoot={data.isRoot}
+                  selected={selected}
+                  modifier={data.modifier}
+                  compact
                 />
               </div>
             </div>
-          )}
 
-          {/* Nom (centre) */}
-          <div className="text-center min-w-0 px-1">
-            <p className="text-xs font-bold leading-tight truncate">{data.label}</p>
-            {data.callsign && (
-              <p className="text-[10px] text-muted-foreground leading-none mt-0.5">{data.callsign}</p>
-            )}
-          </div>
-
-          {/* Symbole OTAN (droite) */}
-          <div className="flex items-center justify-center">
-            <NatoSymbol
-              type={data.type}
-              size={data.size}
-              label={data.label}
-              isRoot={data.isRoot}
-              selected={selected}
-              modifier={data.modifier}
-              compact
-            />
-          </div>
-        </div>
-
-        {/* Tableau des postes */}
-        {roles.length > 0 && (
-          <div className="border-t divide-y divide-border/60">
-            {roles.map((role) => {
-              const assigned = role.characterName || role.memberName
-              return (
-                <div key={role.id} className="flex items-center px-2 py-1 gap-1.5">
-                  {assigned ? (
-                    <div className="flex items-center gap-1 flex-1 min-w-0">
-                      {/* 1. Abréviation de grade */}
-                      {(role.gradeAbbrev || role.gradeLabel) && (
-                        <span className="text-[9px] font-bold text-primary shrink-0">
-                          {role.gradeAbbrev || gradeAbbrev(role.gradeLabel ?? "")}
-                        </span>
+            {/* Tableau des postes */}
+            {roles.length > 0 && (
+              <div className="border-t divide-y divide-border/60">
+                {roles.map((role) => {
+                  const assigned = role.characterName || role.memberName
+                  return (
+                    <div key={role.id} className="flex items-center px-2 py-1 gap-1.5">
+                      {assigned ? (
+                        <div className="flex items-center gap-1 flex-1 min-w-0">
+                          {(role.gradeAbbrev || role.gradeLabel) && (
+                            <span className="text-[9px] font-bold text-primary shrink-0">
+                              {role.gradeAbbrev || gradeAbbrev(role.gradeLabel ?? "")}
+                            </span>
+                          )}
+                          <div className="flex items-center gap-0.5 flex-1 min-w-0">
+                            <span className="text-[10px] font-medium truncate text-foreground">
+                              {role.characterName || role.memberName}
+                            </span>
+                            {role.gradeIcon && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={role.gradeIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />
+                            )}
+                          </div>
+                          <span className="text-[9px] text-muted-foreground shrink-0 truncate max-w-[80px]">{role.title}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 flex-1 min-w-0">
+                          <span className="text-[9px] text-muted-foreground shrink-0 truncate max-w-[90px]">{role.title}</span>
+                          <span className="text-[9px] text-muted-foreground/40 italic">— Vacant</span>
+                        </div>
                       )}
-                      {/* 2. Nom + Icône du personnage RP (collés) */}
-                      <div className="flex items-center gap-0.5 flex-1 min-w-0">
-                        <span className="text-[10px] font-medium truncate text-foreground">
-                          {role.characterName || role.memberName}
-                        </span>
-                        {role.gradeIcon && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={role.gradeIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />
-                        )}
-                      </div>
-                      {/* 3. Description du poste */}
-                      <span className="text-[9px] text-muted-foreground shrink-0 truncate max-w-[80px]">{role.title}</span>
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-1 flex-1 min-w-0">
-                      <span className="text-[9px] text-muted-foreground shrink-0 truncate max-w-[90px]">{role.title}</span>
-                      <span className="text-[9px] text-muted-foreground/40 italic">— Vacant</span>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
 
