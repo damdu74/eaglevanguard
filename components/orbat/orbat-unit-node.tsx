@@ -97,7 +97,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
         </a>
       )}
 
-      {!data.readOnly && !data.isRoot && (
+      {!data.readOnly && !data.isRoot && !!data.onToggleLock && (
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); data.onToggleLock?.(id) }}
