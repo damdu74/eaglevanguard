@@ -142,43 +142,40 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
           </div>
         ) : (
           <>
-            {/* En-tête : image (si présente) | nom | symbole OTAN */}
-            <div className={cn("grid items-center gap-1 px-2 py-2", data.imageUrl ? "grid-cols-[72px_1fr_60px]" : "grid-cols-[1fr_60px]")}>
-              {/* Image (gauche) — masquée si absente */}
-              {data.imageUrl && (
-                <div className="flex items-center justify-center">
-                  <div style={{ width: 56, height: 56, borderRadius: 8, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={data.imageUrl}
-                      alt=""
-                      style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }}
-                    />
+            {/* En-tête : image? | nom | icone? — centré dans l'espace disponible */}
+            {(() => {
+              const hasImage = !!data.imageUrl
+              const hasIcon  = !!data.type
+              const gridCols = hasImage && hasIcon ? "grid-cols-[72px_1fr_60px]"
+                             : hasImage            ? "grid-cols-[72px_1fr]"
+                             : hasIcon             ? "grid-cols-[1fr_60px]"
+                             :                       "grid-cols-[1fr]"
+              return (
+                <div className={cn("grid items-center gap-1 px-2 py-2", gridCols)}>
+                  {hasImage && (
+                    <div className="flex items-center justify-center">
+                      <div style={{ width: 56, height: 56, borderRadius: 8, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={data.imageUrl} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="text-center min-w-0 px-1">
+                    <p className="text-xs font-bold leading-tight truncate">{data.label}</p>
+                    {data.callsign && (
+                      <p className="text-[10px] text-muted-foreground leading-none mt-0.5">{data.callsign}</p>
+                    )}
                   </div>
+
+                  {hasIcon && (
+                    <div className="flex items-center justify-center">
+                      <NatoSymbol type={data.type} size={data.size} label={data.label} isRoot={data.isRoot} selected={selected} modifier={data.modifier} compact />
+                    </div>
+                  )}
                 </div>
-              )}
-
-              {/* Nom (centre) */}
-              <div className="text-center min-w-0 px-1">
-                <p className="text-xs font-bold leading-tight truncate">{data.label}</p>
-                {data.callsign && (
-                  <p className="text-[10px] text-muted-foreground leading-none mt-0.5">{data.callsign}</p>
-                )}
-              </div>
-
-              {/* Symbole OTAN (droite) */}
-              <div className="flex items-center justify-center">
-                <NatoSymbol
-                  type={data.type}
-                  size={data.size}
-                  label={data.label}
-                  isRoot={data.isRoot}
-                  selected={selected}
-                  modifier={data.modifier}
-                  compact
-                />
-              </div>
-            </div>
+              )
+            })()}
 
             {/* Tableau des postes */}
             {roles.length > 0 && (
