@@ -187,7 +187,7 @@ async function createUnit() {
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: 101st Airborne Division" />
             </div>
             <div className="space-y-1">
-              <Label>Période / Ère <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+              <Label>Genre <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
               <Input value={era} onChange={(e) => setEra(e.target.value)} placeholder="Ex: WW2, Guerre Froide, Moderne…" />
             </div>
             <div className="space-y-1">
@@ -216,7 +216,7 @@ async function createUnit() {
               <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <Label>Période / Ère <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+              <Label>Genre <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
               <Input value={editEra} onChange={(e) => setEditEra(e.target.value)} placeholder="Ex: WW2, Guerre Froide, Moderne…" />
             </div>
             <div className="space-y-1">
