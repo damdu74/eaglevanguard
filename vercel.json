@@ -7,10 +7,6 @@
     {
       "path": "/api/cron/update-events",
       "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/sync-discord-events",
-      "schedule": "0 * * * *"
     }
   ]
 }
