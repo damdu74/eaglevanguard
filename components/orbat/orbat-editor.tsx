@@ -304,6 +304,10 @@ export function OrbatEditor({
     }
   }, [communitySlug, unitId])
 
+  // Ref pour accéder aux membres courants dans les callbacks asynchrones
+  const membersRef = useRef<CommunityMember[]>([])
+  membersRef.current = members
+
   // Sync les données de grade dans les rôles existants dès que les membres sont chargés
   useEffect(() => {
     if (members.length === 0) return
@@ -329,6 +333,53 @@ export function OrbatEditor({
     )
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [members])
+
+  // Polling des données racines des unités (ORBAT général uniquement)
+  // Met à jour label, image, rôles de chaque nœud d'unité depuis l'ORBAT de l'unité
+  useEffect(() => {
+    if (!isCommunityOrbat) return
+
+    const fetchUnitRoots = () => {
+      fetch(`/api/communities/${communitySlug}/orbat/unit-roots`)
+        .then((r) => r.json())
+        .then(({ unitRootData: fresh }: { unitRootData: Record<string, Record<string, unknown>> }) => {
+          if (!fresh) return
+          setNodes((nds) =>
+            nds.map((n) => {
+              if (!n.data?.rpUnitId) return n
+              const merged = mergeUnitRoot(n, fresh)
+              // Re-appliquer les grades courants sur les rôles fraîchement chargés
+              const currentMembers = membersRef.current
+              const roles = (merged.data.roles as OrbatRole[] ?? []).map((role) => {
+                if (!role.memberId) return role
+                const m = currentMembers.find((mb) => mb.id === role.memberId)
+                if (!m) return role
+                return {
+                  ...role,
+                  memberName:    m.name          ?? role.memberName,
+                  characterName: m.characterName ?? m.name ?? role.characterName,
+                  gradeLabel:    m.gradeLabel    ?? "",
+                  gradeIcon:     m.gradeIcon     ?? "",
+                  gradeAbbrev:   m.gradeAbbrev   ?? "",
+                }
+              })
+              return { ...merged, data: { ...merged.data, roles } }
+            })
+          )
+        })
+        .catch(() => {})
+    }
+
+    fetchUnitRoots()
+    const interval = setInterval(fetchUnitRoots, 15000)
+    const onVisibility = () => { if (document.visibilityState === "visible") fetchUnitRoots() }
+    document.addEventListener("visibilitychange", onVisibility)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener("visibilitychange", onVisibility)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [communitySlug])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
