@@ -180,7 +180,7 @@ export function OrbatEditor({
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Injection automatique des nœuds game-group et de leurs liaisons (ORBAT général uniquement)
+  // Injection et repositionnement automatique des nœuds game-group (ORBAT général uniquement)
   useEffect(() => {
     if (!isCommunityOrbat) return
     const units = communityUnits ?? []
@@ -188,23 +188,28 @@ export function OrbatEditor({
     if (!games.length) return
 
     setNodes((nds) => {
-      let changed = false
       const next = [...nds]
-      for (const game of games) {
+      games.forEach((game, gi) => {
         const gameNodeId = `game-${game}`
-        if (nds.find((n) => n.id === gameNodeId)) continue
         const unitIdsForGame = new Set(units.filter((u) => u.game === game).map((u) => u.id))
-        const unitNodesForGame = nds.filter((n) => unitIdsForGame.has(n.data?.rpUnitId))
-        const avgX = unitNodesForGame.length
-          ? unitNodesForGame.reduce((sum, n) => sum + n.position.x, 0) / unitNodesForGame.length
-          : 380
-        const minY = unitNodesForGame.length
-          ? Math.min(...unitNodesForGame.map((n) => n.position.y))
+        const unitNodesForGame = nds.filter((n) => n.type === "unit" && unitIdsForGame.has(n.data?.rpUnitId))
+
+        // Placement intelligent : centré sur les unités liées, ou distribué si aucune
+        const posX = unitNodesForGame.length
+          ? snapVal(unitNodesForGame.reduce((sum, n) => sum + n.position.x, 0) / unitNodesForGame.length)
+          : snapVal(gi * 400)
+        const posY = unitNodesForGame.length
+          ? snapVal(Math.max(Math.min(...unitNodesForGame.map((n) => n.position.y)) - 200, 80))
           : 200
-        next.push({ id: gameNodeId, type: "game-group", position: { x: snapVal(avgX), y: snapVal(Math.max(minY - 200, 80)) }, data: { label: GAME_LABELS[game] ?? game } })
-        changed = true
-      }
-      return changed ? next : nds
+
+        const existingIdx = next.findIndex((n) => n.id === gameNodeId)
+        if (existingIdx >= 0) {
+          next[existingIdx] = { ...next[existingIdx], position: { x: posX, y: posY } }
+        } else {
+          next.push({ id: gameNodeId, type: "game-group", position: { x: posX, y: posY }, data: { label: GAME_LABELS[game] ?? game } })
+        }
+      })
+      return next
     })
 
     setEdges((eds) => {
@@ -213,14 +218,12 @@ export function OrbatEditor({
       const currentNodes = nodesRef.current
       for (const game of games) {
         const gameNodeId = `game-${game}`
-        // Racine → groupe jeu
         if (!eds.find((e) => e.source === ROOT_ID && e.target === gameNodeId)) {
           next.push({ id: `auto-root-${gameNodeId}`, source: ROOT_ID, sourceHandle: "bottom", target: gameNodeId, targetHandle: "top", type: "orbat" } as Edge)
           changed = true
         }
-        // Groupe jeu → unités liées
         const unitIdsForGame = new Set(units.filter((u) => u.game === game).map((u) => u.id))
-        for (const n of currentNodes.filter((n) => unitIdsForGame.has(n.data?.rpUnitId))) {
+        for (const n of currentNodes.filter((n) => n.type === "unit" && unitIdsForGame.has(n.data?.rpUnitId))) {
           if (!eds.find((e) => e.source === gameNodeId && e.target === n.id)) {
             next.push({ id: `auto-${gameNodeId}-${n.id}`, source: gameNodeId, sourceHandle: "bottom", target: n.id, targetHandle: "top", type: "orbat" } as Edge)
             changed = true
@@ -337,12 +340,7 @@ const toggleLock = useCallback((nodeId: string) => {
 
   const openEdit = useCallback((nodeId: string) => {
     const node = nodesRef.current.find((n) => n.id === nodeId)
-    if (!node || node.data?.communityRoot) return
-
-    if (node.type === "game-group") {
-      setEditState({ nodeId, nodeType: "game-group", initialRoleCount: 0, label: node.data.label ?? "", type: "", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
-      return
-    }
+    if (!node || node.data?.communityRoot || node.type === "game-group") return
 
     const roles = node.data.roles ?? []
     setEditState({
@@ -362,18 +360,22 @@ const toggleLock = useCallback((nodeId: string) => {
 
   const nodesWithCallbacks = useMemo(
     () =>
-      nodes.map((n) => ({
-        ...n,
-        draggable: n.id === ROOT_ID ? false : !n.data.locked,
-        selectable: true,
-        data: {
-          ...n.data,
-          readOnly,
-          communitySlug,
-          onToggleLock: readOnly ? undefined : toggleLock,
-          onEdit: readOnly ? undefined : openEdit,
-        },
-      })),
+      nodes.map((n) => {
+        const isGameGroup = n.type === "game-group"
+        return {
+          ...n,
+          draggable: isGameGroup || n.id === ROOT_ID ? false : !n.data.locked,
+          deletable: !isGameGroup && n.id !== ROOT_ID,
+          selectable: !isGameGroup,
+          data: {
+            ...n.data,
+            readOnly,
+            communitySlug,
+            onToggleLock: readOnly || isGameGroup ? undefined : toggleLock,
+            onEdit: readOnly || isGameGroup ? undefined : openEdit,
+          },
+        }
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [nodes, readOnly]
   )
@@ -382,20 +384,12 @@ const toggleLock = useCallback((nodeId: string) => {
   const edgeTypes = useMemo(() => ({ orbat: OrbatEdge }), [])
 
   const removeSelected = useCallback(() => {
-    setNodes((nds) => nds.filter((n) => !n.selected || n.id === ROOT_ID))
+    setNodes((nds) => nds.filter((n) => !n.selected || n.id === ROOT_ID || n.type === "game-group"))
     setEdges((eds) => eds.filter((e) => !e.selected))
   }, [setNodes, setEdges])
 
   const applyEdit = useCallback(() => {
     if (!editState) return
-
-    if (editState.nodeType === "game-group") {
-      setNodes((nds) =>
-        nds.map((n) => n.id === editState.nodeId ? { ...n, data: { ...n.data, label: editState.label } } : n)
-      )
-      setEditState(null)
-      return
-    }
 
     const ROLE_ROW_H = 28
     const deltaRoles = editState.roles.length - editState.initialRoleCount
@@ -564,27 +558,12 @@ const toggleLock = useCallback((nodeId: string) => {
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editState?.nodeType === "game-group"
-                ? "Groupe jeu"
-                : editState?.nodeId === ROOT_ID
-                ? "Modifier le commandement"
-                : "Modifier l'unité"}
+              {editState?.nodeId === ROOT_ID ? "Modifier le commandement" : "Modifier l'unité"}
             </DialogTitle>
           </DialogHeader>
           {editState && (
             <div className="space-y-4">
-              {editState.nodeType === "game-group" ? (
-                <div className="space-y-1.5">
-                  <Label>Nom du jeu</Label>
-                  <Input
-                    value={editState.label}
-                    onChange={(e) => setEditState({ ...editState, label: e.target.value })}
-                    placeholder="Ex: Arma 3, DCS World, Squad…"
-                    autoFocus
-                    onKeyDown={(e) => e.key === "Enter" && applyEdit()}
-                  />
-                </div>
-              ) : isCommunityOrbat ? (
+              {isCommunityOrbat ? (
                 /* ORBAT général : sélecteur d'unité uniquement */
                 <div className="space-y-1.5">
                   <Label>Unité liée</Label>
