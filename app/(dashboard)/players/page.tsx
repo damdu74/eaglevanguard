@@ -2,7 +2,6 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { PlayersSearch } from "@/components/players/players-search"
 import { PaginationBar } from "@/components/ui/pagination-bar"
@@ -22,12 +21,6 @@ export default async function PlayersPage({ searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
   const q = searchParams.q?.trim() ?? ""
   const page = Math.max(1, parseInt(searchParams.page ?? "1", 10))
-
-  const myMemberCommunityIds = session?.user?.id
-    ? await prisma.membership
-        .findMany({ where: { userId: session.user.id as string }, select: { communityId: true } })
-        .then((ms) => new Set(ms.map((m) => m.communityId)))
-    : new Set<string>()
 
   const where = {
     visibility: { not: "PRIVATE" as const },
@@ -58,13 +51,6 @@ export default async function PlayersPage({ searchParams }: PageProps) {
         image: true,
         isNexusTeam: true,
         bio: true,
-        memberships: {
-          select: {
-            community: {
-              select: { id: true, name: true, slug: true, isPublic: true },
-            },
-          },
-        },
       },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * PER_PAGE,
@@ -101,10 +87,6 @@ export default async function PlayersPage({ searchParams }: PageProps) {
               const displayName = user.steamName ?? user.discordName ?? user.name ?? "Joueur"
               const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar ?? user.image
 
-              const visibleCommunities = user.memberships
-                .map((m) => m.community)
-                .filter((c) => c.isPublic || myMemberCommunityIds.has(c.id))
-
               return (
                 <Link key={user.id} href={`/profile/${user.id}?from=players`}>
                   <Card className="h-full transition-colors hover:bg-muted/50">
@@ -128,20 +110,6 @@ export default async function PlayersPage({ searchParams }: PageProps) {
                           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                             {user.bio}
                           </p>
-                        )}
-                        {visibleCommunities.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {visibleCommunities.slice(0, 3).map((c) => (
-                              <Badge key={c.id} variant="secondary" className="text-xs px-1.5 py-0">
-                                {c.name}
-                              </Badge>
-                            ))}
-                            {visibleCommunities.length > 3 && (
-                              <Badge variant="outline" className="text-xs px-1.5 py-0">
-                                +{visibleCommunities.length - 3}
-                              </Badge>
-                            )}
-                          </div>
                         )}
                       </div>
                     </CardContent>
