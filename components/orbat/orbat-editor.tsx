@@ -187,28 +187,59 @@ export function OrbatEditor({
     const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
     if (!games.length) return
 
+    // Dimensions approximatives (px canvas)
+    const NODE_W   = 360
+    const H_GAP    = 40   // espace min horizontal entre nœuds
+    const SLOT_W   = NODE_W + H_GAP   // 400
+    const ROOT_H   = 160  // hauteur approximative de la case racine
+    const V_MARGIN = 200  // marge verticale entre couches
+
     setNodes((nds) => {
-      const next = [...nds]
-      games.forEach((game, gi) => {
+      // 1. Calculer la position idéale de chaque groupe
+      const placements = games.map((game, gi) => {
         const gameNodeId = `game-${game}`
-        const unitIdsForGame = new Set(units.filter((u) => u.game === game).map((u) => u.id))
-        const unitNodesForGame = nds.filter((n) => n.type === "unit" && unitIdsForGame.has(n.data?.rpUnitId))
+        const unitIds = new Set(units.filter((u) => u.game === game).map((u) => u.id))
+        const linked  = nds.filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId))
 
-        // Placement intelligent : centré sur les unités liées, ou distribué si aucune
-        const posX = unitNodesForGame.length
-          ? snapVal(unitNodesForGame.reduce((sum, n) => sum + n.position.x, 0) / unitNodesForGame.length)
-          : snapVal(gi * 400)
-        const posY = unitNodesForGame.length
-          ? snapVal(Math.max(Math.min(...unitNodesForGame.map((n) => n.position.y)) - 200, 80))
-          : 200
+        let idealX: number
+        let idealY: number
 
-        const existingIdx = next.findIndex((n) => n.id === gameNodeId)
-        if (existingIdx >= 0) {
-          next[existingIdx] = { ...next[existingIdx], position: { x: posX, y: posY } }
+        if (linked.length) {
+          // Centré sur l'étendue horizontale des unités liées
+          const minX = Math.min(...linked.map((n) => n.position.x))
+          const maxX = Math.max(...linked.map((n) => n.position.x))
+          idealX = (minX + maxX) / 2
+
+          // Positionné entre la racine et la 1ère unité
+          const minUnitY = Math.min(...linked.map((n) => n.position.y))
+          idealY = Math.max(ROOT_H + V_MARGIN / 2, minUnitY - V_MARGIN)
         } else {
-          next.push({ id: gameNodeId, type: "game-group", position: { x: posX, y: posY }, data: { label: GAME_LABELS[game] ?? game } })
+          // Pas d'unités liées : distribution centrée autour de x=0
+          idealX = (gi - (games.length - 1) / 2) * SLOT_W
+          idealY = ROOT_H + V_MARGIN
         }
+
+        return { game, gameNodeId, x: snapVal(idealX), y: snapVal(idealY) }
       })
+
+      // 2. Résoudre les chevauchements horizontaux entre groupes
+      // Tri par X, puis décalage en cascade si trop proches
+      placements.sort((a, b) => a.x - b.x)
+      for (let i = 1; i < placements.length; i++) {
+        const minX = placements[i - 1].x + SLOT_W
+        if (placements[i].x < minX) placements[i] = { ...placements[i], x: snapVal(minX) }
+      }
+
+      // 3. Appliquer les positions (créer ou mettre à jour)
+      const next = [...nds]
+      for (const { game, gameNodeId, x, y } of placements) {
+        const idx = next.findIndex((n) => n.id === gameNodeId)
+        if (idx >= 0) {
+          next[idx] = { ...next[idx], position: { x, y } }
+        } else {
+          next.push({ id: gameNodeId, type: "game-group", position: { x, y }, data: { label: GAME_LABELS[game] ?? game } })
+        }
+      }
       return next
     })
 
