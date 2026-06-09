@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic"
 
 interface PageProps {
   params: { slug: string; unitId: string }
+  searchParams?: { from?: string }
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: PageProps) {
   return { title: unit ? `ORBAT — ${unit.name}` : "ORBAT" }
 }
 
-export default async function RpUnitOrbatPage({ params }: PageProps) {
+export default async function RpUnitOrbatPage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
 
   const community = await prisma.community.findUnique({ where: { slug: params.slug }, select: { id: true, name: true, isPublic: true } })
@@ -60,9 +61,14 @@ export default async function RpUnitOrbatPage({ params }: PageProps) {
   return (
     <div className="space-y-4">
       <div>
-        <Link href={`/communities/${params.slug}/rp/${unit.id}`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
+        <Link
+          href={searchParams?.from === "orbat-general"
+            ? `/communities/${params.slug}/orbat`
+            : `/communities/${params.slug}/rp/${unit.id}`}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1"
+        >
           <ChevronLeft className="h-4 w-4" />
-          {unit.name}
+          {searchParams?.from === "orbat-general" ? "ORBAT Général" : unit.name}
         </Link>
         <h1 className="text-2xl font-bold">ORBAT — {unit.name}</h1>
         <p className="text-sm text-muted-foreground">Ordre de bataille de l&apos;unité</p>

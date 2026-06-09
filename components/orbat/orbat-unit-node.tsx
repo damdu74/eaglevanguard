@@ -87,7 +87,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
 
       {data.rpUnitId && data.communitySlug && (
         <a
-          href={`/communities/${data.communitySlug}/rp/${data.rpUnitId}/orbat`}
+          href={`/communities/${data.communitySlug}/rp/${data.rpUnitId}/orbat?from=orbat-general`}
           onClick={(e) => e.stopPropagation()}
           title="Voir l'ORBAT de l'unité"
           className="absolute -top-2.5 left-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 border border-violet-600 text-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
