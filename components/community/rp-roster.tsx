@@ -131,9 +131,9 @@ async function createUnit() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {units.map((unit) => (
             <div key={unit.id} className="relative group">
-              <Link href={`/communities/${communitySlug}/rp/${unit.id}`}>
+              <Link href={`/communities/${communitySlug}/rp/${unit.id}`} className="block h-full">
                 <Card className="h-full transition-colors hover:bg-muted/50 cursor-pointer">
-                  <CardContent className="p-4 space-y-2">
+                  <CardContent className="p-4 flex flex-col h-full gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       {unit.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -147,11 +147,11 @@ async function createUnit() {
                       )}
                       <span className="font-semibold truncate">{unit.name}</span>
                     </div>
-                    {unit.era && <Badge variant="outline" className="text-xs">{unit.era}</Badge>}
+                    {unit.era && <Badge variant="outline" className="text-xs w-fit">{unit.era}</Badge>}
                     {unit.description && (
                       <p className="text-sm text-muted-foreground line-clamp-2">{unit.description}</p>
                     )}
-                    <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center justify-between pt-1 mt-auto">
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Users className="h-3.5 w-3.5" />
                         {unit._count.characters} personnage{unit._count.characters !== 1 ? "s" : ""}
