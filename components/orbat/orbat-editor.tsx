@@ -96,9 +96,29 @@ interface OrbatEditorProps {
   rootLabel?: string
   communityLogoUrl?: string | null
   communityUnits?: { id: string; name: string }[]
+  unitRootData?: Record<string, Record<string, unknown>>
   initialNodes?: Node[]
   initialEdges?: Edge[]
   readOnly?: boolean
+}
+
+function mergeUnitRoot(node: Node, unitRootData?: Record<string, Record<string, unknown>>): Node {
+  const rpUnitId = node.data?.rpUnitId
+  if (!rpUnitId || !unitRootData?.[rpUnitId]) return node
+  const root = unitRootData[rpUnitId]
+  return {
+    ...node,
+    data: {
+      ...node.data,
+      label:    String(root.label    ?? node.data.label ?? ""),
+      imageUrl: String(root.imageUrl ?? ""),
+      type:     String(root.type     ?? node.data.type ?? "infantry"),
+      size:     String(root.size     ?? ""),
+      callsign: String(root.callsign ?? ""),
+      modifier: String(root.modifier ?? ""),
+      roles:    Array.isArray(root.roles) ? root.roles : [],
+    },
+  }
 }
 
 interface EditState {
@@ -120,6 +140,7 @@ export function OrbatEditor({
   rootLabel,
   communityLogoUrl,
   communityUnits,
+  unitRootData,
   initialNodes = [],
   initialEdges = [],
   readOnly = false,
@@ -131,8 +152,9 @@ export function OrbatEditor({
   const isCommunityOrbat = !unitId
   const hasRoot = initialNodes.some((n) => n.id === ROOT_ID)
   const baseNodes = (hasRoot ? initialNodes : [makeRootNode(rootLabel, communityLogoUrl ?? "", isCommunityOrbat), ...initialNodes])
-    .map((n) => n.id === ROOT_ID
-      ? {
+    .map((n) => {
+      if (n.id === ROOT_ID) {
+        return {
           ...n,
           data: {
             ...n.data,
@@ -140,8 +162,9 @@ export function OrbatEditor({
             ...(isCommunityOrbat && { imageUrl: communityLogoUrl ?? "", communityRoot: true }),
           },
         }
-      : n
-    )
+      }
+      return isCommunityOrbat ? mergeUnitRoot(n, unitRootData) : n
+    })
 
   const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(
@@ -275,23 +298,24 @@ export function OrbatEditor({
       nds.map((n) => {
         const isEdited = n.id === editState.nodeId
         const shouldShift = shift !== 0 && !isEdited && n.position.y > editedY
-        return {
-          ...n,
-          ...(shouldShift ? { position: { ...n.position, y: snapVal(n.position.y + shift) } } : {}),
-          data: isEdited
-            ? {
-                ...n.data,
-                label:    editState.label,
-                type:     editState.type,
-                size:     editState.size,
-                callsign: editState.callsign,
-                imageUrl: editState.imageUrl,
-                modifier: editState.modifier,
-                roles:    editState.roles,
-                rpUnitId: editState.rpUnitId || null,
-              }
-            : n.data,
+        if (!isEdited) {
+          return shouldShift ? { ...n, position: { ...n.position, y: snapVal(n.position.y + shift) } } : n
         }
+        const updatedNode: Node = {
+          ...n,
+          data: {
+            ...n.data,
+            label:    editState.label,
+            type:     editState.type,
+            size:     editState.size,
+            callsign: editState.callsign,
+            imageUrl: editState.imageUrl,
+            modifier: editState.modifier,
+            roles:    editState.roles,
+            rpUnitId: editState.rpUnitId || null,
+          },
+        }
+        return isCommunityOrbat ? mergeUnitRoot(updatedNode, unitRootData) : updatedNode
       })
     )
     setEditState(null)
@@ -434,226 +458,145 @@ export function OrbatEditor({
           </DialogHeader>
           {editState && (
             <div className="space-y-4">
-              {/* Image */}
-              <div className="space-y-2">
-                <Label>{"Image de l'unité"}</Label>
-                {/* Aperçu centré au-dessus */}
-                <div className="flex justify-center">
-                  {editState.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={editState.imageUrl}
-                      alt="Aperçu"
-                      style={{ maxWidth: 96, maxHeight: 96, objectFit: "contain", display: "block" }}
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
-                    />
-                  ) : (
-                    <div className="h-24 w-24 rounded border border-dashed border-border bg-muted/30 flex items-center justify-center">
-                      <span className="text-xs text-muted-foreground">Aucune image</span>
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      disabled={uploading}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {uploading
-                        ? <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Téléversement...</>
-                        : <><Upload className="mr-2 h-3.5 w-3.5" />Depuis le PC</>
-                      }
-                    </Button>
-                    <div className="relative flex items-center gap-2">
-                      <div className="h-px flex-1 bg-border" />
-                      <span className="text-[10px] text-muted-foreground">ou URL</span>
-                      <div className="h-px flex-1 bg-border" />
-                    </div>
-                    <Input
-                      value={editState.imageUrl}
-                      onChange={(e) => setEditState({ ...editState, imageUrl: e.target.value })}
-                      placeholder="https://..."
-                      className="text-xs h-8"
-                    />
-                </div>
-              </div>
-
-              {/* Unité liée — ORBAT général uniquement, hors racine */}
-              {communityUnits && communityUnits.length > 0 && editState.nodeId !== ROOT_ID && (
+              {isCommunityOrbat ? (
+                /* ORBAT général : sélecteur d'unité uniquement */
                 <div className="space-y-1.5">
-                  <Label>Unité liée <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                  <Label>Unité liée</Label>
                   <Select
                     value={editState.rpUnitId || "__none__"}
-                    onValueChange={(v) => {
-                      if (v === "__none__") {
-                        setEditState({ ...editState, rpUnitId: "" })
-                      } else {
-                        const unit = communityUnits.find((u) => u.id === v)
-                        setEditState({
-                          ...editState,
-                          rpUnitId: v,
-                          label: (!editState.label || editState.label === "Nouvelle unité") && unit ? unit.name : editState.label,
-                        })
-                      }
-                    }}
+                    onValueChange={(v) => setEditState({ ...editState, rpUnitId: v === "__none__" ? "" : v })}
                   >
                     <SelectTrigger><SelectValue placeholder="Aucune" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__">Aucune</SelectItem>
-                      {communityUnits.map((u) => (
+                      {(communityUnits ?? []).map((u) => (
                         <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Les informations (nom, image, symbole, postes) sont récupérées automatiquement depuis la case principale de l&apos;ORBAT de cette unité.
+                  </p>
                 </div>
-              )}
-
-              {/* Nom */}
-              <div className="space-y-1.5">
-                <Label>Nom</Label>
-                <Input
-                  value={editState.label}
-                  onChange={(e) => setEditState({ ...editState, label: e.target.value })}
-                  placeholder="Ex: 1ère Section"
-                  autoFocus
-                  onKeyDown={(e) => e.key === "Enter" && applyEdit()}
-                />
-              </div>
-
-              {/* Échelon */}
-              <div className="space-y-1.5">
-                <Label>Échelon <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-                <Select
-                  value={editState.size || "__none__"}
-                  onValueChange={(v) => setEditState({ ...editState, size: v === "__none__" ? "" : v })}
-                >
-                  <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">Aucun</SelectItem>
-                    {NATO_SIZES.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>{s.marker} — {s.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Type */}
-              <div className="space-y-1.5">
-                <Label>Symbole de base</Label>
-                <Select
-                  value={editState.type || "__none__"}
-                  onValueChange={(v) => setEditState({ ...editState, type: v === "__none__" ? "" : v })}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    <SelectItem value="__none__">Aucun</SelectItem>
-                    {Array.from(new Set(NATO_TYPES.map((t) => t.category))).map((cat) => (
-                      <div key={cat}>
-                        <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{cat}</div>
-                        {NATO_TYPES.filter((t) => t.category === cat).map((t) => (
-                          <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                        ))}
+              ) : (
+                /* ORBAT d'unité : formulaire complet */
+                <>
+                  {/* Image */}
+                  <div className="space-y-2">
+                    <Label>{"Image de l'unité"}</Label>
+                    <div className="flex justify-center">
+                      {editState.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={editState.imageUrl}
+                          alt="Aperçu"
+                          style={{ maxWidth: 96, maxHeight: 96, objectFit: "contain", display: "block" }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                        />
+                      ) : (
+                        <div className="h-24 w-24 rounded border border-dashed border-border bg-muted/30 flex items-center justify-center">
+                          <span className="text-xs text-muted-foreground">Aucune image</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
+                      <Button type="button" variant="outline" size="sm" className="w-full" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+                        {uploading ? <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Téléversement...</> : <><Upload className="mr-2 h-3.5 w-3.5" />Depuis le PC</>}
+                      </Button>
+                      <div className="relative flex items-center gap-2">
+                        <div className="h-px flex-1 bg-border" />
+                        <span className="text-[10px] text-muted-foreground">ou URL</span>
+                        <div className="h-px flex-1 bg-border" />
                       </div>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                      <Input value={editState.imageUrl} onChange={(e) => setEditState({ ...editState, imageUrl: e.target.value })} placeholder="https://..." className="text-xs h-8" />
+                    </div>
+                  </div>
 
-              {/* Symbole complémentaire */}
-              <div className="space-y-1.5">
-                <Label>Symbole complémentaire <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-                <Select
-                  value={editState.modifier || "__none__"}
-                  onValueChange={(v) => setEditState({ ...editState, modifier: v === "__none__" ? "" : v })}
-                >
-                  <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">Aucun</SelectItem>
-                    {NATO_MODIFIERS.map((mod) => (
-                      <SelectItem key={mod.value} value={mod.value}>{mod.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  {/* Nom */}
+                  <div className="space-y-1.5">
+                    <Label>Nom</Label>
+                    <Input value={editState.label} onChange={(e) => setEditState({ ...editState, label: e.target.value })} placeholder="Ex: 1ère Section" autoFocus onKeyDown={(e) => e.key === "Enter" && applyEdit()} />
+                  </div>
 
-              {/* Callsign */}
-              <div className="space-y-1.5">
-                <Label>Callsign <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-                <Input
-                  value={editState.callsign}
-                  onChange={(e) => setEditState({ ...editState, callsign: e.target.value })}
-                  placeholder="Ex: Alpha-1"
-                  onKeyDown={(e) => e.key === "Enter" && applyEdit()}
-                />
-              </div>
-
-              {/* Postes */}
-              <div className="space-y-2">
-                <Label>Postes</Label>
-                {editState.roles.length === 0 && (
-                  <p className="text-xs text-muted-foreground">Aucun poste défini.</p>
-                )}
-                {editState.roles.map((role, i) => (
-                  <div key={role.id} className="flex gap-2 items-center">
-                    <Input
-                      value={role.title}
-                      onChange={(e) => updateRole(i, { title: e.target.value })}
-                      placeholder="Titre du poste"
-                      className="text-xs h-8 flex-1"
-                    />
-                    <Select
-                      value={role.memberId || "__vacant__"}
-                      onValueChange={(v) => {
-                        if (v === "__vacant__") {
-                          updateRole(i, { memberId: "", memberName: "", characterName: "", gradeLabel: "", gradeIcon: "" })
-                        } else {
-                          const m = members.find((m) => m.id === v)
-                          updateRole(i, {
-                            memberId: v,
-                            memberName: m?.name ?? "",
-                            characterName: m?.characterName ?? m?.name ?? "",
-                            gradeLabel: m?.gradeLabel ?? "",
-                            gradeIcon: m?.gradeIcon ?? "",
-                            gradeAbbrev: m?.gradeAbbrev ?? "",
-                          })
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="h-8 text-xs w-36"><SelectValue placeholder="Vacant" /></SelectTrigger>
+                  {/* Échelon */}
+                  <div className="space-y-1.5">
+                    <Label>Échelon <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                    <Select value={editState.size || "__none__"} onValueChange={(v) => setEditState({ ...editState, size: v === "__none__" ? "" : v })}>
+                      <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="__vacant__">Vacant</SelectItem>
-                        {members.map((m) => (
-                          <SelectItem key={m.id} value={m.id}>
-                            {m.characterName ? `${m.characterName}${m.gradeLabel ? ` (${m.gradeLabel})` : ""}` : m.name}
-                          </SelectItem>
+                        <SelectItem value="__none__">Aucun</SelectItem>
+                        {NATO_SIZES.map((s) => <SelectItem key={s.value} value={s.value}>{s.marker} — {s.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Type */}
+                  <div className="space-y-1.5">
+                    <Label>Symbole de base</Label>
+                    <Select value={editState.type || "__none__"} onValueChange={(v) => setEditState({ ...editState, type: v === "__none__" ? "" : v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        <SelectItem value="__none__">Aucun</SelectItem>
+                        {Array.from(new Set(NATO_TYPES.map((t) => t.category))).map((cat) => (
+                          <div key={cat}>
+                            <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{cat}</div>
+                            {NATO_TYPES.filter((t) => t.category === cat).map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                          </div>
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeRole(i)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
+                  </div>
+
+                  {/* Symbole complémentaire */}
+                  <div className="space-y-1.5">
+                    <Label>Symbole complémentaire <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                    <Select value={editState.modifier || "__none__"} onValueChange={(v) => setEditState({ ...editState, modifier: v === "__none__" ? "" : v })}>
+                      <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Aucun</SelectItem>
+                        {NATO_MODIFIERS.map((mod) => <SelectItem key={mod.value} value={mod.value}>{mod.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Callsign */}
+                  <div className="space-y-1.5">
+                    <Label>Callsign <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                    <Input value={editState.callsign} onChange={(e) => setEditState({ ...editState, callsign: e.target.value })} placeholder="Ex: Alpha-1" onKeyDown={(e) => e.key === "Enter" && applyEdit()} />
+                  </div>
+
+                  {/* Postes */}
+                  <div className="space-y-2">
+                    <Label>Postes</Label>
+                    {editState.roles.length === 0 && <p className="text-xs text-muted-foreground">Aucun poste défini.</p>}
+                    {editState.roles.map((role, i) => (
+                      <div key={role.id} className="flex gap-2 items-center">
+                        <Input value={role.title} onChange={(e) => updateRole(i, { title: e.target.value })} placeholder="Titre du poste" className="text-xs h-8 flex-1" />
+                        <Select value={role.memberId || "__vacant__"} onValueChange={(v) => {
+                          if (v === "__vacant__") { updateRole(i, { memberId: "", memberName: "", characterName: "", gradeLabel: "", gradeIcon: "" }) }
+                          else {
+                            const m = members.find((m) => m.id === v)
+                            updateRole(i, { memberId: v, memberName: m?.name ?? "", characterName: m?.characterName ?? m?.name ?? "", gradeLabel: m?.gradeLabel ?? "", gradeIcon: m?.gradeIcon ?? "", gradeAbbrev: m?.gradeAbbrev ?? "" })
+                          }
+                        }}>
+                          <SelectTrigger className="h-8 text-xs w-36"><SelectValue placeholder="Vacant" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__vacant__">Vacant</SelectItem>
+                            {members.map((m) => <SelectItem key={m.id} value={m.id}>{m.characterName ? `${m.characterName}${m.gradeLabel ? ` (${m.gradeLabel})` : ""}` : m.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeRole(i)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button variant="outline" size="sm" className="w-full h-8 text-xs" onClick={addRole}>
+                      <Plus className="h-3.5 w-3.5 mr-1" />Ajouter un poste
                     </Button>
                   </div>
-                ))}
-                <Button variant="outline" size="sm" className="w-full h-8 text-xs" onClick={addRole}>
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  Ajouter un poste
-                </Button>
-              </div>
+                </>
+              )}
             </div>
           )}
           <DialogFooter>

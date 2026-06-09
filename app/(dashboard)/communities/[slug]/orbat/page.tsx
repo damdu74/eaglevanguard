@@ -39,6 +39,22 @@ export default async function OrbatPage({ params }: PageProps) {
     }),
   ])
 
+  // Nœud racine de chaque ORBAT d'unité (pour peupler automatiquement les cases)
+  const unitOrbatRoots = community
+    ? await prisma.rpUnitOrbatNode.findMany({
+        where: { rpUnit: { communityId: community.id }, nodeId: "root" },
+        select: { rpUnitId: true, label: true, data: true },
+      })
+    : []
+
+  const unitRootData: Record<string, Record<string, unknown>> = {}
+  for (const root of unitOrbatRoots) {
+    unitRootData[root.rpUnitId] = {
+      ...((root.data as Record<string, unknown>) ?? {}),
+      label: root.label,
+    }
+  }
+
   if (!community) notFound()
 
   const membership = community.memberships?.[0]
@@ -76,6 +92,7 @@ export default async function OrbatPage({ params }: PageProps) {
         rootLabel={community.name}
         communityLogoUrl={community.logoUrl}
         communityUnits={rpUnits}
+        unitRootData={unitRootData}
         initialNodes={nodes}
         initialEdges={edges}
         readOnly={!canEdit}

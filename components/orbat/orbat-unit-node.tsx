@@ -76,13 +76,14 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
           <Handle type="source" position={Position.Right} id="right" className={handleCls} />
         </>
       )}
-      {/* Case racine : tous les côtés aussi */}
-      {data.isRoot && (
+      {/* Case racine unité : left + right (pas de top) */}
+      {data.isRoot && !data.communityRoot && (
         <>
           <Handle type="source" position={Position.Left}  id="left"  className={handleCls} />
           <Handle type="source" position={Position.Right} id="right" className={handleCls} />
         </>
       )}
+      {/* Case racine communauté : seulement le bas */}
 
       {data.rpUnitId && data.communitySlug && (
         <a
