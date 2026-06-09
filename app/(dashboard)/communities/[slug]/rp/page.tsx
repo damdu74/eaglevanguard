@@ -38,6 +38,7 @@ export default async function RpPage({ params }: PageProps) {
     select: {
       id: true, name: true, description: true, era: true, columnConfig: true,
       _count: { select: { characters: true } },
+      orbatNodes: { where: { nodeId: "root" }, select: { data: true }, take: 1 },
     },
     orderBy: { createdAt: "asc" },
   })
@@ -55,7 +56,10 @@ export default async function RpPage({ params }: PageProps) {
 
       <RpRoster
         communitySlug={params.slug}
-        units={units}
+        units={units.map((u) => ({
+          ...u,
+          imageUrl: (u.orbatNodes[0]?.data as Record<string, unknown> | null)?.imageUrl as string | null ?? null,
+        }))}
         isStaff={isStaff}
       />
     </div>

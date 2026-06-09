@@ -22,6 +22,7 @@ interface RpUnit {
   description: string | null
   era: string | null
   columnConfig: unknown
+  imageUrl: string | null
   _count: { characters: number }
 }
 
@@ -128,7 +129,16 @@ async function createUnit() {
                 <Card className="h-full transition-colors hover:bg-muted/50 cursor-pointer">
                   <CardContent className="p-4 space-y-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <Sword className="h-4 w-4 text-primary shrink-0" />
+                      {unit.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={unit.imageUrl}
+                          alt=""
+                          className="h-8 w-8 shrink-0 object-contain rounded"
+                        />
+                      ) : (
+                        <Sword className="h-4 w-4 text-primary shrink-0" />
+                      )}
                       <span className="font-semibold truncate">{unit.name}</span>
                     </div>
                     {unit.era && <Badge variant="outline" className="text-xs">{unit.era}</Badge>}
