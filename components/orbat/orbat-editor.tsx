@@ -413,7 +413,7 @@ export function OrbatEditor({
           connectionMode={ConnectionMode.Loose}
           snapToGrid={!readOnly}
           snapGrid={SNAP_GRID}
-          {...(isCommunityOrbat && { translateExtent: [[-Infinity, -100], [Infinity, Infinity]] as [[number, number], [number, number]] })}
+          translateExtent={[[-Infinity, -100], [Infinity, Infinity]]}
         >
           <Background gap={SNAP_GRID[0]} />
           <Controls />
