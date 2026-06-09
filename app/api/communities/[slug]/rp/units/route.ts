@@ -19,11 +19,11 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     return NextResponse.json({ error: "Droits insuffisants" }, { status: 403 })
   }
 
-  const { name, description, era } = await req.json()
+  const { name, description, era, game } = await req.json()
   if (!name?.trim()) return NextResponse.json({ error: "Nom requis" }, { status: 400 })
 
   const unit = await prisma.rpUnit.create({
-    data: { communityId: community.id, name: name.trim(), description: description?.trim() || null, era: era?.trim() || null },
+    data: { communityId: community.id, name: name.trim(), description: description?.trim() || null, era: era?.trim() || null, game: game || null },
   })
 
   return NextResponse.json(unit, { status: 201 })

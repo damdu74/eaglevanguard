@@ -379,6 +379,7 @@ model RpUnit {
   name         String
   description  String?       @db.Text
   era          String?
+  game         String?
   columnConfig Json?
   createdAt    DateTime      @default(now())
 

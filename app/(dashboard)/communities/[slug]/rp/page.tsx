@@ -36,7 +36,7 @@ export default async function RpPage({ params }: PageProps) {
   const units = await prisma.rpUnit.findMany({
     where: { communityId: community.id },
     select: {
-      id: true, name: true, description: true, era: true, columnConfig: true,
+      id: true, name: true, description: true, era: true, game: true, columnConfig: true,
       _count: { select: { characters: true } },
       orbatNodes: { where: { nodeId: "root" }, select: { data: true }, take: 1 },
     },
@@ -58,6 +58,7 @@ export default async function RpPage({ params }: PageProps) {
         communitySlug={params.slug}
         units={units.map((u) => ({
           ...u,
+          game: u.game ?? null,
           imageUrl: (u.orbatNodes[0]?.data as Record<string, unknown> | null)?.imageUrl as string | null ?? null,
         }))}
         isStaff={isStaff}

@@ -75,6 +75,7 @@ function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, tar
 
 const ROOT_ID = "root"
 const SNAP_GRID: [number, number] = [20, 20]
+const GAME_LABELS: Record<string, string> = { arma3: "Arma 3" }
 
 function snapVal(v: number) {
   return Math.round(v / SNAP_GRID[0]) * SNAP_GRID[0]
@@ -96,7 +97,7 @@ interface OrbatEditorProps {
   unitId?: string
   rootLabel?: string
   communityLogoUrl?: string | null
-  communityUnits?: { id: string; name: string }[]
+  communityUnits?: { id: string; name: string; game?: string | null }[]
   unitRootData?: Record<string, Record<string, unknown>>
   initialNodes?: Node[]
   initialEdges?: Edge[]
@@ -168,10 +169,50 @@ export function OrbatEditor({
       return isCommunityOrbat ? mergeUnitRoot(n, unitRootData) : n
     })
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(
-    initialEdges.map((e) => ({ ...e, type: "orbat" }))
-  )
+  // Injection automatique des nœuds game-group pour l'ORBAT général
+  const baseEdgeList = initialEdges.map((e) => ({ ...e, type: "orbat" }))
+  let augmentedNodes = baseNodes
+  let augmentedEdges = baseEdgeList
+
+  if (isCommunityOrbat) {
+    const units = communityUnits ?? []
+    const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
+    const extraNodes: Node[] = []
+    const extraEdges: Edge[] = []
+
+    for (const game of games) {
+      const gameNodeId = `game-${game}`
+      const unitIdsForGame = new Set(units.filter((u) => u.game === game).map((u) => u.id))
+      const unitNodesForGame = baseNodes.filter((n) => unitIdsForGame.has(n.data?.rpUnitId))
+
+      if (!baseNodes.find((n) => n.id === gameNodeId)) {
+        const avgX = unitNodesForGame.length
+          ? unitNodesForGame.reduce((sum, n) => sum + n.position.x, 0) / unitNodesForGame.length
+          : 380
+        const minY = unitNodesForGame.length
+          ? Math.min(...unitNodesForGame.map((n) => n.position.y))
+          : 200
+        extraNodes.push({
+          id: gameNodeId,
+          type: "game-group",
+          position: { x: snapVal(avgX), y: snapVal(Math.max(minY - 200, 80)) },
+          data: { label: GAME_LABELS[game] ?? game },
+        })
+      }
+
+      for (const n of unitNodesForGame) {
+        if (!baseEdgeList.find((e) => e.source === gameNodeId && e.target === n.id)) {
+          extraEdges.push({ id: `auto-${gameNodeId}-${n.id}`, source: gameNodeId, target: n.id, type: "orbat" } as Edge)
+        }
+      }
+    }
+
+    augmentedNodes = [...baseNodes, ...extraNodes]
+    augmentedEdges = [...baseEdgeList, ...extraEdges] as typeof baseEdgeList
+  }
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(augmentedNodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(augmentedEdges)
   const [saving, setSaving] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [editState, setEditState] = useState<EditState | null>(null)
@@ -276,21 +317,7 @@ export function OrbatEditor({
     setEditState({ nodeId: newId, nodeType: "unit", initialRoleCount: 0, label: "Nouvelle unité", type: "infantry", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
   }, [setNodes])
 
-  const addGameGroup = useCallback(() => {
-    const newId = `game-${Date.now()}`
-    const last = nodesRef.current[nodesRef.current.length - 1]
-    const position = last
-      ? { x: snapVal(last.position.x + 380), y: snapVal(last.position.y) }
-      : { x: snapVal(380), y: snapVal(160) }
-
-    setNodes((nds) => [
-      ...nds,
-      { id: newId, type: "game-group", position, data: { label: "Nouveau jeu" } },
-    ])
-    setEditState({ nodeId: newId, nodeType: "game-group", initialRoleCount: 0, label: "Nouveau jeu", type: "", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
-  }, [setNodes])
-
-  const toggleLock = useCallback((nodeId: string) => {
+const toggleLock = useCallback((nodeId: string) => {
     setNodes((nds) =>
       nds.map((n) => n.id === nodeId ? { ...n, data: { ...n.data, locked: !n.data.locked } } : n)
     )
@@ -492,12 +519,6 @@ export function OrbatEditor({
 
           {!readOnly && (
             <Panel position="top-right" className="flex gap-2">
-              {isCommunityOrbat && (
-                <Button size="sm" variant="outline" onClick={addGameGroup} className="border-violet-500 text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-950/30">
-                  <Plus className="mr-1 h-4 w-4" />
-                  Groupe jeu
-                </Button>
-              )}
               <Button size="sm" onClick={addNode} className="bg-green-600 hover:bg-green-700 text-white border-0">
                 <Plus className="mr-1 h-4 w-4" />
                 Ajouter

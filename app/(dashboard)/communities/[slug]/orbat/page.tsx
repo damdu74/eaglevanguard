@@ -34,7 +34,7 @@ export default async function OrbatPage({ params }: PageProps) {
     }),
     prisma.rpUnit.findMany({
       where: { community: { slug: params.slug } },
-      select: { id: true, name: true },
+      select: { id: true, name: true, game: true },
       orderBy: { createdAt: "asc" },
     }),
   ])

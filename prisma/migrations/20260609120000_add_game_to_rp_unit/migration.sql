@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "RpUnit" ADD COLUMN IF NOT EXISTS "game" TEXT;

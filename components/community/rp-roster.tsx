@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/dialog"
 import { Loader2, Plus, Trash2, Pencil, Sword, Users, ChevronRight } from "lucide-react"
 import Link from "next/link"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+const GAMES = [{ value: "arma3", label: "Arma 3" }]
 
 
 interface RpUnit {
@@ -21,6 +24,7 @@ interface RpUnit {
   name: string
   description: string | null
   era: string | null
+  game: string | null
   columnConfig: unknown
   imageUrl: string | null
   _count: { characters: number }
@@ -39,19 +43,21 @@ export function RpRoster({ communitySlug, units, isStaff }: Props) {
   const [name, setName] = useState("")
   const [desc, setDesc] = useState("")
   const [era, setEra] = useState("")
+  const [game, setGame] = useState("")
   const [saving, setSaving] = useState(false)
 
   const [editUnit, setEditUnit] = useState<RpUnit | null>(null)
   const [editName, setEditName] = useState("")
   const [editDesc, setEditDesc] = useState("")
   const [editEra, setEditEra] = useState("")
+  const [editGame, setEditGame] = useState("")
   const [editSaving, setEditSaving] = useState(false)
 
 
   function openEdit(unit: RpUnit, e: React.MouseEvent) {
     e.preventDefault(); e.stopPropagation()
     setEditUnit(unit); setEditName(unit.name)
-    setEditDesc(unit.description ?? ""); setEditEra(unit.era ?? "")
+    setEditDesc(unit.description ?? ""); setEditEra(unit.era ?? ""); setEditGame(unit.game ?? "")
   }
 
 async function createUnit() {
@@ -61,11 +67,11 @@ async function createUnit() {
       const res = await fetch(`/api/communities/${communitySlug}/rp/units`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), description: desc.trim() || null, era: era.trim() || null }),
+        body: JSON.stringify({ name: name.trim(), description: desc.trim() || null, era: era.trim() || null, game: game || null }),
       })
       if (!res.ok) throw new Error()
       toast.success("Unité créée")
-      setCreateDialog(false); setName(""); setDesc(""); setEra("")
+      setCreateDialog(false); setName(""); setDesc(""); setEra(""); setGame("")
       router.refresh()
     } catch {
       toast.error("Erreur lors de la création")
@@ -81,7 +87,7 @@ async function createUnit() {
       const res = await fetch(`/api/communities/${communitySlug}/rp/units/${editUnit.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName.trim(), description: editDesc.trim() || null, era: editEra.trim() || null }),
+        body: JSON.stringify({ name: editName.trim(), description: editDesc.trim() || null, era: editEra.trim() || null, game: editGame || null }),
       })
       if (!res.ok) throw new Error()
       toast.success("Unité mise à jour")
@@ -191,6 +197,16 @@ async function createUnit() {
               <Input value={era} onChange={(e) => setEra(e.target.value)} placeholder="Ex: WW2, Guerre Froide, Moderne…" />
             </div>
             <div className="space-y-1">
+              <Label>Jeu <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+              <Select value={game || "__none__"} onValueChange={(v) => setGame(v === "__none__" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Aucun</SelectItem>
+                  {GAMES.map((g) => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
               <Label>Description <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
               <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={2}
                 placeholder="Contexte, histoire de l'unité…" />
@@ -218,6 +234,16 @@ async function createUnit() {
             <div className="space-y-1">
               <Label>Genre <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
               <Input value={editEra} onChange={(e) => setEditEra(e.target.value)} placeholder="Ex: WW2, Guerre Froide, Moderne…" />
+            </div>
+            <div className="space-y-1">
+              <Label>Jeu <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+              <Select value={editGame || "__none__"} onValueChange={(v) => setEditGame(v === "__none__" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Aucun</SelectItem>
+                  {GAMES.map((g) => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1">
               <Label>Description <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
