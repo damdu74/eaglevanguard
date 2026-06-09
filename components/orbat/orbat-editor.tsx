@@ -103,7 +103,7 @@ function buildGameLayout(
   const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
   if (!games.length) return nds
 
-  let result = [...nds]
+  const result = [...nds]
 
   // Créer les nœuds pour les nouvelles unités (pas encore dans le graphe)
   const existingRpIds = new Set(result.filter((n) => n.data?.rpUnitId).map((n) => n.data.rpUnitId as string))
