@@ -541,8 +541,8 @@ const toggleLock = useCallback((nodeId: string) => {
             ...n.data,
             readOnly,
             communitySlug,
-            onToggleLock: readOnly || isGameGroup ? undefined : toggleLock,
-            onEdit: readOnly || isGameGroup ? undefined : openEdit,
+            onToggleLock: readOnly || isGameGroup || isCommunityOrbat ? undefined : toggleLock,
+            onEdit: readOnly || isGameGroup || isCommunityOrbat ? undefined : openEdit,
           },
         }
       }),
@@ -696,14 +696,18 @@ const toggleLock = useCallback((nodeId: string) => {
 
           {!readOnly && (
             <Panel position="top-right" className="flex gap-2">
-              <Button size="sm" onClick={addNode} className="bg-green-600 hover:bg-green-700 text-white border-0">
-                <Plus className="mr-1 h-4 w-4" />
-                Ajouter
-              </Button>
-              <Button size="sm" variant="outline" onClick={removeSelected}>
-                <Trash2 className="mr-1 h-4 w-4" />
-                Supprimer la sélection
-              </Button>
+              {!isCommunityOrbat && (
+                <Button size="sm" onClick={addNode} className="bg-green-600 hover:bg-green-700 text-white border-0">
+                  <Plus className="mr-1 h-4 w-4" />
+                  Ajouter
+                </Button>
+              )}
+              {!isCommunityOrbat && (
+                <Button size="sm" variant="outline" onClick={removeSelected}>
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  Supprimer la sélection
+                </Button>
+              )}
               <Button size="sm" onClick={save} disabled={saving}>
                 <Save className="mr-1 h-4 w-4" />
                 {saving ? "Sauvegarde..." : "Sauvegarder"}
@@ -715,12 +719,10 @@ const toggleLock = useCallback((nodeId: string) => {
             </Panel>
           )}
 
-          {!readOnly && (
+          {!readOnly && !isCommunityOrbat && (
             <Panel position="bottom-center">
               <p className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded border">
-                {isCommunityOrbat
-                  ? "Double-clic sur un nœud pour modifier · Les liens sont gérés automatiquement"
-                  : "Survolez une unité → + pour ajouter un subordonné · Double-clic pour modifier"}
+                Survolez une unité → <strong>+</strong> pour ajouter un subordonné · Double-clic pour modifier
               </p>
             </Panel>
           )}
