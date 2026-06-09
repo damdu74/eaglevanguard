@@ -180,64 +180,77 @@ export function OrbatEditor({
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Injection et repositionnement automatique des nœuds game-group (ORBAT général uniquement)
+  // Layout hiérarchique automatique : racine → game-groups → unités (ORBAT général uniquement)
   useEffect(() => {
     if (!isCommunityOrbat) return
     const units = communityUnits ?? []
     const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
     if (!games.length) return
 
-    // Dimensions approximatives (px canvas)
-    const NODE_W   = 360
-    const H_GAP    = 40   // espace min horizontal entre nœuds
-    const SLOT_W   = NODE_W + H_GAP   // 400
-    const ROOT_H   = 160  // hauteur approximative de la case racine
-    const V_MARGIN = 200  // marge verticale entre couches
+    // Hauteurs approximatives des nœuds (px canvas)
+    const NODE_W  = 360
+    const H_GAP   = 40          // espace horizontal entre nœuds
+    const SLOT_W  = NODE_W + H_GAP  // 400
+    const ROOT_H  = 140         // hauteur nœud racine
+    const GAME_H  = 60          // hauteur nœud game-group
+    const V_GAP   = 60          // espace vertical entre couches
+
+    // Couches Y fixes dérivées des hauteurs réelles
+    const GAME_Y = snapVal(ROOT_H + V_GAP)            // 200
+    const UNIT_Y = snapVal(GAME_Y + GAME_H + V_GAP)   // 320
+
+    // Centre horizontal de la racine (racine à x=0, largeur 360)
+    const ROOT_CENTER = NODE_W / 2  // 180
+
+    // Sous-arbre de chaque jeu : largeur = max(NODE_W, N * SLOT_W - H_GAP)
+    const gameInfos = games.map((game) => {
+      const unitIds  = new Set(units.filter((u) => u.game === game).map((u) => u.id))
+      const count    = nodesRef.current.filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId)).length
+      const subtreeW = count > 0 ? count * SLOT_W - H_GAP : NODE_W
+      return { game, gameNodeId: `game-${game}`, count, subtreeW }
+    })
+
+    // Largeur totale de tous les sous-arbres + gaps entre jeux
+    const totalW = gameInfos.reduce((s, g) => s + g.subtreeW, 0) + (gameInfos.length - 1) * H_GAP
+
+    // Centres X de chaque jeu (ensemble centré sous la racine)
+    let curX = ROOT_CENTER - totalW / 2
+    const gameCenters = gameInfos.map((gi) => {
+      const center = curX + gi.subtreeW / 2
+      curX += gi.subtreeW + H_GAP
+      return center
+    })
 
     setNodes((nds) => {
-      // 1. Calculer la position idéale de chaque groupe
-      const placements = games.map((game, gi) => {
-        const gameNodeId = `game-${game}`
-        const unitIds = new Set(units.filter((u) => u.game === game).map((u) => u.id))
-        const linked  = nds.filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId))
+      const next = [...nds]
 
-        let idealX: number
-        let idealY: number
+      for (let gi = 0; gi < gameInfos.length; gi++) {
+        const { game, gameNodeId, count } = gameInfos[gi]
+        const centerX = gameCenters[gi]
+        const gameX   = snapVal(centerX - NODE_W / 2)
 
-        if (linked.length) {
-          // Centré sur l'étendue horizontale des unités liées
-          const minX = Math.min(...linked.map((n) => n.position.x))
-          const maxX = Math.max(...linked.map((n) => n.position.x))
-          idealX = (minX + maxX) / 2
-
-          // Positionné entre la racine et la 1ère unité
-          const minUnitY = Math.min(...linked.map((n) => n.position.y))
-          idealY = Math.max(ROOT_H + V_MARGIN / 2, minUnitY - V_MARGIN)
+        // Créer ou repositionner le nœud game-group
+        const gameIdx = next.findIndex((n) => n.id === gameNodeId)
+        if (gameIdx >= 0) {
+          next[gameIdx] = { ...next[gameIdx], position: { x: gameX, y: GAME_Y } }
         } else {
-          // Pas d'unités liées : distribution centrée autour de x=0
-          idealX = (gi - (games.length - 1) / 2) * SLOT_W
-          idealY = ROOT_H + V_MARGIN
+          next.push({ id: gameNodeId, type: "game-group", position: { x: gameX, y: GAME_Y }, data: { label: GAME_LABELS[game] ?? game } })
         }
 
-        return { game, gameNodeId, x: snapVal(idealX), y: snapVal(idealY) }
-      })
+        // Redistribuer les unités liées horizontalement sous le game-group
+        if (count > 0) {
+          const unitIds    = new Set(units.filter((u) => u.game === game).map((u) => u.id))
+          const linked     = next
+            .filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId))
+            .sort((a, b) => a.position.x - b.position.x)  // conserver l'ordre relatif
+          const totalUnitsW = linked.length * NODE_W + (linked.length - 1) * H_GAP
+          const startX      = centerX - totalUnitsW / 2
 
-      // 2. Résoudre les chevauchements horizontaux entre groupes
-      // Tri par X, puis décalage en cascade si trop proches
-      placements.sort((a, b) => a.x - b.x)
-      for (let i = 1; i < placements.length; i++) {
-        const minX = placements[i - 1].x + SLOT_W
-        if (placements[i].x < minX) placements[i] = { ...placements[i], x: snapVal(minX) }
-      }
-
-      // 3. Appliquer les positions (créer ou mettre à jour)
-      const next = [...nds]
-      for (const { game, gameNodeId, x, y } of placements) {
-        const idx = next.findIndex((n) => n.id === gameNodeId)
-        if (idx >= 0) {
-          next[idx] = { ...next[idx], position: { x, y } }
-        } else {
-          next.push({ id: gameNodeId, type: "game-group", position: { x, y }, data: { label: GAME_LABELS[game] ?? game } })
+          for (let ui = 0; ui < linked.length; ui++) {
+            const unitX  = snapVal(startX + ui * SLOT_W)
+            const unitIdx = next.findIndex((n) => n.id === linked[ui].id)
+            if (unitIdx >= 0) next[unitIdx] = { ...next[unitIdx], position: { x: unitX, y: UNIT_Y } }
+          }
         }
       }
       return next
