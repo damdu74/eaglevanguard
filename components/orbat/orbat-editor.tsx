@@ -178,14 +178,28 @@ export function OrbatEditor({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch members : personnages de l'unité si unitId, sinon tous les membres
+  // Re-fetch toutes les 15s + dès que l'onglet redevient visible
   useEffect(() => {
     const url = unitId
       ? `/api/communities/${communitySlug}/rp/units/${unitId}/characters`
       : `/api/communities/${communitySlug}/members`
-    fetch(url)
-      .then((r) => r.json())
-      .then((data) => setMembers(data.members ?? []))
-      .catch(() => {})
+
+    const fetchMembers = () => {
+      fetch(url)
+        .then((r) => r.json())
+        .then((data) => setMembers(data.members ?? []))
+        .catch(() => {})
+    }
+
+    fetchMembers()
+    const interval = setInterval(fetchMembers, 15000)
+    const onVisibility = () => { if (document.visibilityState === "visible") fetchMembers() }
+    document.addEventListener("visibilitychange", onVisibility)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener("visibilitychange", onVisibility)
+    }
   }, [communitySlug, unitId])
 
   // Sync les données de grade dans les rôles existants dès que les membres sont chargés
