@@ -32,6 +32,7 @@ interface UnitNodeData {
   imageUrl?: string
   modifier?: string
   isRoot?: boolean
+  communityRoot?: boolean
   readOnly?: boolean
   locked?: boolean
   communitySlug?: string
@@ -47,9 +48,9 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
 
   // Listener natif — React synthetic events ne remontent pas fiablement
   // sur les nœuds non-draggables dans ReactFlow v11.
-  // Désactivé pour la case racine (non éditable).
+  // Désactivé pour la case racine de l'ORBAT général (non éditable).
   useEffect(() => {
-    if (data.isRoot) return
+    if (data.communityRoot) return
     const el = rootRef.current
     if (!el) return
     const handler = (e: Event) => {
@@ -120,8 +121,8 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
           data.isRoot && "bg-violet-50 dark:bg-violet-950/30"
         )}
       >
-        {/* Case racine : logo centré + nom uniquement */}
-        {data.isRoot ? (
+        {/* Case racine communauté : logo centré + nom uniquement, non éditable */}
+        {data.communityRoot ? (
           <div className="flex flex-col items-center justify-center gap-2 px-4 py-4">
             {data.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element

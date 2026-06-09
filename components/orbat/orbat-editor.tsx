@@ -79,14 +79,14 @@ function snapVal(v: number) {
   return Math.round(v / SNAP_GRID[0]) * SNAP_GRID[0]
 }
 
-function makeRootNode(label = "Commandement", imageUrl = ""): Node {
+function makeRootNode(label = "Commandement", imageUrl = "", communityRoot = false): Node {
   return {
     id: ROOT_ID,
     type: "unit",
     position: { x: 0, y: 0 },
     draggable: false,
     deletable: false,
-    data: { label, type: "hq", size: "", isRoot: true, callsign: "", imageUrl, roles: [] },
+    data: { label, type: "hq", size: "", isRoot: true, communityRoot, callsign: "", imageUrl, roles: [] },
   }
 }
 
@@ -128,10 +128,18 @@ export function OrbatEditor({
     ? `/api/communities/${communitySlug}/rp/units/${unitId}/orbat`
     : `/api/communities/${communitySlug}/orbat`
 
+  const isCommunityOrbat = !unitId
   const hasRoot = initialNodes.some((n) => n.id === ROOT_ID)
-  const baseNodes = (hasRoot ? initialNodes : [makeRootNode(rootLabel, communityLogoUrl ?? ""), ...initialNodes])
+  const baseNodes = (hasRoot ? initialNodes : [makeRootNode(rootLabel, communityLogoUrl ?? "", isCommunityOrbat), ...initialNodes])
     .map((n) => n.id === ROOT_ID
-      ? { ...n, data: { ...n.data, label: rootLabel ?? n.data.label, imageUrl: communityLogoUrl ?? "" } }
+      ? {
+          ...n,
+          data: {
+            ...n.data,
+            label: rootLabel ?? n.data.label,
+            ...(isCommunityOrbat && { imageUrl: communityLogoUrl ?? "", communityRoot: true }),
+          },
+        }
       : n
     )
 
@@ -210,9 +218,8 @@ export function OrbatEditor({
   }, [setNodes])
 
   const openEdit = useCallback((nodeId: string) => {
-    if (nodeId === ROOT_ID) return
     const node = nodesRef.current.find((n) => n.id === nodeId)
-    if (!node) return
+    if (!node || node.data?.communityRoot) return
     const roles = node.data.roles ?? []
     setEditState({
       nodeId,
