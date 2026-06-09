@@ -8,6 +8,7 @@ import { Gamepad2 } from "lucide-react"
 interface GameNodeData {
   label: string
   readOnly?: boolean
+  hideHandles?: boolean
   onEdit?: (id: string) => void
 }
 
@@ -27,7 +28,7 @@ export const OrbatGameNode = memo(function OrbatGameNode({ id, data, selected }:
 
   const handleCls = cn(
     "!bg-primary !w-3 !h-3 !border-2 !border-background transition-opacity",
-    data.readOnly ? "opacity-0" : "opacity-0 group-hover:opacity-100"
+    data.readOnly || data.hideHandles ? "opacity-0" : "opacity-0 group-hover:opacity-100"
   )
 
   return (

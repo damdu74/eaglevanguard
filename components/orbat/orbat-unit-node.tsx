@@ -34,6 +34,7 @@ interface UnitNodeData {
   isRoot?: boolean
   communityRoot?: boolean
   readOnly?: boolean
+  hideHandles?: boolean
   locked?: boolean
   communitySlug?: string
   rpUnitId?: string
@@ -63,7 +64,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
 
   const handleCls = cn(
     "!bg-primary !w-3 !h-3 !border-2 !border-background transition-opacity",
-    data.readOnly ? "opacity-0" : "opacity-0 group-hover:opacity-100"
+    data.readOnly || data.hideHandles ? "opacity-0" : "opacity-0 group-hover:opacity-100"
   )
 
   return (

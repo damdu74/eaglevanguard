@@ -541,6 +541,7 @@ const toggleLock = useCallback((nodeId: string) => {
             ...n.data,
             readOnly,
             communitySlug,
+            hideHandles: isCommunityOrbat,
             onToggleLock: readOnly || isGameGroup || isCommunityOrbat ? undefined : toggleLock,
             onEdit: readOnly || isGameGroup || isCommunityOrbat ? undefined : openEdit,
           },
