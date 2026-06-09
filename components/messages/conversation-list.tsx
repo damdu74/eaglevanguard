@@ -57,6 +57,13 @@ export function ConversationList({ initialConversations }: Props) {
   const debouncedQuery = useDebounce(searchQuery, 300)
 
   useEffect(() => {
+    fetch("/api/messages")
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setConversations(data) })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) {
       setSearchResults([])
       return
