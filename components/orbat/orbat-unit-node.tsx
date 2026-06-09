@@ -151,7 +151,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
                              : hasIcon             ? "grid-cols-[1fr_60px]"
                              :                       "grid-cols-[1fr]"
               return (
-                <div className={cn("grid items-center gap-1 px-2 py-2", gridCols)}>
+                <div className={cn("grid items-center gap-1 px-2 py-2 min-h-[72px]", gridCols)}>
                   {hasImage && (
                     <div className="flex items-center justify-center">
                       <div style={{ width: 56, height: 56, borderRadius: 8, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
