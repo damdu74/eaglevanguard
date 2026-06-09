@@ -534,7 +534,7 @@ const toggleLock = useCallback((nodeId: string) => {
         const isGameGroup = n.type === "game-group"
         return {
           ...n,
-          draggable: isGameGroup || n.id === ROOT_ID ? false : !n.data.locked,
+          draggable: isCommunityOrbat || isGameGroup || n.id === ROOT_ID ? false : !n.data.locked,
           deletable: !isGameGroup && n.id !== ROOT_ID,
           selectable: !isGameGroup,
           data: {
