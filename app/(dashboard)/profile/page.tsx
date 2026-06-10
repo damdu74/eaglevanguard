@@ -4,7 +4,6 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Crown, User } from "lucide-react"
 import { LinkDiscordButton } from "@/components/profile/link-discord-button"
 import { AvatarUpload } from "@/components/profile/avatar-upload"
 import { BioEdit } from "@/components/profile/bio-edit"
@@ -21,7 +20,6 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
-      memberships: { include: { community: true }, take: 5 },
       eagleVanguardRank: true,
     },
   })
@@ -115,25 +113,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
         </Card>
       </div>
 
-      {/* Communities */}
-      {user.memberships.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Mes communautés</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {user.memberships.map((m) => (
-              <div key={m.communityId} className="flex items-center justify-between">
-                <p className="font-medium">{m.community.name}</p>
-                {m.role === "OWNER"
-                  ? <Crown className="h-4 w-4 text-yellow-500" />
-                  : <User className="h-4 w-4 text-muted-foreground" />
-                }
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+
 
     </div>
   )
