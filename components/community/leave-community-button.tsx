@@ -56,7 +56,7 @@ export function LeaveCommunityButton({ slug, communityName }: Props) {
         <DialogHeader>
           <DialogTitle>Quitter {communityName} ?</DialogTitle>
           <DialogDescription>
-            Vous perdrez l'accès aux contenus réservés aux membres. Vous pourrez soumettre une nouvelle candidature pour rejoindre à nouveau.
+            Vous perdrez l&rsquo;accès aux contenus réservés aux membres. Vous pourrez soumettre une nouvelle candidature pour rejoindre à nouveau.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
