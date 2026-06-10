@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { createAuditLog } from "@/lib/audit"
+import { CommunityVisibility } from "@prisma/client"
 
 const createSchema = z.object({
   name: z.string().min(3).max(50),
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   const visibilityFilter = isNexusTeam
     ? {}
-    : { visibility: { in: ["PUBLIC", "WHITELIST"] } }
+    : { visibility: { in: [CommunityVisibility.PUBLIC, CommunityVisibility.WHITELIST] } }
 
   const where = {
     ...visibilityFilter,

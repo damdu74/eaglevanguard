@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { CommunityVisibility } from "@prisma/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -29,7 +30,7 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
 
   const visibilityFilter = isNexusTeam
     ? {}
-    : { visibility: { in: ["PUBLIC", "WHITELIST"] } }
+    : { visibility: { in: [CommunityVisibility.PUBLIC, CommunityVisibility.WHITELIST] } }
 
   const where = {
     ...visibilityFilter,
@@ -38,7 +39,7 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
     ...(gameFilter ? { game: gameFilter } : {}),
   }
 
-  const gamesWhere = isNexusTeam ? {} : { visibility: { in: ["PUBLIC", "WHITELIST"] } }
+  const gamesWhere = isNexusTeam ? {} : { visibility: { in: [CommunityVisibility.PUBLIC, CommunityVisibility.WHITELIST] } }
 
   const [total, communities, allGames] = await Promise.all([
     prisma.community.count({ where }),
