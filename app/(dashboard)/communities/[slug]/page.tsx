@@ -9,7 +9,7 @@ import { RichTextContent } from "@/components/ui/rich-text-content"
 import { CommunityLogo } from "@/components/community/community-logo"
 import Image from "next/image"
 import Link from "next/link"
-import { Users, Calendar, GitBranch, Settings, Sword, ChevronLeft, Megaphone, ShieldAlert, ScrollText, EyeOff } from "lucide-react"
+import { Users, GitBranch, Settings, Sword, ChevronLeft, Megaphone, ShieldAlert, ScrollText, EyeOff } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -30,7 +30,7 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
     where: { slug: params.slug },
     include: {
       creator: { select: { id: true, name: true } },
-      _count: { select: { memberships: true, events: true } },
+      _count: { select: { memberships: true } },
     },
   })
 
@@ -98,7 +98,7 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
             )}
             {membership && (
               <p className="text-sm text-muted-foreground">
-                {community._count.memberships} membres · {community._count.events} événements
+                {community._count.memberships} membres
               </p>
             )}
           </div>
@@ -122,7 +122,6 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
                 href: `/communities/${params.slug}/members`,
                 label: "Membres", icon: Users, count: community._count.memberships, highlight: false,
               },
-              { href: `/communities/${params.slug}/events`, label: "Événements", icon: Calendar, count: community._count.events, highlight: false },
               { href: `/communities/${params.slug}/news`, label: "Annonces", icon: Megaphone, count: postsCount, highlight: false },
               ...(isStaff ? [{ href: `/communities/${params.slug}/moderation`, label: "Modération", icon: ShieldAlert, count: null, highlight: false }] : []),
               ...(isStaff ? [{ href: `/communities/${params.slug}/logs`, label: "Logs", icon: ScrollText, count: null, highlight: false }] : []),
