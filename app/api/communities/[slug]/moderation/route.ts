@@ -30,8 +30,8 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
   const staff = await getModerateMembership(session.user.id, community.id)
-  const nexusUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } })
-  if (!hasCommunityPermission(staff, "MODERATE") && !nexusUser?.isNexusTeam) {
+  const eagleVanguardUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { isEagleVanguardTeam: true } })
+  if (!hasCommunityPermission(staff, "MODERATE") && !eagleVanguardUser?.isEagleVanguardTeam) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
   }
 

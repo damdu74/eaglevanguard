@@ -9,7 +9,7 @@ export const metadata = { title: "Nouvelle communauté" }
 
 export default async function NewCommunityPage() {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.isNexusTeam) redirect("/communities")
+  if (!session?.user?.isEagleVanguardTeam) redirect("/communities")
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

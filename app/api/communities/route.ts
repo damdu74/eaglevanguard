@@ -17,7 +17,7 @@ const createSchema = z.object({
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  const isNexusTeam = session?.user?.isNexusTeam ?? false
+  const isEagleVanguardTeam = session?.user?.isEagleVanguardTeam ?? false
 
   const { searchParams } = new URL(req.url)
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1") || 1)
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   const game = searchParams.get("game")
   const search = searchParams.get("search")
 
-  const visibilityFilter = isNexusTeam
+  const visibilityFilter = isEagleVanguardTeam
     ? {}
     : { visibility: { in: [CommunityVisibility.PUBLIC, CommunityVisibility.WHITELIST] } }
 

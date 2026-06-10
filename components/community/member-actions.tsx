@@ -51,7 +51,7 @@ interface Props {
   currentRankId: string | null
   ranks: { id: string; name: string; isPermanent: boolean }[]
   canModerate?: boolean
-  isNexusTeam?: boolean
+  isEagleVanguardTeam?: boolean
 }
 
 export function MemberActions({
@@ -61,7 +61,7 @@ export function MemberActions({
   currentRankId,
   ranks,
   canModerate = false,
-  isNexusTeam = false,
+  isEagleVanguardTeam = false,
 }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -113,7 +113,7 @@ export function MemberActions({
     if (!modAction || !reason.trim()) return
     setSubmitting(true)
     try {
-      const apiUrl = isNexusTeam && (modAction === "BAN_PLATFORM" || modAction === "UNBAN")
+      const apiUrl = isEagleVanguardTeam && (modAction === "BAN_PLATFORM" || modAction === "UNBAN")
         ? "/api/moderation"
         : `/api/communities/${communitySlug}/moderation`
 
@@ -148,7 +148,7 @@ export function MemberActions({
   const availableRanks = ranks.filter((r) => !r.isPermanent)
 
   const communityModActions: ModActionType[] = ["WARN", "KICK", "BAN_COMMUNITY", "UNBAN"]
-  const nexusModActions: ModActionType[] = ["BAN_PLATFORM", "UNBAN"]
+  const eagleVanguardModActions: ModActionType[] = ["BAN_PLATFORM", "UNBAN"]
 
   return (
     <>
@@ -205,11 +205,11 @@ export function MemberActions({
             </>
           )}
 
-          {isNexusTeam && (
+          {isEagleVanguardTeam && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs text-muted-foreground font-normal py-1">NEXUS</DropdownMenuLabel>
-              {nexusModActions.map((type) => (
+              <DropdownMenuLabel className="text-xs text-muted-foreground font-normal py-1">Eagle Vanguard</DropdownMenuLabel>
+              {eagleVanguardModActions.map((type) => (
                 <DropdownMenuItem
                   key={type}
                   onClick={() => { setModAction(type); setReason(""); setNote("") }}

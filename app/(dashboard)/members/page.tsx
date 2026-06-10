@@ -46,7 +46,7 @@ export default async function MembersPage() {
                   customAvatar: true,
                   steamAvatar: true,
                   discordAvatar: true,
-                  isNexusTeam: true,
+                  isEagleVanguardTeam: true,
                 },
               },
               rank: { select: { name: true } },
@@ -125,9 +125,9 @@ export default async function MembersPage() {
                           <div>
                             <div className="flex items-center gap-1.5">
                               <p className="text-sm font-medium leading-none">{displayName}</p>
-                              {user.isNexusTeam && (
+                              {user.isEagleVanguardTeam && (
                                 <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded leading-none text-white" style={{ backgroundColor: "#5865F2", borderColor: "#5865F2" }}>
-                                  NEXUS Team
+                                  Eagle Vanguard Team
                                 </span>
                               )}
                             </div>

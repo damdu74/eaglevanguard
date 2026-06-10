@@ -11,14 +11,14 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   const community = await prisma.community.findUnique({ where: { slug: params.slug }, select: { id: true } })
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
-  const [membership, nexusUser] = await Promise.all([
+  const [membership, eagleVanguardUser] = await Promise.all([
     prisma.membership.findFirst({
       where: { userId: session.user.id, communityId: community.id },
       include: { rank: { select: { permissions: true } } },
     }),
-    prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { isEagleVanguardTeam: true } }),
   ])
-  if (!hasCommunityPermission(membership, "VIEW_LOGS") && !nexusUser?.isNexusTeam) {
+  if (!hasCommunityPermission(membership, "VIEW_LOGS") && !eagleVanguardUser?.isEagleVanguardTeam) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
   }
 

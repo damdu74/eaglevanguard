@@ -37,10 +37,10 @@ interface ModerationAction {
 }
 
 interface Props {
-  mode: "nexus" | "community"
+  mode: "eagle-vanguard" | "community"
   communitySlug?: string
   communityName?: string
-  isNexusTeam: boolean
+  isEagleVanguardTeam: boolean
   showLogs?: boolean
 }
 
@@ -91,7 +91,7 @@ function getDateLabel(dateStr: string): string {
   return format(date, "d MMMM yyyy", { locale: fr })
 }
 
-export function ModerationPanel({ mode, communitySlug, communityName, isNexusTeam, showLogs = false }: Props) {
+export function ModerationPanel({ mode, communitySlug, communityName, isEagleVanguardTeam, showLogs = false }: Props) {
   const [actions, setActions] = useState<ModerationAction[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -104,8 +104,8 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
   const [staffList, setStaffList] = useState<SelectedUser[]>([])
 
   useEffect(() => {
-    if (mode !== "nexus") return
-    fetch("/api/nexus/members")
+    if (mode !== "eagle-vanguard") return
+    fetch("/api/eagle-vanguard/members")
       .then((r) => r.json())
       .then((members: Array<{ id: string; steamName: string | null; discordName: string | null; name: string | null }>) => {
         setStaffList(members.map((m) => ({
@@ -120,7 +120,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
   const [resolveNote, setResolveNote] = useState("")
   const [resolving, setResolving] = useState(false)
 
-  const apiBase = mode === "nexus" ? "/api/moderation" : `/api/communities/${communitySlug}/moderation`
+  const apiBase = mode === "eagle-vanguard" ? "/api/moderation" : `/api/communities/${communitySlug}/moderation`
 
   const fetchActions = useCallback(async (p = 1) => {
     setLoading(true)
@@ -147,7 +147,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
     fetchActions(1)
   }, [fetchActions])
 
-  const availableTypes: ActionType[] = mode === "nexus"
+  const availableTypes: ActionType[] = mode === "eagle-vanguard"
     ? ["WARN", "KICK", "BAN_COMMUNITY", "BAN_PLATFORM", "UNBAN"]
     : ["WARN", "KICK", "BAN_COMMUNITY", "UNBAN"]
 
@@ -225,11 +225,11 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
             value={filterTargetUser}
             onChange={setFilterTargetUser}
             placeholder="Cible..."
-            forMod={mode === "nexus"}
+            forMod={mode === "eagle-vanguard"}
           />
         </div>
 
-        {mode === "nexus" ? (
+        {mode === "eagle-vanguard" ? (
           <Select
             value={filterModeratorUser?.id ?? "all"}
             onValueChange={(v) => setFilterModeratorUser(v === "all" ? null : (staffList.find((s) => s.id === v) ?? null))}
@@ -287,7 +287,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
                           <span className="font-medium">{getUserDisplayName(action.moderator)}</span>
                           {" "}<span className="text-muted-foreground">{ACTION_VERBS[action.type]}</span>{" "}
                           <span className="font-medium">{getUserDisplayName(action.target)}</span>
-                          {action.community && mode === "nexus" && (
+                          {action.community && mode === "eagle-vanguard" && (
                             <span className="text-muted-foreground"> dans {action.community.name}</span>
                           )}
                           {action.resolvedAt && (
@@ -321,7 +321,7 @@ export function ModerationPanel({ mode, communitySlug, communityName, isNexusTea
                           Résoudre
                         </Button>
                       )}
-                      {(!action.resolvedAt || isNexusTeam) && (
+                      {(!action.resolvedAt || isEagleVanguardTeam) && (
                         <Button
                           size="sm" variant="ghost"
                           className="h-7 w-7 p-0 text-destructive hover:text-destructive"

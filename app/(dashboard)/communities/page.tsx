@@ -26,9 +26,9 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
   const q = searchParams.q?.trim() ?? ""
   const gameFilter = searchParams.game?.trim() ?? ""
   const userId = session?.user?.id as string | undefined
-  const isNexusTeam = session?.user?.isNexusTeam ?? false
+  const isEagleVanguardTeam = session?.user?.isEagleVanguardTeam ?? false
 
-  const visibilityFilter = isNexusTeam
+  const visibilityFilter = isEagleVanguardTeam
     ? {}
     : { visibility: { in: [CommunityVisibility.PUBLIC, CommunityVisibility.WHITELIST] } }
 
@@ -39,7 +39,7 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
     ...(gameFilter ? { game: gameFilter } : {}),
   }
 
-  const gamesWhere = isNexusTeam ? {} : { visibility: { in: [CommunityVisibility.PUBLIC, CommunityVisibility.WHITELIST] } }
+  const gamesWhere = isEagleVanguardTeam ? {} : { visibility: { in: [CommunityVisibility.PUBLIC, CommunityVisibility.WHITELIST] } }
 
   const [total, communities, allGames] = await Promise.all([
     prisma.community.count({ where }),
@@ -75,11 +75,11 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
         </div>
         {session && (
           <Button
-            asChild={!!session.user?.isNexusTeam}
-            disabled={!session.user?.isNexusTeam}
-            title={!session.user?.isNexusTeam ? "La création de communauté est temporairement désactivée" : undefined}
+            asChild={!!session.user?.isEagleVanguardTeam}
+            disabled={!session.user?.isEagleVanguardTeam}
+            title={!session.user?.isEagleVanguardTeam ? "La création de communauté est temporairement désactivée" : undefined}
           >
-            {session.user?.isNexusTeam ? (
+            {session.user?.isEagleVanguardTeam ? (
               <Link href="/communities/new">
                 <Plus className="mr-2 h-4 w-4" />
                 Nouvelle communauté
@@ -111,11 +111,11 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
           </div>
           {session && !q && !gameFilter && (
             <Button
-              asChild={!!session.user?.isNexusTeam}
-              disabled={!session.user?.isNexusTeam}
-              title={!session.user?.isNexusTeam ? "La création de communauté est temporairement désactivée" : undefined}
+              asChild={!!session.user?.isEagleVanguardTeam}
+              disabled={!session.user?.isEagleVanguardTeam}
+              title={!session.user?.isEagleVanguardTeam ? "La création de communauté est temporairement désactivée" : undefined}
             >
-              {session.user?.isNexusTeam ? (
+              {session.user?.isEagleVanguardTeam ? (
                 <Link href="/communities/new">Créer une communauté</Link>
               ) : (
                 <>Créer une communauté</>

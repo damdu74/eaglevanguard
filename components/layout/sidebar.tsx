@@ -29,25 +29,25 @@ const navSections = [
   },
 ]
 
-const nexusSections = [
+const eagleVanguardSections = [
   {
-    label: "NEXUS Team",
+    label: "Eagle Vanguard Team",
     items: [
-      { href: "/nexus/team", label: "Équipe", icon: Users, exact: false },
-      { href: "/nexus/moderation", label: "Modération", icon: ShieldAlert, exact: false },
+      { href: "/eagle-vanguard/team", label: "Équipe", icon: Users, exact: false },
+      { href: "/eagle-vanguard/moderation", label: "Modération", icon: ShieldAlert, exact: false },
     ],
   },
 ]
 
 interface SidebarProps {
-  isNexusTeam?: boolean
+  isEagleVanguardTeam?: boolean
 }
 
-export function Sidebar({ isNexusTeam }: SidebarProps) {
+export function Sidebar({ isEagleVanguardTeam }: SidebarProps) {
   const pathname = usePathname()
 
-  const sections = isNexusTeam
-    ? [navSections[0], ...nexusSections, ...navSections.slice(1)]
+  const sections = isEagleVanguardTeam
+    ? [navSections[0], ...eagleVanguardSections, ...navSections.slice(1)]
     : navSections
 
   return (

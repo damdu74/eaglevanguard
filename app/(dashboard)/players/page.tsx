@@ -49,7 +49,7 @@ export default async function PlayersPage({ searchParams }: PageProps) {
         steamAvatar: true,
         discordAvatar: true,
         image: true,
-        isNexusTeam: true,
+        isEagleVanguardTeam: true,
         bio: true,
       },
       orderBy: { createdAt: "desc" },
@@ -100,9 +100,9 @@ export default async function PlayersPage({ searchParams }: PageProps) {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <p className="font-medium text-sm leading-tight truncate">{displayName}</p>
-                          {user.isNexusTeam && (
+                          {user.isEagleVanguardTeam && (
                             <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded leading-none text-white" style={{ backgroundColor: "#5865F2", borderColor: "#5865F2" }}>
-                              NEXUS Team
+                              Eagle Vanguard Team
                             </span>
                           )}
                         </div>

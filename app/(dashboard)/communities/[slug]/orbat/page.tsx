@@ -19,7 +19,7 @@ export async function generateMetadata() {
 export default async function OrbatPage({ params }: PageProps) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user?.isNexusTeam) redirect(`/communities/${params.slug}`)
+  if (!session?.user?.isEagleVanguardTeam) redirect(`/communities/${params.slug}`)
 
   const [community, rpUnits] = await Promise.all([
     prisma.community.findUnique({

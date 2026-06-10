@@ -18,7 +18,7 @@ export default async function SignInPage() {
     <div className="flex h-screen flex-col">
       <header className="flex shrink-0 items-center border-b bg-background px-6 py-2 z-50">
         <Link href="/" className="flex items-center">
-          <Image src="/icon.png" alt="NEXUS" width={36} height={36} />
+          <Image src="/icon.png" alt="Eagle Vanguard" width={36} height={36} />
         </Link>
       </header>
       <main className="flex flex-1 items-center justify-center overflow-auto px-4">
@@ -27,7 +27,7 @@ export default async function SignInPage() {
             <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
               <Shield className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle>NEXUS</CardTitle>
+            <CardTitle>Eagle Vanguard</CardTitle>
             <CardDescription>Connectez-vous pour accéder à votre communauté</CardDescription>
           </CardHeader>
           <CardContent>

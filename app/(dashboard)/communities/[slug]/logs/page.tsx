@@ -28,15 +28,15 @@ export default async function CommunityLogsPage({ params }: PageProps) {
   })
   if (!community) notFound()
 
-  const [membership, nexusUser] = await Promise.all([
+  const [membership, eagleVanguardUser] = await Promise.all([
     prisma.membership.findFirst({
       where: { userId: session.user.id, communityId: community.id },
       include: { rank: { select: { permissions: true } } },
     }),
-    prisma.user.findUnique({ where: { id: session.user.id }, select: { isNexusTeam: true } }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { isEagleVanguardTeam: true } }),
   ])
 
-  if (!hasCommunityPermission(membership, "VIEW_LOGS") && !nexusUser?.isNexusTeam) redirect(`/communities/${params.slug}`)
+  if (!hasCommunityPermission(membership, "VIEW_LOGS") && !eagleVanguardUser?.isEagleVanguardTeam) redirect(`/communities/${params.slug}`)
 
   return (
     <div className="space-y-4">

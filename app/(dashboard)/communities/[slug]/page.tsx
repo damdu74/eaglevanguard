@@ -149,7 +149,7 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
               ...(isAdmin ? [{ href: "applications", fullHref: null, label: "Candidatures", icon: ClipboardList, count: pendingApplicationsCount, highlight: pendingApplicationsCount > 0 }] : []),
               ...(isStaff ? [{ href: "moderation", fullHref: null, label: "Modération", icon: ShieldAlert, count: null, highlight: false }] : []),
               ...(isStaff ? [{ href: "logs", fullHref: null, label: "Logs", icon: ScrollText, count: null, highlight: false }] : []),
-              ...(session?.user?.isNexusTeam ? [{ href: "orbat", fullHref: null, label: "ORBAT Général", icon: GitBranch, count: null, highlight: false }] : []),
+              ...(session?.user?.isEagleVanguardTeam ? [{ href: "orbat", fullHref: null, label: "ORBAT Général", icon: GitBranch, count: null, highlight: false }] : []),
               { href: "rp", fullHref: null, label: "Registre des effectifs", icon: Sword, count: null, highlight: false },
             ].map(({ href, fullHref, label, icon: Icon, count, highlight }) => (
               <Link key={href} href={fullHref ?? `/communities/${params.slug}/${href}`} className="h-full">

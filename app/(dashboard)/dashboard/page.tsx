@@ -112,11 +112,11 @@ export default async function DashboardPage() {
           <p className="text-sm text-muted-foreground">Bienvenue, {displayName}</p>
         </div>
         <Button
-          asChild={!!session!.user?.isNexusTeam}
-          disabled={!session!.user?.isNexusTeam}
-          title={!session!.user?.isNexusTeam ? "La création de communauté est temporairement désactivée" : undefined}
+          asChild={!!session!.user?.isEagleVanguardTeam}
+          disabled={!session!.user?.isEagleVanguardTeam}
+          title={!session!.user?.isEagleVanguardTeam ? "La création de communauté est temporairement désactivée" : undefined}
         >
-          {session!.user?.isNexusTeam ? (
+          {session!.user?.isEagleVanguardTeam ? (
             <Link href="/communities/new">
               <Plus className="mr-2 h-4 w-4" />
               Nouvelle communauté

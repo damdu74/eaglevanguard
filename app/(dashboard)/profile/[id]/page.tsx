@@ -36,7 +36,7 @@ export default async function PublicProfilePage({ params, searchParams }: { para
           include: { community: { select: { id: true, name: true, slug: true, logoUrl: true, visibility: true } } },
           orderBy: { joinedAt: "asc" },
         },
-        nexusRank: true,
+        eagleVanguardRank: true,
         events: {
           where: {
             status: { in: ["CONFIRMED", "TENTATIVE"] },
@@ -170,17 +170,17 @@ export default async function PublicProfilePage({ params, searchParams }: { para
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-xl font-semibold">{displayName}</p>
-                {target.isNexusTeam && (
+                {target.isEagleVanguardTeam && (
                   <span className="text-xs font-semibold px-2 py-0.5 rounded text-white" style={{ backgroundColor: "#5865F2" }}>
-                    NEXUS Team
+                    Eagle Vanguard Team
                   </span>
                 )}
-                {target.nexusRank && (
+                {target.eagleVanguardRank && (
                   <span
                     className="text-xs font-mono font-bold px-2 py-0.5 rounded text-white"
-                    style={{ backgroundColor: target.nexusRank.color }}
+                    style={{ backgroundColor: target.eagleVanguardRank.color }}
                   >
-                    {target.nexusRank.name}
+                    {target.eagleVanguardRank.name}
                   </span>
                 )}
               </div>

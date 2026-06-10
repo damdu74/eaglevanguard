@@ -9,7 +9,7 @@ const PROTECTED_PREFIXES = [
   "/communities/mine",
   "/players",
   "/members",
-  "/nexus",
+  "/eagle-vanguard",
 ]
 
 export async function middleware(req: NextRequest) {

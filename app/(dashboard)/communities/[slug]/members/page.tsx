@@ -71,7 +71,7 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
   const myRole = myMembership?.role ?? null
   const canManage = myMembership ? isStaff(myMembership) : false
   const canModerate = myMembership ? hasCommunityPermission(myMembership, "MODERATE") : false
-  const isNexusTeam = session?.user?.isNexusTeam ?? false
+  const isEagleVanguardTeam = session?.user?.isEagleVanguardTeam ?? false
 
   const membersUrl = `/communities/${params.slug}/members${searchParams?.back ? `?back=${encodeURIComponent(searchParams.back)}` : ""}`
 
@@ -115,7 +115,7 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
                     isCreator={user.id === community.creatorId}
                     canActOnTarget={canManage && user.id !== session?.user?.id && myRole === "OWNER"}
                     canModerate={canModerate && user.id !== session?.user?.id}
-                    isNexusTeam={isNexusTeam && user.id !== session?.user?.id}
+                    isEagleVanguardTeam={isEagleVanguardTeam && user.id !== session?.user?.id}
                     communitySlug={params.slug}
                     ranks={ranks}
                     membersUrl={membersUrl}
@@ -146,7 +146,7 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
                     isCreator={user.id === community.creatorId}
                     canActOnTarget={canManage && user.id !== session?.user?.id}
                     canModerate={canModerate && user.id !== session?.user?.id}
-                    isNexusTeam={isNexusTeam && user.id !== session?.user?.id}
+                    isEagleVanguardTeam={isEagleVanguardTeam && user.id !== session?.user?.id}
                     communitySlug={params.slug}
                     ranks={ranks}
                     membersUrl={membersUrl}
@@ -173,7 +173,7 @@ export default async function CommunityMembersPage({ params, searchParams }: Pag
 }
 
 function MemberRow({
-  user, role, rank, isMe, isCreator, canActOnTarget, canModerate, isNexusTeam, communitySlug, ranks, membersUrl,
+  user, role, rank, isMe, isCreator, canActOnTarget, canModerate, isEagleVanguardTeam, communitySlug, ranks, membersUrl,
 }: {
   user: { id: string; steamName: string | null; discordName: string | null; name: string | null; customAvatar: string | null; steamAvatar: string | null; discordAvatar: string | null }
   role: string
@@ -182,7 +182,7 @@ function MemberRow({
   isCreator: boolean
   canActOnTarget: boolean
   canModerate: boolean
-  isNexusTeam: boolean
+  isEagleVanguardTeam: boolean
   communitySlug: string
   ranks: { id: string; name: string; isPermanent: boolean }[]
   membersUrl: string
@@ -219,7 +219,7 @@ function MemberRow({
         <Badge variant="outline" className="text-xs" style={badgeStyle}>
           {badgeLabel}
         </Badge>
-        {(canActOnTarget || canModerate || isNexusTeam) && (
+        {(canActOnTarget || canModerate || isEagleVanguardTeam) && (
           <MemberActions
             communitySlug={communitySlug}
             userId={user.id}
@@ -227,7 +227,7 @@ function MemberRow({
             currentRankId={rank?.id ?? null}
             ranks={canActOnTarget ? ranks : []}
             canModerate={canModerate}
-            isNexusTeam={isNexusTeam}
+            isEagleVanguardTeam={isEagleVanguardTeam}
           />
         )}
       </div>

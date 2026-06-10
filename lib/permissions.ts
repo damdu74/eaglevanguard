@@ -50,36 +50,36 @@ export const ROLE_LABELS: Record<MemberRole, string> = {
   RECRUIT: "Nouveau Membre",
 }
 
-// ─── NEXUS TEAM PERMISSIONS ───────────────────────────────────────────────────
+// ─── Eagle Vanguard TEAM PERMISSIONS ───────────────────────────────────────────────────
 
-export const NEXUS_PERMISSIONS = [
-  "MANAGE_TEAM",         // ajouter/retirer des membres NEXUS, changer leurs rôles
-  "MANAGE_RANKS",        // créer/modifier/supprimer les rangs NEXUS
+export const Eagle Vanguard_PERMISSIONS = [
+  "MANAGE_TEAM",         // ajouter/retirer des membres Eagle Vanguard, changer leurs rôles
+  "MANAGE_RANKS",        // créer/modifier/supprimer les rangs Eagle Vanguard
   "GLOBAL_MODERATION",   // accès à la modération globale (WARN, KICK, BAN)
   "BAN_PLATFORM",        // bannir/débannir de la plateforme
   "VIEW_LOGS",           // voir les logs d'activité globaux
 ] as const
 
-export type NexusPermission = typeof NEXUS_PERMISSIONS[number]
+export type Eagle VanguardPermission = typeof Eagle Vanguard_PERMISSIONS[number]
 
-export const NEXUS_PERMISSION_LABELS: Record<NexusPermission, string> = {
-  MANAGE_TEAM:       "Gérer l'équipe NEXUS",
+export const Eagle Vanguard_PERMISSION_LABELS: Record<Eagle VanguardPermission, string> = {
+  MANAGE_TEAM:       "Gérer l'équipe Eagle Vanguard",
   MANAGE_RANKS:      "Gérer les rangs et fonctions",
   GLOBAL_MODERATION: "Modération globale",
   BAN_PLATFORM:      "Bannir de la plateforme",
   VIEW_LOGS:         "Voir les logs globaux",
 }
 
-interface NexusRankLike {
+interface EagleVanguardRankLike {
   permissions: string[]
   isProtected: boolean
 }
 
-export function hasNexusPermission(
-  nexusRank: NexusRankLike | null | undefined,
-  permission: NexusPermission
+export function hasEagle VanguardPermission(
+  eagleVanguardRank: EagleVanguardRankLike | null | undefined,
+  permission: Eagle VanguardPermission
 ): boolean {
-  if (!nexusRank) return false
-  if (nexusRank.isProtected) return true
-  return nexusRank.permissions.includes(permission)
+  if (!eagleVanguardRank) return false
+  if (eagleVanguardRank.isProtected) return true
+  return eagleVanguardRank.permissions.includes(permission)
 }

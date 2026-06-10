@@ -16,7 +16,7 @@ export default async function LegalLayout({ children }: { children: React.ReactN
     <div className="flex h-screen flex-col">
       <header className="flex shrink-0 items-center justify-between border-b bg-background px-6 py-2 z-50">
         <Link href="/" className="flex items-center">
-          <Image src="/icon.png" alt="NEXUS" width={36} height={36} />
+          <Image src="/icon.png" alt="Eagle Vanguard" width={36} height={36} />
         </Link>
         <Link
           href={backHref}

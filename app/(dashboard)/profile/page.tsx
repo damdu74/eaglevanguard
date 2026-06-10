@@ -22,7 +22,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
     where: { id: session.user.id },
     include: {
       memberships: { include: { community: true }, take: 5 },
-      nexusRank: true,
+      eagleVanguardRank: true,
     },
   })
 
@@ -61,14 +61,14 @@ export default async function ProfilePage({ searchParams }: { searchParams: { di
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-lg font-semibold">{displayName}</p>
-                  {user.isNexusTeam && (
+                  {user.isEagleVanguardTeam && (
                     <span className="text-xs font-semibold px-2 py-0.5 rounded text-white" style={{ backgroundColor: "#5865F2" }}>
-                      NEXUS Team
+                      Eagle Vanguard Team
                     </span>
                   )}
-                  {user.nexusRank && (
-                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded text-white" style={{ backgroundColor: user.nexusRank.color }}>
-                      {user.nexusRank.name}
+                  {user.eagleVanguardRank && (
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded text-white" style={{ backgroundColor: user.eagleVanguardRank.color }}>
+                      {user.eagleVanguardRank.name}
                     </span>
                   )}
                 </div>

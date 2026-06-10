@@ -6,8 +6,8 @@ export function Footer() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon.png" alt="NEXUS" width={16} height={16} className="inline-block" />
-          <span>© {new Date().getFullYear()} NEXUS — Plateforme communautaire</span>
+          <img src="/icon.png" alt="Eagle Vanguard" width={16} height={16} className="inline-block" />
+          <span>© {new Date().getFullYear()} Eagle Vanguard — Plateforme communautaire</span>
         </div>
         <nav className="flex items-center gap-4">
           <Link href="/legal/mentions-legales" className="hover:text-foreground transition-colors">

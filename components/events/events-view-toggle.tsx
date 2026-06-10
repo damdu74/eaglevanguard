@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { List, CalendarDays } from "lucide-react"
 
-const STORAGE_KEY = "nexus_events_view"
+const STORAGE_KEY = "eagle_vanguard_events_view"
 
 interface Props {
   currentView: "list" | "calendar"

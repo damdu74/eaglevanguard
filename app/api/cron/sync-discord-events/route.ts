@@ -4,18 +4,18 @@ import { EventStatus } from "@prisma/client"
 
 export const dynamic = "force-dynamic"
 
-// Mapping statut Discord → statut Nexus
+// Mapping statut Discord → statut Eagle Vanguard
 // Discord: 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELLED
-function discordStatusToNexus(status: number): EventStatus {
+function discordStatusToEagleVanguard(status: number): EventStatus {
   if (status === 2) return EventStatus.ONGOING
   if (status === 3) return EventStatus.COMPLETED
   if (status === 4) return EventStatus.CANCELLED
   return EventStatus.PUBLISHED
 }
 
-// Mapping entity_type Discord → type Nexus
+// Mapping entity_type Discord → type Eagle Vanguard
 // Discord: 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
-function discordEntityTypeToNexus(entityType: number): string {
+function discordEntityTypeToEagle Vanguard(entityType: number): string {
   if (entityType === 1) return "Stage"
   if (entityType === 2) return "Vocal"
   return "Événement"
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
 
     const discordIds = discordEvents.map((e) => e.id)
 
-    // Événements Nexus issus de Discord pour cette communauté
+    // Événements Eagle Vanguard issus de Discord pour cette communauté
     const existingEvents = await prisma.event.findMany({
       where: { communityId: community.id, source: "DISCORD" },
       select: { id: true, discordEventId: true, status: true },
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
 
     // Créer ou mettre à jour chaque événement Discord
     for (const de of discordEvents) {
-      const nexusStatus = discordStatusToNexus(de.status)
+      const eagleVanguardStatus = discordStatusToEagleVanguard(de.status)
       const existing = existingMap.get(de.id)
 
       if (existing) {
@@ -93,7 +93,7 @@ export async function GET(req: NextRequest) {
             description: de.description ?? null,
             startDate: new Date(de.scheduled_start_time),
             endDate: de.scheduled_end_time ? new Date(de.scheduled_end_time) : null,
-            status: nexusStatus,
+            status: eagleVanguardStatus,
           },
         })
         updated++
@@ -103,8 +103,8 @@ export async function GET(req: NextRequest) {
             communityId: community.id,
             title: de.name,
             description: de.description ?? null,
-            type: discordEntityTypeToNexus(de.entity_type),
-            status: nexusStatus,
+            type: discordEntityTypeToEagle Vanguard(de.entity_type),
+            status: eagleVanguardStatus,
             startDate: new Date(de.scheduled_start_time),
             endDate: de.scheduled_end_time ? new Date(de.scheduled_end_time) : null,
             source: "DISCORD",
@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Annuler les événements Nexus dont l'ID Discord n'existe plus (event supprimé sur Discord)
+    // Annuler les événements Eagle Vanguard dont l'ID Discord n'existe plus (event supprimé sur Discord)
     for (const existing of existingEvents) {
       if (!discordIds.includes(existing.discordEventId!) && !["COMPLETED", "CANCELLED", "ARCHIVED"].includes(existing.status)) {
         await prisma.event.update({

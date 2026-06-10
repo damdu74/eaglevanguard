@@ -12,8 +12,8 @@ export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
   title: {
-    default: "NEXUS",
-    template: "%s | NEXUS",
+    default: "Eagle Vanguard",
+    template: "%s | Eagle Vanguard",
   },
   description: "Plateforme de gestion de communautés",
   icons: {

@@ -55,7 +55,7 @@ export default function AuthErrorPage() {
     <div className="flex h-screen flex-col">
       <header className="flex shrink-0 items-center border-b bg-background px-6 py-2 z-50">
         <Link href="/" className="flex items-center">
-          <Image src="/icon.png" alt="NEXUS" width={36} height={36} />
+          <Image src="/icon.png" alt="Eagle Vanguard" width={36} height={36} />
         </Link>
       </header>
       <main className="flex flex-1 items-center justify-center px-4">

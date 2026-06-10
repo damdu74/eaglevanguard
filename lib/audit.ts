@@ -31,12 +31,12 @@ export type AuditAction =
   | "MODERATION_BAN_PLATFORM"
   | "MODERATION_UNBAN"
   | "MODERATION_RESOLVED"
-  // NEXUS Team
-  | "NEXUS_MEMBER_ADDED"
-  | "NEXUS_MEMBER_REMOVED"
-  | "NEXUS_RANK_CREATED"
-  | "NEXUS_RANK_UPDATED"
-  | "NEXUS_RANK_DELETED"
+  // Eagle Vanguard Team
+  | "Eagle Vanguard_MEMBER_ADDED"
+  | "Eagle Vanguard_MEMBER_REMOVED"
+  | "Eagle Vanguard_RANK_CREATED"
+  | "Eagle Vanguard_RANK_UPDATED"
+  | "Eagle Vanguard_RANK_DELETED"
   // Posts
   | "POST_CREATED"
   | "POST_DELETED"

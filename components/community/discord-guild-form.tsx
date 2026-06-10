@@ -112,7 +112,7 @@ export function DiscordGuildForm({ slug, currentGuildId, discordClientId }: Prop
             <div className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground space-y-1.5">
               <p className="font-medium text-foreground">Comment configurer :</p>
               <ol className="list-decimal list-inside space-y-1">
-                <li>Ajoutez le bot Nexus à votre serveur Discord</li>
+                <li>Ajoutez le bot Eagle Vanguard à votre serveur Discord</li>
                 <li>Dans Discord : Paramètres → Avancés → Mode développeur (activez-le)</li>
                 <li>Clic droit sur votre serveur → <strong>Copier l&apos;identifiant du serveur</strong></li>
                 <li>Collez l&apos;ID ci-dessus et cliquez Lier</li>
@@ -125,7 +125,7 @@ export function DiscordGuildForm({ slug, currentGuildId, discordClientId }: Prop
                   className="inline-flex items-center gap-1 text-[#5865F2] hover:underline font-medium mt-1"
                 >
                   <ExternalLink className="h-3 w-3" />
-                  Ajouter le bot Nexus à votre serveur
+                  Ajouter le bot Eagle Vanguard à votre serveur
                 </a>
               )}
             </div>
@@ -134,7 +134,7 @@ export function DiscordGuildForm({ slug, currentGuildId, discordClientId }: Prop
 
         <p className="text-xs text-muted-foreground">
           Les événements Discord programmés seront importés automatiquement toutes les heures.
-          Ils sont en lecture seule sur Nexus.
+          Ils sont en lecture seule sur Eagle Vanguard.
         </p>
       </CardContent>
     </Card>

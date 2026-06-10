@@ -7,7 +7,7 @@ export default function ConfidentialitePage() {
       <p className="text-muted-foreground text-sm">Dernière mise à jour : mai 2026</p>
 
       <h2>Données collectées</h2>
-      <p>Lors de votre utilisation de NEXUS, nous collectons les données suivantes :</p>
+      <p>Lors de votre utilisation de Eagle Vanguard, nous collectons les données suivantes :</p>
       <ul>
         <li><strong>Via Steam</strong> : identifiant Steam (SteamID), pseudo Steam, avatar Steam.</li>
         <li><strong>Via Discord (optionnel)</strong> : identifiant Discord, pseudo Discord, avatar Discord.</li>
@@ -53,12 +53,12 @@ export default function ConfidentialitePage() {
       </ul>
       <p>
         Pour exercer ces droits, contactez-nous à :{" "}
-        <a href="mailto:contact@nexus-milsim.fr">contact@nexus-milsim.fr</a>
+        <a href="mailto:contact.eaglevanguard@gmail.com">contact.eaglevanguard@gmail.com</a>
       </p>
 
       <h2>Cookies</h2>
       <p>
-        NEXUS utilise uniquement des cookies strictement nécessaires au fonctionnement de la session
+        Eagle Vanguard utilise uniquement des cookies strictement nécessaires au fonctionnement de la session
         d&apos;authentification. Aucun cookie publicitaire ou de traçage tiers n&apos;est utilisé.
       </p>
     </article>

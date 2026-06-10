@@ -4,7 +4,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string
-      isNexusTeam?: boolean
+      isEagleVanguardTeam?: boolean
     } & DefaultSession["user"]
   }
 }

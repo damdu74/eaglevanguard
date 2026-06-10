@@ -84,7 +84,7 @@ export function CreateCommunityForm() {
           <div className="space-y-1">
             <Label htmlFor="slug">Identifiant URL</Label>
             <div className="flex items-center gap-1">
-              <span className="text-sm text-muted-foreground">nexus.gg/</span>
+              <span className="text-sm text-muted-foreground">eaglevanguard.gg/</span>
               <Input id="slug" {...register("slug")} placeholder="1ere-compagnie" />
             </div>
             {errors.slug && <p className="text-sm text-destructive">{errors.slug.message}</p>}

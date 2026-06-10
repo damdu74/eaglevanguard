@@ -65,7 +65,7 @@ export default async function HomePage() {
       {/* Header */}
       <header className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-950/80 backdrop-blur px-6 py-2 z-50">
         <Link href="/" className="flex items-center">
-          <Image src="/icon.png" alt="NEXUS" width={36} height={36} priority />
+          <Image src="/icon.png" alt="Eagle Vanguard" width={36} height={36} priority />
         </Link>
         <div className="flex items-center gap-3">
           {session ? (
@@ -90,7 +90,7 @@ export default async function HomePage() {
 
           <Image
             src="/logo.png"
-            alt="NEXUS"
+            alt="Eagle Vanguard"
             width={280}
             height={215}
             priority
@@ -111,12 +111,12 @@ export default async function HomePage() {
               votre communauté
             </h1>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-              NEXUS regroupe au même endroit le recrutement, l&apos;organisation hiérarchique et la gestion des événements de votre communauté, dans une plateforme conçue pour les joueurs.
+              Eagle Vanguard regroupe au même endroit le recrutement, l&apos;organisation hiérarchique et la gestion des événements de votre communauté, dans une plateforme conçue pour les joueurs.
             </p>
           </div>
 
           <div className="relative z-10 flex flex-wrap gap-4 justify-center">
-            {session?.user?.isNexusTeam ? (
+            {session?.user?.isEagleVanguardTeam ? (
               <Button size="lg" className="bg-violet-600 hover:bg-violet-700 gap-2 px-8" asChild>
                 <Link href="/communities/new">
                   Créer ma communauté
@@ -210,7 +210,7 @@ export default async function HomePage() {
           <div className="mx-auto max-w-xl space-y-5">
             <h2 className="text-2xl font-bold text-white">Prêt à lancer votre communauté ?</h2>
             <p className="text-zinc-400 text-sm leading-relaxed">
-              Rejoignez NEXUS et donnez à votre communauté une base solide pour recruter, s&apos;organiser et progresser.
+              Rejoignez Eagle Vanguard et donnez à votre communauté une base solide pour recruter, s&apos;organiser et progresser.
             </p>
             <Button size="lg" className="bg-violet-600 hover:bg-violet-700 gap-2 px-8" asChild>
               <Link href={session ? "/dashboard" : "/auth/signin"}>
@@ -228,8 +228,8 @@ export default async function HomePage() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-500">
           <div className="flex items-center gap-1.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.png" alt="NEXUS" width={16} height={16} className="inline-block" />
-            <span>© {new Date().getFullYear()} NEXUS — Plateforme communautaire</span>
+            <img src="/icon.png" alt="Eagle Vanguard" width={16} height={16} className="inline-block" />
+            <span>© {new Date().getFullYear()} Eagle Vanguard — Plateforme communautaire</span>
           </div>
           <nav className="flex items-center gap-4">
             <Link href="/legal/mentions-legales" className="hover:text-zinc-300 transition-colors">

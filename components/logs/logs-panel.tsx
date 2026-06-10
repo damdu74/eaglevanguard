@@ -22,7 +22,7 @@ interface AuditLog {
 }
 
 interface Props {
-  mode: "nexus" | "community"
+  mode: "eagle-vanguard" | "community"
   communitySlug?: string
   communityName?: string
 }
@@ -35,7 +35,7 @@ const ACTION_CATEGORIES = [
   { value: "EVENT", label: "Événements" },
   { value: "MODERATION", label: "Modération" },
   { value: "POST", label: "Annonces" },
-  { value: "NEXUS", label: "NEXUS Team" },
+  { value: "Eagle Vanguard", label: "Eagle Vanguard Team" },
 ]
 
 function getActionIcon(action: string) {
@@ -45,7 +45,7 @@ function getActionIcon(action: string) {
   if (action.startsWith("EVENT")) return <Calendar className="h-4 w-4" />
   if (action.startsWith("MODERATION")) return <AlertTriangle className="h-4 w-4" />
   if (action.startsWith("POST")) return <Megaphone className="h-4 w-4" />
-  if (action.startsWith("NEXUS")) return <Star className="h-4 w-4" />
+  if (action.startsWith("Eagle Vanguard")) return <Star className="h-4 w-4" />
   return <ClipboardList className="h-4 w-4" />
 }
 
@@ -56,7 +56,7 @@ function getActionIconBg(action: string) {
   if (action.startsWith("EVENT")) return "bg-orange-500/15 text-orange-500"
   if (action.startsWith("MODERATION")) return "bg-red-500/15 text-red-500"
   if (action.startsWith("POST")) return "bg-purple-500/15 text-purple-500"
-  if (action.startsWith("NEXUS")) return "bg-yellow-500/15 text-yellow-500"
+  if (action.startsWith("Eagle Vanguard")) return "bg-yellow-500/15 text-yellow-500"
   return "bg-muted text-muted-foreground"
 }
 
@@ -91,7 +91,7 @@ export function LogsPanel({ mode, communitySlug }: Props) {
   const [filterActor, setFilterActor] = useState<SelectedUser | null>(null)
   const [filterTarget, setFilterTarget] = useState<SelectedUser | null>(null)
 
-  const apiBase = mode === "nexus" ? "/api/logs" : `/api/communities/${communitySlug}/logs`
+  const apiBase = mode === "eagle-vanguard" ? "/api/logs" : `/api/communities/${communitySlug}/logs`
 
   const fetchLogs = useCallback(async (p = 1) => {
     setLoading(true)
@@ -119,7 +119,7 @@ export function LogsPanel({ mode, communitySlug }: Props) {
   }, [fetchLogs])
 
   const categoryOptions = mode === "community"
-    ? ACTION_CATEGORIES.filter((c) => c.value !== "NEXUS" && c.value !== "COMMUNITY")
+    ? ACTION_CATEGORIES.filter((c) => c.value !== "Eagle Vanguard" && c.value !== "COMMUNITY")
     : ACTION_CATEGORIES
 
   // Grouper par date
@@ -202,7 +202,7 @@ export function LogsPanel({ mode, communitySlug }: Props) {
                             {log.target && log.target.id !== log.actor?.id && (
                               <span className="text-muted-foreground"> → <span className="font-medium text-foreground">{getUserName(log.target)}</span></span>
                             )}
-                            {mode === "nexus" && log.community && (
+                            {mode === "eagle-vanguard" && log.community && (
                               <span className="text-muted-foreground"> dans {log.community.name}</span>
                             )}
                           </p>
