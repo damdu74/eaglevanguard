@@ -9,7 +9,7 @@ import Link from "next/link"
 import { Users } from "lucide-react"
 
 export const dynamic = "force-dynamic"
-export const metadata = { title: "Joueurs" }
+export const metadata = { title: "Membres" }
 
 const PER_PAGE = 24
 
@@ -62,11 +62,11 @@ export default async function PlayersPage({ searchParams }: PageProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Joueurs</h1>
+          <h1 className="text-2xl font-bold">Membres</h1>
           <p className="text-sm text-muted-foreground">
             {q.length >= 2
               ? `${total} résultat${total > 1 ? "s" : ""} pour « ${q} »`
-              : `${total} joueur${total > 1 ? "s" : ""} inscrit${total > 1 ? "s" : ""}`}
+              : `${total} membre${total > 1 ? "s" : ""}`}
           </p>
         </div>
       </div>
@@ -77,7 +77,7 @@ export default async function PlayersPage({ searchParams }: PageProps) {
         <div className="flex flex-col items-center gap-3 py-20 text-muted-foreground text-center">
           <Users className="h-12 w-12" />
           <p className="font-medium">
-            {q.length >= 2 ? "Aucun joueur trouvé" : "Aucun joueur inscrit"}
+            {q.length >= 2 ? "Aucun membre trouvé" : "Aucun membre inscrit"}
           </p>
         </div>
       ) : (

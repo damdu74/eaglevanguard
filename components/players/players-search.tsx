@@ -34,7 +34,7 @@ export function PlayersSearch({ initialQuery }: Props) {
       <Input
         defaultValue={initialQuery}
         onChange={handleChange}
-        placeholder="Rechercher un joueur…"
+        placeholder="Rechercher un membre…"
         className="pl-9"
       />
     </div>

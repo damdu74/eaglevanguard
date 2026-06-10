@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Shield, UserSearch, UserCheck, BookOpen, Users, ShieldAlert, MessageCircle } from "lucide-react"
+import { LayoutDashboard, Users, UserCheck, ShieldAlert, MessageCircle } from "lucide-react"
 
 const navSections = [
   {
@@ -14,16 +14,9 @@ const navSections = [
     ],
   },
   {
-    label: "Communautés",
+    label: "Communauté",
     items: [
-      { href: "/communities", label: "Annuaire", icon: BookOpen, exact: true },
-      { href: "/communities/mine", label: "Communautés", icon: Shield, exact: true },
-    ],
-  },
-  {
-    label: "Joueurs",
-    items: [
-      { href: "/players", label: "Annuaire joueurs", icon: UserSearch, exact: true },
+      { href: "/players", label: "Membres", icon: Users, exact: true },
       { href: "/players/friends", label: "Mes amis", icon: UserCheck, exact: true },
     ],
   },
