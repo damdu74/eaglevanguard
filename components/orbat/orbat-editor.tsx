@@ -205,7 +205,7 @@ function makeRootNode(label = "Commandement", imageUrl = "", communityRoot = fal
     position: { x: 0, y: 0 },
     draggable: false,
     deletable: false,
-    data: { label, type: "hq", size: "", isRoot: true, communityRoot, callsign: "", imageUrl, roles: [] },
+    data: { label, type: "", size: "", isRoot: true, communityRoot, callsign: "", imageUrl, roles: [] },
   }
 }
 
