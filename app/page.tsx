@@ -12,7 +12,7 @@ export default async function HomePage() {
       {/* Barre fixe du haut */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between border-b border-black/40 px-6 py-3" style={{ backgroundColor: "#2a3d1a" }}>
         <Link href="/" className="flex items-center">
-          <Image src="/logo-dark.png" alt="Eagle Vanguard" width={80} height={80} priority className="object-contain" />
+          <Image src="/icon-dark.png" alt="Eagle Vanguard" width={36} height={36} priority className="object-contain" />
         </Link>
         <div>
           {session ? (
