@@ -1,5 +1,3 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
@@ -24,10 +22,9 @@ const userSelect = {
   discordAvatar: true,
   image: true,
   isEagleVanguardTeam: true,
-  bio: true,
 } as const
 
-function UserCard({ user, isSelf }: { user: {
+function UserCard({ user }: { user: {
   id: string
   steamName: string | null
   discordName: string | null
@@ -37,14 +34,13 @@ function UserCard({ user, isSelf }: { user: {
   discordAvatar: string | null
   image: string | null
   isEagleVanguardTeam: boolean
-  bio: string | null
-}, isSelf?: boolean }) {
+} }) {
   const displayName = user.steamName ?? user.discordName ?? user.name ?? "Membre"
   const avatar = user.customAvatar ?? user.steamAvatar ?? user.discordAvatar ?? user.image
 
   return (
     <Link href={`/profile/${user.id}?from=players`}>
-      <Card className={`h-full transition-colors hover:bg-muted/50 ${isSelf ? "ring-1 ring-primary/30" : ""}`}>
+      <Card className="h-full transition-colors hover:bg-muted/50">
         <CardContent className="flex items-start gap-3 p-4">
           <Avatar className="h-10 w-10 shrink-0 mt-0.5">
             <AvatarImage src={avatar ?? undefined} />
@@ -53,17 +49,7 @@ function UserCard({ user, isSelf }: { user: {
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <p className="font-medium text-sm leading-tight truncate">{displayName}</p>
-              {isSelf && (
-                <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded leading-none bg-muted text-muted-foreground">
-                  Vous
-                </span>
-              )}
-            </div>
-            {user.bio && (
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{user.bio}</p>
-            )}
+            <p className="font-medium text-sm leading-tight truncate">{displayName}</p>
           </div>
         </CardContent>
       </Card>
@@ -72,9 +58,7 @@ function UserCard({ user, isSelf }: { user: {
 }
 
 export default async function PlayersPage({ searchParams }: PageProps) {
-  const session = await getServerSession(authOptions)
   const q = searchParams.q?.trim() ?? ""
-  const userId = session?.user?.id as string | undefined
 
   const searchFilter = q.length >= 2
     ? {
@@ -139,7 +123,7 @@ export default async function PlayersPage({ searchParams }: PageProps) {
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {staff.map((user) => (
-                  <UserCard key={user.id} user={user} isSelf={user.id === userId} />
+                  <UserCard key={user.id} user={user} />
                 ))}
               </div>
             </div>
@@ -154,7 +138,7 @@ export default async function PlayersPage({ searchParams }: PageProps) {
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {members.map((user) => (
-                  <UserCard key={user.id} user={user} isSelf={user.id === userId} />
+                  <UserCard key={user.id} user={user} />
                 ))}
               </div>
             </div>
