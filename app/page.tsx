@@ -11,9 +11,8 @@ export default async function HomePage() {
 
       {/* Barre fixe du haut */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between border-b border-black/40 px-6 py-3" style={{ backgroundColor: "#2a3d1a" }}>
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/icon.png" alt="Eagle Vanguard" width={28} height={28} priority />
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">Eagle Vanguard</span>
+        <Link href="/" className="flex items-center">
+          <Image src="/logo-dark.png" alt="Eagle Vanguard" width={80} height={80} priority className="object-contain" />
         </Link>
         <div>
           {session ? (
@@ -47,14 +46,9 @@ export default async function HomePage() {
         <div className="absolute top-1/2 left-0 right-0 h-px -translate-y-20 bg-gradient-to-r from-transparent via-[#e8003c]/20 to-transparent" />
         <div className="absolute top-1/2 left-0 right-0 h-px translate-y-20 bg-gradient-to-r from-transparent via-[#e8003c]/10 to-transparent" />
 
-        {/* Titre */}
+        {/* Logo + titre */}
         <div className="relative z-10 flex flex-col items-center gap-5 text-center px-6">
-          <p className="text-[10px] font-semibold tracking-[0.4em] uppercase text-[#7a8a2a]">
-            Communauté — Milsim
-          </p>
-          <h1 className="text-6xl font-black tracking-tight sm:text-7xl lg:text-8xl leading-none">
-            EAGLE <span className="text-[#e8003c]">VANGUARD</span>
-          </h1>
+          <Image src="/logo-dark.png" alt="Eagle Vanguard" width={220} height={220} priority className="object-contain drop-shadow-[0_0_40px_rgba(232,0,60,0.15)]" />
           <div className="h-0.5 w-24 bg-[#e8003c]" />
           <p className="text-sm text-white/30 tracking-widest uppercase">
             Plateforme communautaire
