@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80">
+  <!-- Base olive -->
+  <rect width="120" height="80" fill="#7a7a32"/>
+
+  <!-- Taches vertes foncées -->
+  <ellipse cx="10" cy="12" rx="14" ry="9" fill="#3d4e1e"/>
+  <ellipse cx="45" cy="8" rx="18" ry="11" fill="#3d4e1e"/>
+  <ellipse cx="85" cy="18" rx="20" ry="12" fill="#3d4e1e"/>
+  <ellipse cx="110" cy="5" rx="14" ry="8" fill="#3d4e1e"/>
+  <ellipse cx="25" cy="55" rx="16" ry="10" fill="#3d4e1e"/>
+  <ellipse cx="70" cy="65" rx="22" ry="12" fill="#3d4e1e"/>
+  <ellipse cx="108" cy="58" rx="16" ry="10" fill="#3d4e1e"/>
+  <ellipse cx="0" cy="40" rx="10" ry="14" fill="#3d4e1e"/>
+  <ellipse cx="120" cy="40" rx="10" ry="14" fill="#3d4e1e"/>
+
+  <!-- Taches marron -->
+  <ellipse cx="30" cy="25" rx="15" ry="9" fill="#7a4e1e"/>
+  <ellipse cx="68" cy="35" rx="19" ry="11" fill="#7a4e1e"/>
+  <ellipse cx="102" cy="30" rx="16" ry="10" fill="#7a4e1e"/>
+  <ellipse cx="12" cy="68" rx="14" ry="9" fill="#7a4e1e"/>
+  <ellipse cx="50" cy="72" rx="17" ry="8" fill="#7a4e1e"/>
+  <ellipse cx="95" cy="75" rx="20" ry="7" fill="#7a4e1e"/>
+
+  <!-- "Petits pois" — points ronds caractéristiques -->
+  <circle cx="8"   cy="30" r="2.5" fill="#2a3010"/>
+  <circle cx="22"  cy="42" r="2"   fill="#2a3010"/>
+  <circle cx="38"  cy="14" r="2.5" fill="#2a3010"/>
+  <circle cx="55"  cy="48" r="2"   fill="#2a3010"/>
+  <circle cx="60"  cy="22" r="2.5" fill="#2a3010"/>
+  <circle cx="78"  cy="52" r="2"   fill="#2a3010"/>
+  <circle cx="90"  cy="8"  r="2.5" fill="#2a3010"/>
+  <circle cx="100" cy="45" r="2"   fill="#2a3010"/>
+  <circle cx="115" cy="68" r="2.5" fill="#2a3010"/>
+  <circle cx="35"  cy="68" r="2"   fill="#2a3010"/>
+  <circle cx="16"  cy="52" r="2"   fill="#2a3010"/>
+  <circle cx="48"  cy="35" r="2.5" fill="#2a3010"/>
+  <circle cx="75"  cy="15" r="2"   fill="#2a3010"/>
+  <circle cx="112" cy="22" r="2.5" fill="#2a3010"/>
+
+  <!-- Reflets clairs sur les pois -->
+  <circle cx="7"   cy="29" r="1"   fill="#9a9a52" opacity="0.6"/>
+  <circle cx="37"  cy="13" r="1"   fill="#9a9a52" opacity="0.6"/>
+  <circle cx="59"  cy="21" r="1"   fill="#9a9a52" opacity="0.6"/>
+  <circle cx="89"  cy="7"  r="1"   fill="#9a9a52" opacity="0.6"/>
+  <circle cx="99"  cy="44" r="1"   fill="#9a9a52" opacity="0.6"/>
+</svg>
