@@ -7,15 +7,10 @@ import { LayoutDashboard, Users, UserCheck, ShieldAlert, MessageCircle } from "l
 
 const navSections = [
   {
-    label: "Navigation",
+    label: "Communauté",
     items: [
       { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard, exact: true },
       { href: "/messages", label: "Messages", icon: MessageCircle, exact: false },
-    ],
-  },
-  {
-    label: "Communauté",
-    items: [
       { href: "/players", label: "Membres", icon: Users, exact: true },
       { href: "/players/friends", label: "Mes amis", icon: UserCheck, exact: true },
     ],
