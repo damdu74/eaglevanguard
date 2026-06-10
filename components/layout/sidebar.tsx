@@ -40,7 +40,7 @@ export function Sidebar({ isEagleVanguardTeam }: SidebarProps) {
   const pathname = usePathname()
 
   const sections = isEagleVanguardTeam
-    ? [navSections[0], ...eagleVanguardSections, ...navSections.slice(1)]
+    ? [...eagleVanguardSections, ...navSections]
     : navSections
 
   return (
