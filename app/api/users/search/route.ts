@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { checkEagle VanguardPermission } from "@/lib/eagle-vanguard-auth"
+import { checkEagleVanguardPermission } from "@/lib/eagle-vanguard-auth"
 
 export const dynamic = "force-dynamic"
 
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   let skipVisibilityFilter = false
 
   if (forMod) {
-    const canModerate = await checkEagle VanguardPermission(session.user.id, "GLOBAL_MODERATION")
+    const canModerate = await checkEagleVanguardPermission(session.user.id, "GLOBAL_MODERATION")
     skipVisibilityFilter = canModerate
   }
 

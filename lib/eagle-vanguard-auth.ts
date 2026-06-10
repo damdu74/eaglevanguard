@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
-import type { Eagle VanguardPermission } from "@/lib/permissions"
+import type { EagleVanguardPermission } from "@/lib/permissions"
 
-export async function getEagle VanguardActor(userId: string) {
+export async function getEagleVanguardActor(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -12,8 +12,8 @@ export async function getEagle VanguardActor(userId: string) {
   return user
 }
 
-export async function checkEagle VanguardPermission(userId: string, permission: Eagle VanguardPermission): Promise<boolean> {
-  const user = await getEagle VanguardActor(userId)
+export async function checkEagleVanguardPermission(userId: string, permission: EagleVanguardPermission): Promise<boolean> {
+  const user = await getEagleVanguardActor(userId)
   if (!user?.isEagleVanguardTeam) return false
   // Rang protégé → tous les droits
   if (user.eagleVanguardRank?.isProtected) return true

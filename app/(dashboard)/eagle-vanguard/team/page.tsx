@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { EagleVanguardTeamManager } from "@/components/eagle-vanguard/eagle-vanguard-team-manager"
-import { Eagle VanguardNav } from "@/components/eagle-vanguard/eagle-vanguard-nav"
+import { EagleVanguardNav } from "@/components/eagle-vanguard/eagle-vanguard-nav"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Eagle Vanguard Team" }
@@ -25,7 +25,7 @@ export default async function EagleVanguardTeamPage() {
         <h1 className="text-2xl font-bold">Eagle Vanguard Team</h1>
         <p className="text-sm text-muted-foreground">Gestion du staff de la plateforme</p>
       </div>
-      <Eagle VanguardNav />
+      <EagleVanguardNav />
       <EagleVanguardTeamManager
         stats={{ totalUsers, totalCommunities, pendingApplications, teamSize }}
       />

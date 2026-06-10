@@ -10,7 +10,7 @@ const links = [
   { href: "/eagle-vanguard/moderation", label: "Logs", icon: ShieldAlert },
 ]
 
-export function Eagle VanguardNav() {
+export function EagleVanguardNav() {
   const pathname = usePathname()
 
   return (

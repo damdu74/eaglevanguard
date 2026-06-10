@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { checkEagle VanguardPermission } from "@/lib/eagle-vanguard-auth"
+import { checkEagleVanguardPermission } from "@/lib/eagle-vanguard-auth"
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
 
-  if (!await checkEagle VanguardPermission(session.user.id, "VIEW_LOGS")) {
+  if (!await checkEagleVanguardPermission(session.user.id, "VIEW_LOGS")) {
     return NextResponse.json({ error: "Permission VIEW_LOGS requise" }, { status: 403 })
   }
 

@@ -5,8 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { ModerationActionType, Prisma } from "@prisma/client"
 import { z } from "zod"
 import { createAuditLog } from "@/lib/audit"
-import { checkEagle VanguardPermission, getEagle VanguardActor } from "@/lib/eagle-vanguard-auth"
-import { hasEagle VanguardPermission } from "@/lib/permissions"
+import { checkEagleVanguardPermission, getEagleVanguardActor } from "@/lib/eagle-vanguard-auth"
+import { hasEagleVanguardPermission } from "@/lib/permissions"
 
 const createSchema = z.object({
   type: z.enum(["WARN", "KICK", "BAN_COMMUNITY", "BAN_PLATFORM", "UNBAN"]),
@@ -20,7 +20,7 @@ const createSchema = z.object({
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
-  if (!await checkEagle VanguardPermission(session.user.id, "GLOBAL_MODERATION")) {
+  if (!await checkEagleVanguardPermission(session.user.id, "GLOBAL_MODERATION")) {
     return NextResponse.json({ error: "Permission GLOBAL_MODERATION requise" }, { status: 403 })
   }
 
@@ -62,9 +62,9 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
 
-  const actor = await getEagle VanguardActor(session.user.id)
+  const actor = await getEagleVanguardActor(session.user.id)
   if (!actor?.isEagleVanguardTeam) return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
-  if (!hasEagle VanguardPermission(actor.eagleVanguardRank, "GLOBAL_MODERATION")) {
+  if (!hasEagleVanguardPermission(actor.eagleVanguardRank, "GLOBAL_MODERATION")) {
     return NextResponse.json({ error: "Permission GLOBAL_MODERATION requise" }, { status: 403 })
   }
 
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Un ban plateforme ne peut pas être lié à une communauté" }, { status: 400 })
   }
 
-  if ((type === "BAN_PLATFORM" || type === "UNBAN") && !hasEagle VanguardPermission(actor.eagleVanguardRank, "BAN_PLATFORM")) {
+  if ((type === "BAN_PLATFORM" || type === "UNBAN") && !hasEagleVanguardPermission(actor.eagleVanguardRank, "BAN_PLATFORM")) {
     return NextResponse.json({ error: "Permission BAN_PLATFORM requise" }, { status: 403 })
   }
 

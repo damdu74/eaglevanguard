@@ -2,14 +2,14 @@ import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Eagle VanguardMembersManager } from "@/components/eagle-vanguard/eagle-vanguard-members-manager"
+import { EagleVanguardMembersManager } from "@/components/eagle-vanguard/eagle-vanguard-members-manager"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Membres — Eagle Vanguard Team" }
 
-export default async function Eagle VanguardMembersPage() {
+export default async function EagleVanguardMembersPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isEagleVanguardTeam) redirect("/dashboard")
 
@@ -50,7 +50,7 @@ export default async function Eagle VanguardMembersPage() {
         <p className="text-sm text-muted-foreground">Gérez les membres, leurs rôles et fonctions.</p>
       </div>
 
-      <Eagle VanguardMembersManager
+      <EagleVanguardMembersManager
         initialRanks={ranks}
         initialMembers={members}
         currentUserId={session.user.id}

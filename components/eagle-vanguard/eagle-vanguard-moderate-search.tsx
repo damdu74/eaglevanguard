@@ -57,7 +57,7 @@ function getAvatar(u: UserResult) {
   return u.customAvatar ?? u.steamAvatar ?? u.discordAvatar ?? u.image ?? undefined
 }
 
-export function Eagle VanguardModerateSearch() {
+export function EagleVanguardModerateSearch() {
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<UserResult[]>([])
   const [searching, setSearching] = useState(false)

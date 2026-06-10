@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { z } from "zod"
-import { checkEagle VanguardPermission } from "@/lib/eagle-vanguard-auth"
+import { checkEagleVanguardPermission } from "@/lib/eagle-vanguard-auth"
 
 const resolveSchema = z.object({
   note: z.string().max(500).optional(),
@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { actionId: 
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
 
-  if (!await checkEagle VanguardPermission(session.user.id, "GLOBAL_MODERATION")) {
+  if (!await checkEagleVanguardPermission(session.user.id, "GLOBAL_MODERATION")) {
     return NextResponse.json({ error: "Permission GLOBAL_MODERATION requise" }, { status: 403 })
   }
 
@@ -46,7 +46,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { actionId
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
 
-  if (!await checkEagle VanguardPermission(session.user.id, "GLOBAL_MODERATION")) {
+  if (!await checkEagleVanguardPermission(session.user.id, "GLOBAL_MODERATION")) {
     return NextResponse.json({ error: "Permission GLOBAL_MODERATION requise" }, { status: 403 })
   }
 

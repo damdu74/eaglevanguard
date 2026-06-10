@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
-import { checkEagle VanguardPermission } from "@/lib/eagle-vanguard-auth"
+import { checkEagleVanguardPermission } from "@/lib/eagle-vanguard-auth"
 
 export const dynamic = "force-dynamic"
 
@@ -15,7 +15,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
-  if (!await checkEagle VanguardPermission(session.user.id, "MANAGE_RANKS")) {
+  if (!await checkEagleVanguardPermission(session.user.id, "MANAGE_RANKS")) {
     return NextResponse.json({ error: "Permission MANAGE_RANKS requise" }, { status: 403 })
   }
 
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   })
 
   await createAuditLog({
-    action: "Eagle Vanguard_RANK_CREATED",
+    action: "EAGLE_VANGUARD_RANK_CREATED",
     description: `Grade Eagle Vanguard « ${rank.name} » (${rank.category}) créé`,
     actorId: session.user.id as string,
     metadata: { rankId: rank.id, category: rank.category },

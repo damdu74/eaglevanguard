@@ -32,11 +32,11 @@ export type AuditAction =
   | "MODERATION_UNBAN"
   | "MODERATION_RESOLVED"
   // Eagle Vanguard Team
-  | "Eagle Vanguard_MEMBER_ADDED"
-  | "Eagle Vanguard_MEMBER_REMOVED"
-  | "Eagle Vanguard_RANK_CREATED"
-  | "Eagle Vanguard_RANK_UPDATED"
-  | "Eagle Vanguard_RANK_DELETED"
+  | "EAGLE_VANGUARD_MEMBER_ADDED"
+  | "EAGLE_VANGUARD_MEMBER_REMOVED"
+  | "EAGLE_VANGUARD_RANK_CREATED"
+  | "EAGLE_VANGUARD_RANK_UPDATED"
+  | "EAGLE_VANGUARD_RANK_DELETED"
   // Posts
   | "POST_CREATED"
   | "POST_DELETED"

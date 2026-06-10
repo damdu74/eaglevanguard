@@ -52,7 +52,7 @@ export const ROLE_LABELS: Record<MemberRole, string> = {
 
 // ─── Eagle Vanguard TEAM PERMISSIONS ───────────────────────────────────────────────────
 
-export const Eagle Vanguard_PERMISSIONS = [
+export const EAGLE_VANGUARD_PERMISSIONS = [
   "MANAGE_TEAM",         // ajouter/retirer des membres Eagle Vanguard, changer leurs rôles
   "MANAGE_RANKS",        // créer/modifier/supprimer les rangs Eagle Vanguard
   "GLOBAL_MODERATION",   // accès à la modération globale (WARN, KICK, BAN)
@@ -60,9 +60,9 @@ export const Eagle Vanguard_PERMISSIONS = [
   "VIEW_LOGS",           // voir les logs d'activité globaux
 ] as const
 
-export type Eagle VanguardPermission = typeof Eagle Vanguard_PERMISSIONS[number]
+export type EagleVanguardPermission = typeof EAGLE_VANGUARD_PERMISSIONS[number]
 
-export const Eagle Vanguard_PERMISSION_LABELS: Record<Eagle VanguardPermission, string> = {
+export const EAGLE_VANGUARD_PERMISSION_LABELS: Record<EagleVanguardPermission, string> = {
   MANAGE_TEAM:       "Gérer l'équipe Eagle Vanguard",
   MANAGE_RANKS:      "Gérer les rangs et fonctions",
   GLOBAL_MODERATION: "Modération globale",
@@ -75,9 +75,9 @@ interface EagleVanguardRankLike {
   isProtected: boolean
 }
 
-export function hasEagle VanguardPermission(
+export function hasEagleVanguardPermission(
   eagleVanguardRank: EagleVanguardRankLike | null | undefined,
-  permission: Eagle VanguardPermission
+  permission: EagleVanguardPermission
 ): boolean {
   if (!eagleVanguardRank) return false
   if (eagleVanguardRank.isProtected) return true

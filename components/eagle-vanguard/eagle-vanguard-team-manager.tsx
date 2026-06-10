@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 
 import Link from "next/link"
 import { Users, Building2, FileText, Shield, ChevronRight } from "lucide-react"
-import { Eagle VanguardModerateSearch } from "@/components/eagle-vanguard/eagle-vanguard-moderate-search"
+import { EagleVanguardModerateSearch } from "@/components/eagle-vanguard/eagle-vanguard-moderate-search"
 
 interface Stats {
   totalUsers: number
@@ -54,7 +54,7 @@ export function EagleVanguardTeamManager({ stats }: Props) {
           <CardDescription>Recherchez un utilisateur pour lui appliquer une sanction.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Eagle VanguardModerateSearch />
+          <EagleVanguardModerateSearch />
         </CardContent>
       </Card>
 

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
 
-export default function Eagle VanguardLogsRedirect() {
+export default function EagleVanguardLogsRedirect() {
   redirect("/eagle-vanguard/moderation")
 }

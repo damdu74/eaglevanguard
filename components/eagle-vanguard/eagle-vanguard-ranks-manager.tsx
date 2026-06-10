@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Loader2, Plus, Trash2, Pencil, Check, X, Lock, ChevronDown, ChevronUp } from "lucide-react"
-import { Eagle Vanguard_PERMISSIONS, Eagle Vanguard_PERMISSION_LABELS, type Eagle VanguardPermission } from "@/lib/permissions"
+import { EAGLE_VANGUARD_PERMISSIONS, EAGLE_VANGUARD_PERMISSION_LABELS, type EagleVanguardPermission } from "@/lib/permissions"
 
 interface EagleVanguardRank {
   id: string
@@ -107,7 +107,7 @@ function RankSection({ title, description, category, ranks, setRanks }: {
     finally { setSaving(null) }
   }
 
-  function togglePermission(rankId: string, perm: Eagle VanguardPermission) {
+  function togglePermission(rankId: string, perm: EagleVanguardPermission) {
     setRanks(prev => prev.map(r => {
       if (r.id !== rankId) return r
       const has = r.permissions.includes(perm)
@@ -190,9 +190,9 @@ function RankSection({ title, description, category, ranks, setRanks }: {
                 {category === "ROLE" && expanded === rank.id && (
                   <div className="border-t px-3 py-2 space-y-1.5">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Permissions</p>
-                    {Eagle Vanguard_PERMISSIONS.map((perm) => (
+                    {EAGLE_VANGUARD_PERMISSIONS.map((perm) => (
                       <div key={perm} className="flex items-center justify-between">
-                        <span className="text-xs">{Eagle Vanguard_PERMISSION_LABELS[perm]}</span>
+                        <span className="text-xs">{EAGLE_VANGUARD_PERMISSION_LABELS[perm]}</span>
                         <Switch
                           checked={rank.permissions.includes(perm)}
                           onCheckedChange={() => togglePermission(rank.id, perm)}

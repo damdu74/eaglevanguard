@@ -3,15 +3,15 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
-import { checkEagle VanguardPermission } from "@/lib/eagle-vanguard-auth"
-import { Eagle Vanguard_PERMISSIONS } from "@/lib/permissions"
+import { checkEagleVanguardPermission } from "@/lib/eagle-vanguard-auth"
+import { EAGLE_VANGUARD_PERMISSIONS } from "@/lib/permissions"
 
 type Params = { params: { id: string } }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
-  if (!await checkEagle VanguardPermission(session.user.id, "MANAGE_RANKS")) {
+  if (!await checkEagleVanguardPermission(session.user.id, "MANAGE_RANKS")) {
     return NextResponse.json({ error: "Permission MANAGE_RANKS requise" }, { status: 403 })
   }
 
@@ -30,13 +30,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(color !== undefined && { color }),
       ...(category !== undefined && { category: category === "FUNCTION" ? "FUNCTION" : "ROLE" }),
       ...(Array.isArray(permissions) && {
-        permissions: permissions.filter((p: string) => Eagle Vanguard_PERMISSIONS.includes(p as typeof Eagle Vanguard_PERMISSIONS[number])),
+        permissions: permissions.filter((p: string) => EAGLE_VANGUARD_PERMISSIONS.includes(p as typeof EAGLE_VANGUARD_PERMISSIONS[number])),
       }),
     },
   })
 
   await createAuditLog({
-    action: "Eagle Vanguard_RANK_UPDATED",
+    action: "EAGLE_VANGUARD_RANK_UPDATED",
     description: `Grade Eagle Vanguard « ${updated.name} » modifié`,
     actorId: session.user.id as string,
     metadata: { rankId: params.id },
@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
-  if (!await checkEagle VanguardPermission(session.user.id, "MANAGE_RANKS")) {
+  if (!await checkEagleVanguardPermission(session.user.id, "MANAGE_RANKS")) {
     return NextResponse.json({ error: "Permission MANAGE_RANKS requise" }, { status: 403 })
   }
 
@@ -57,7 +57,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if (rank.isProtected) return NextResponse.json({ error: "Ce grade est protégé" }, { status: 403 })
 
   await createAuditLog({
-    action: "Eagle Vanguard_RANK_DELETED",
+    action: "EAGLE_VANGUARD_RANK_DELETED",
     description: `Grade Eagle Vanguard « ${rank.name} » supprimé`,
     actorId: session.user.id as string,
     metadata: { rankName: rank.name },

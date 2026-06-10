@@ -51,7 +51,7 @@ interface Props {
   currentUserId: string
 }
 
-export function Eagle VanguardMembersManager({ initialRanks, initialMembers, currentUserId }: Props) {
+export function EagleVanguardMembersManager({ initialRanks, initialMembers, currentUserId }: Props) {
   const [ranks] = useState<EagleVanguardRank[]>(initialRanks)
   const [members, setMembers] = useState<Member[]>(initialMembers)
 
