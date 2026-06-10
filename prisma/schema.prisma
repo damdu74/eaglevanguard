@@ -74,9 +74,9 @@ model User {
   discordId     String?           @unique
   discordName   String?
   discordAvatar String?
-  isNexusTeam          Boolean           @default(false)
+  isEagleVanguardTeam  Boolean           @default(false)
   isBannedFromPlatform Boolean           @default(false)
-  nexusRankId          String?
+  eagleVanguardRankId  String?
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
 
@@ -92,8 +92,8 @@ model User {
   notifications      Notification[]
   rpCharacters       RpCharacter[]
   posts              CommunityPost[]
-  nexusRank          NexusRank?        @relation("UserRole", fields: [nexusRankId], references: [id], onDelete: SetNull)
-  nexusFunctions     NexusRank[]       @relation("UserFunctions")
+  eagleVanguardRank      EagleVanguardRank?  @relation("UserRole", fields: [eagleVanguardRankId], references: [id], onDelete: SetNull)
+  eagleVanguardFunctions EagleVanguardRank[] @relation("UserFunctions")
   moderationTarget   ModerationAction[] @relation("ModTarget")
   moderationActed    ModerationAction[] @relation("ModActor")
   moderationResolved ModerationAction[] @relation("ModResolver")
@@ -106,9 +106,9 @@ model User {
   blocksReceived     Block[]            @relation("BlocksReceived")
 }
 
-// ─── NEXUS TEAM ───────────────────────────────────────────────────────────────
+// ─── EAGLE VANGUARD TEAM ─────────────────────────────────────────────────────
 
-model NexusRank {
+model EagleVanguardRank {
   id           String   @id @default(cuid())
   name         String
   abbreviation String
@@ -168,7 +168,7 @@ model SteamAuthCode {
 enum CommunityVisibility {
   PUBLIC     // visible dans l'annuaire, rejoindre sans candidature
   WHITELIST  // visible dans l'annuaire, candidature requise
-  INVISIBLE  // non visible dans l'annuaire (sauf membres + NEXUS Team)
+  INVISIBLE  // non visible dans l'annuaire (sauf membres + Eagle Vanguard Team)
 }
 
 model Community {
@@ -345,7 +345,7 @@ model Event {
   endDate        DateTime?
   maxSlots       Int?
   imageUrl       String?
-  source         String      @default("NEXUS")
+  source         String      @default("Eagle Vanguard")
   discordEventId String?
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
