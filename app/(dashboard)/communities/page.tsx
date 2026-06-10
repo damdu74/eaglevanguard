@@ -29,7 +29,7 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
 
   const visibilityFilter = isNexusTeam
     ? {}
-    : { visibility: { in: ["PUBLIC", "WHITELIST"] as const } }
+    : { visibility: { in: ["PUBLIC", "WHITELIST"] } }
 
   const where = {
     ...visibilityFilter,
@@ -38,7 +38,7 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
     ...(gameFilter ? { game: gameFilter } : {}),
   }
 
-  const gamesWhere = isNexusTeam ? {} : { visibility: { in: ["PUBLIC", "WHITELIST"] as const } }
+  const gamesWhere = isNexusTeam ? {} : { visibility: { in: ["PUBLIC", "WHITELIST"] } }
 
   const [total, communities, allGames] = await Promise.all([
     prisma.community.count({ where }),

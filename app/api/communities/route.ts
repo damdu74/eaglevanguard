@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   const visibilityFilter = isNexusTeam
     ? {}
-    : { visibility: { in: ["PUBLIC", "WHITELIST"] as const } }
+    : { visibility: { in: ["PUBLIC", "WHITELIST"] } }
 
   const where = {
     ...visibilityFilter,
