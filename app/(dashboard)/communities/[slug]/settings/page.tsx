@@ -6,6 +6,7 @@ import { CommunitySettingsForm } from "@/components/community/community-settings
 import { CommunityLogoUpload } from "@/components/community/community-logo-upload"
 import { TransferOwnershipForm } from "@/components/community/transfer-ownership-form"
 import { DiscordGuildForm } from "@/components/community/discord-guild-form"
+import { CommunityVisibilityButton } from "@/components/community/community-visibility-button"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 
@@ -59,8 +60,13 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
           <ChevronLeft className="h-4 w-4" />
           {community.name}
         </Link>
-        <h1 className="text-2xl font-bold">Paramètres</h1>
-        <p className="text-sm text-muted-foreground">{community.name}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Paramètres</h1>
+            <p className="text-sm text-muted-foreground">{community.name}</p>
+          </div>
+          <CommunityVisibilityButton slug={params.slug} initialVisibility={community.visibility} />
+        </div>
       </div>
 
       <CommunityLogoUpload slug={params.slug} currentLogoUrl={community.logoUrl} />

@@ -9,50 +9,25 @@ import { Label } from "@/components/ui/label"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Trash2, ChevronRight, Info, Copy, Check, Globe, Users, EyeOff } from "lucide-react"
+import { Loader2, Trash2, ChevronRight, Info, Copy, Check } from "lucide-react"
 import Link from "next/link"
-
-type Visibility = "PUBLIC" | "WHITELIST" | "INVISIBLE"
 
 interface Props {
   community: {
     name: string
     slug: string
     description: string | null
-    visibility: Visibility
     game: string
   }
   isOwner: boolean
   transferForm?: React.ReactNode
 }
 
-const VISIBILITY_OPTIONS: { value: Visibility; icon: React.ElementType; label: string; description: string }[] = [
-  {
-    value: "PUBLIC",
-    icon: Globe,
-    label: "Publique",
-    description: "Visible dans l'annuaire. Tout le monde peut rejoindre directement sans candidature.",
-  },
-  {
-    value: "WHITELIST",
-    icon: Users,
-    label: "Sur candidature",
-    description: "Visible dans l'annuaire. Rejoindre la communauté nécessite une candidature approuvée.",
-  },
-  {
-    value: "INVISIBLE",
-    icon: EyeOff,
-    label: "Invisible",
-    description: "Non visible dans l'annuaire. Seuls les membres, le fondateur et la NEXUS Team peuvent la voir.",
-  },
-]
-
 export function CommunitySettingsForm({ community, isOwner, transferForm }: Props) {
   const router = useRouter()
   const [name, setName] = useState(community.name)
   const [slug, setSlug] = useState(community.slug)
   const [description, setDescription] = useState(community.description ?? "")
-  const [visibility, setVisibility] = useState<Visibility>(community.visibility)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState("")
@@ -84,7 +59,7 @@ export function CommunitySettingsForm({ community, isOwner, transferForm }: Prop
       const res = await fetch(`/api/communities/${community.slug}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), slug: slug.trim(), description: description || null, visibility }),
+        body: JSON.stringify({ name: name.trim(), slug: slug.trim(), description: description || null }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -166,28 +141,6 @@ export function CommunitySettingsForm({ community, isOwner, transferForm }: Prop
               onChange={setDescription}
               placeholder="Décrivez votre communauté..."
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Visibilité</Label>
-            <div className="grid gap-2">
-              {VISIBILITY_OPTIONS.map(({ value, icon: Icon, label, description: desc }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setVisibility(value)}
-                  className={`flex items-start gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50 ${
-                    visibility === value ? "border-primary bg-primary/5" : "border-border"
-                  }`}
-                >
-                  <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${visibility === value ? "text-primary" : "text-muted-foreground"}`} />
-                  <div className="space-y-0.5">
-                    <p className={`text-sm font-medium ${visibility === value ? "text-primary" : ""}`}>{label}</p>
-                    <p className="text-xs text-muted-foreground">{desc}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="flex justify-end">
