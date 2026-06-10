@@ -17,7 +17,10 @@ export const metadata: Metadata = {
   },
   description: "Plateforme de gestion de communautés",
   icons: {
-    icon: "/icon.png",
+    icon: [
+      { url: "/icon-light.png", media: "(prefers-color-scheme: light)" },
+      { url: "/icon-dark.png",  media: "(prefers-color-scheme: dark)"  },
+    ],
   },
 }
 

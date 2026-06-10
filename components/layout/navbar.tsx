@@ -25,7 +25,8 @@ export function Navbar({ user, pendingFriendsCount = 0, pendingApplicationsCount
   return (
     <header className="flex shrink-0 items-center gap-4 border-b bg-background/95 backdrop-blur px-6 py-2 z-50">
       <Link href="/" className="flex items-center">
-        <Image src="/icon.png" alt="Eagle Vanguard" width={36} height={36} priority />
+        <Image src="/icon-light.png" alt="Eagle Vanguard" width={36} height={36} priority className="dark:hidden" />
+        <Image src="/icon-dark.png"  alt="Eagle Vanguard" width={36} height={36} priority className="hidden dark:block" />
       </Link>
 
 
