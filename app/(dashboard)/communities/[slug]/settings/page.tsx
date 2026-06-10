@@ -4,7 +4,6 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { CommunitySettingsForm } from "@/components/community/community-settings-form"
 import { CommunityLogoUpload } from "@/components/community/community-logo-upload"
-import { TransferOwnershipForm } from "@/components/community/transfer-ownership-form"
 import { DiscordGuildForm } from "@/components/community/discord-guild-form"
 import { CommunityVisibilityButton } from "@/components/community/community-visibility-button"
 import Link from "next/link"
@@ -38,18 +37,6 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
 
   const isOwner = membership?.role === "OWNER"
 
-  const otherMembers = isOwner
-    ? await prisma.membership.findMany({
-        where: { communityId: community.id, userId: { not: session.user.id as string } },
-        include: {
-          user: {
-            select: { id: true, steamName: true, discordName: true, name: true, customAvatar: true, steamAvatar: true, discordAvatar: true },
-          },
-        },
-        orderBy: { user: { name: "asc" } },
-      })
-    : []
-
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -73,20 +60,7 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
 
       <DiscordGuildForm slug={params.slug} currentGuildId={community.discordGuildId} discordClientId={process.env.DISCORD_CLIENT_ID ?? null} />
 
-      <CommunitySettingsForm
-        community={community}
-        isOwner={isOwner}
-        transferForm={isOwner ? (
-          <TransferOwnershipForm
-            slug={params.slug}
-            members={otherMembers.map((m) => ({
-              id: m.user.id,
-              name: m.user.steamName ?? m.user.discordName ?? m.user.name ?? "Inconnu",
-              image: m.user.customAvatar ?? m.user.steamAvatar ?? m.user.discordAvatar ?? null,
-            }))}
-          />
-        ) : undefined}
-      />
+      <CommunitySettingsForm community={community} isOwner={isOwner} />
     </div>
   )
 }

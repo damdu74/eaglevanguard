@@ -9,9 +9,7 @@ import { RichTextContent } from "@/components/ui/rich-text-content"
 import { CommunityLogo } from "@/components/community/community-logo"
 import Image from "next/image"
 import Link from "next/link"
-import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList, ChevronLeft, Megaphone, ShieldAlert, ScrollText, Globe, EyeOff } from "lucide-react"
-import { JoinButton } from "@/components/community/join-button"
-import { LeaveCommunityButton } from "@/components/community/leave-community-button"
+import { Users, Calendar, GitBranch, Settings, Sword, ChevronLeft, Megaphone, ShieldAlert, ScrollText, EyeOff } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -47,10 +45,6 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
   const isAdmin = membership && ["OWNER", "ADMIN"].includes(membership.role)
   const isStaff = membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
 
-  const pendingApplicationsCount = isAdmin
-    ? await prisma.application.count({ where: { communityId: community.id, status: "PENDING" } })
-    : 0
-
   const postsCount = membership
     ? await prisma.communityPost.count({ where: { communityId: community.id } })
     : 0
@@ -65,14 +59,13 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
 
   return (
     <div className="space-y-6">
-      {/* Bouton retour */}
-      {(membership || searchParams?.back) && (
+      {searchParams?.back && (
         <Link
-          href={searchParams?.back ?? "/communities/mine"}
+          href={searchParams.back}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" />
-          {searchParams?.back ? "Profil du joueur" : "Mes communautés"}
+          Retour
         </Link>
       )}
 
@@ -91,7 +84,6 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4">
-          {/* Logo */}
           <CommunityLogo url={community.logoUrl} name={community.name} size="lg" />
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -99,9 +91,6 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
               <Badge variant="secondary">{community.game}</Badge>
               {community.visibility === "INVISIBLE" && (
                 <Badge variant="outline" className="gap-1"><EyeOff className="h-3 w-3" />Invisible</Badge>
-              )}
-              {community.visibility === "PUBLIC" && (
-                <Badge variant="outline" className="gap-1"><Globe className="h-3 w-3" />Ouverte</Badge>
               )}
             </div>
             {community.description && (
@@ -115,44 +104,32 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
           </div>
         </div>
 
-        <div className="flex gap-2 shrink-0">
-          {!membership && community.visibility === "PUBLIC" && (
-            <JoinButton slug={params.slug} />
-          )}
-          {!membership && community.visibility !== "PUBLIC" && (
-            <Button asChild>
-              <Link href={`/communities/${params.slug}/apply`}>Candidater</Link>
-            </Button>
-          )}
-          {isAdmin && (
-            <Button variant="outline" size="icon" asChild>
-              <Link href={`/communities/${params.slug}/settings`}>
-                <Settings className="h-4 w-4" />
-              </Link>
-            </Button>
-          )}
-        </div>
+        {isAdmin && (
+          <Button variant="outline" size="icon" asChild>
+            <Link href={`/communities/${params.slug}/settings`}>
+              <Settings className="h-4 w-4" />
+            </Link>
+          </Button>
+        )}
       </div>
 
       {/* Contenu réservé aux membres */}
       {membership && (
         <>
-          <div className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3`}>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                href: "members",
-                fullHref: `/communities/${params.slug}/members${searchParams?.back ? `?back=${encodeURIComponent(`/communities/${params.slug}?back=${encodeURIComponent(searchParams.back)}`)}` : ""}`,
+                href: `/communities/${params.slug}/members`,
                 label: "Membres", icon: Users, count: community._count.memberships, highlight: false,
               },
-              { href: "events", fullHref: null, label: "Événements", icon: Calendar, count: community._count.events, highlight: false },
-              { href: "news", fullHref: null, label: "Annonces", icon: Megaphone, count: postsCount, highlight: false },
-              ...(isAdmin ? [{ href: "applications", fullHref: null, label: "Candidatures", icon: ClipboardList, count: pendingApplicationsCount, highlight: pendingApplicationsCount > 0 }] : []),
-              ...(isStaff ? [{ href: "moderation", fullHref: null, label: "Modération", icon: ShieldAlert, count: null, highlight: false }] : []),
-              ...(isStaff ? [{ href: "logs", fullHref: null, label: "Logs", icon: ScrollText, count: null, highlight: false }] : []),
-              ...(session?.user?.isEagleVanguardTeam ? [{ href: "orbat", fullHref: null, label: "ORBAT Général", icon: GitBranch, count: null, highlight: false }] : []),
-              { href: "rp", fullHref: null, label: "Registre des effectifs", icon: Sword, count: null, highlight: false },
-            ].map(({ href, fullHref, label, icon: Icon, count, highlight }) => (
-              <Link key={href} href={fullHref ?? `/communities/${params.slug}/${href}`} className="h-full">
+              { href: `/communities/${params.slug}/events`, label: "Événements", icon: Calendar, count: community._count.events, highlight: false },
+              { href: `/communities/${params.slug}/news`, label: "Annonces", icon: Megaphone, count: postsCount, highlight: false },
+              ...(isStaff ? [{ href: `/communities/${params.slug}/moderation`, label: "Modération", icon: ShieldAlert, count: null, highlight: false }] : []),
+              ...(isStaff ? [{ href: `/communities/${params.slug}/logs`, label: "Logs", icon: ScrollText, count: null, highlight: false }] : []),
+              ...(session?.user?.isEagleVanguardTeam ? [{ href: `/communities/${params.slug}/orbat`, label: "ORBAT Général", icon: GitBranch, count: null, highlight: false }] : []),
+              { href: `/communities/${params.slug}/rp`, label: "Registre des effectifs", icon: Sword, count: null, highlight: false },
+            ].map(({ href, label, icon: Icon, count, highlight }) => (
+              <Link key={href} href={href} className="h-full">
                 <Card className="h-full transition-colors hover:bg-muted/50">
                   <CardContent className="flex h-full items-center justify-center gap-2 py-4">
                     <Icon className={`h-5 w-5 ${highlight ? "text-orange-500" : "text-primary"}`} />
@@ -171,11 +148,8 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
           </div>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="pb-2">
               <CardTitle className="text-sm">Mon statut</CardTitle>
-              {membership.role !== "OWNER" && (
-                <LeaveCommunityButton slug={params.slug} communityName={community.name} />
-              )}
             </CardHeader>
             <CardContent className="flex gap-4 text-sm">
               <div>
@@ -190,9 +164,7 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
               )}
               <div>
                 <p className="text-muted-foreground">Membre depuis</p>
-                <p className="font-medium">
-                  {new Date(membership.joinedAt).toLocaleDateString("fr-FR")}
-                </p>
+                <p className="font-medium">{new Date(membership.joinedAt).toLocaleDateString("fr-FR")}</p>
               </div>
             </CardContent>
           </Card>

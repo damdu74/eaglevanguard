@@ -5,10 +5,8 @@ const PROTECTED_PREFIXES = [
   "/dashboard",
   "/profile",
   "/settings",
-  "/communities/new",
-  "/communities/mine",
+  "/communities",
   "/players",
-  "/members",
   "/eagle-vanguard",
 ]
 
