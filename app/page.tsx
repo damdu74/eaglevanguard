@@ -10,7 +10,7 @@ export default async function HomePage() {
     <div className="flex h-screen flex-col bg-[#0f1a0c] text-white">
 
       {/* Barre fixe du haut */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between border-b border-black/40 px-6 py-3" style={{ backgroundImage: "url('/erbsenmuster.svg')", backgroundRepeat: "repeat", backgroundSize: "120px 80px" }}>
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between border-b border-black/40 px-6 py-3" style={{ backgroundColor: "#2a3d1a" }}>
         <Link href="/" className="flex items-center gap-2">
           <Image src="/icon.png" alt="Eagle Vanguard" width={28} height={28} priority />
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">Eagle Vanguard</span>
@@ -64,7 +64,7 @@ export default async function HomePage() {
       </main>
 
       {/* Barre fixe du bas */}
-      <footer className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between border-t border-black/40 px-6 py-3" style={{ backgroundImage: "url('/erbsenmuster.svg')", backgroundRepeat: "repeat", backgroundSize: "120px 80px" }}>
+      <footer className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between border-t border-black/40 px-6 py-3" style={{ backgroundColor: "#2a3d1a" }}>
         <span className="text-[10px] uppercase tracking-widest text-white/20">
           © {new Date().getFullYear()} Eagle Vanguard
         </span>
