@@ -24,9 +24,11 @@ export default async function ApplyPage({ params }: PageProps) {
 
   const community = await prisma.community.findUnique({
     where: { slug: params.slug },
-    select: { id: true, name: true, slug: true, description: true, game: true },
+    select: { id: true, name: true, slug: true, description: true, game: true, visibility: true },
   })
   if (!community) notFound()
+
+  if (community.visibility === "PUBLIC") redirect(`/communities/${params.slug}`)
 
   const membership = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },

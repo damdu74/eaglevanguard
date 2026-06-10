@@ -29,7 +29,7 @@ export default async function RpPage({ params }: PageProps) {
       })
     : null
 
-  if (!community.isPublic && !membership) redirect(`/communities/${params.slug}`)
+  if (community.visibility === "INVISIBLE" && !membership) redirect(`/communities/${params.slug}`)
 
   const isStaff = !!membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
 

@@ -24,6 +24,10 @@ export async function POST(req: NextRequest, { params }: Params) {
   const community = await prisma.community.findUnique({ where: { slug: params.slug } })
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
+  if (community.visibility === "PUBLIC") {
+    return NextResponse.json({ error: "Cette communauté est ouverte, utilisez l'endpoint /join" }, { status: 400 })
+  }
+
   const existing = await prisma.membership.findFirst({
     where: { communityId: community.id, userId: session.user.id as string },
   })

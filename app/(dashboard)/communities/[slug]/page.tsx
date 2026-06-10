@@ -9,7 +9,8 @@ import { RichTextContent } from "@/components/ui/rich-text-content"
 import { CommunityLogo } from "@/components/community/community-logo"
 import Image from "next/image"
 import Link from "next/link"
-import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList, ChevronLeft, Megaphone, ShieldAlert, ScrollText } from "lucide-react"
+import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList, ChevronLeft, Megaphone, ShieldAlert, ScrollText, Globe, EyeOff } from "lucide-react"
+import { JoinButton } from "@/components/community/join-button"
 
 export const dynamic = "force-dynamic"
 
@@ -95,7 +96,12 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">{community.name}</h1>
               <Badge variant="secondary">{community.game}</Badge>
-              {!community.isPublic && <Badge variant="outline">Privée</Badge>}
+              {community.visibility === "INVISIBLE" && (
+                <Badge variant="outline" className="gap-1"><EyeOff className="h-3 w-3" />Invisible</Badge>
+              )}
+              {community.visibility === "PUBLIC" && (
+                <Badge variant="outline" className="gap-1"><Globe className="h-3 w-3" />Ouverte</Badge>
+              )}
             </div>
             {community.description && (
               <RichTextContent html={community.description} className="max-w-2xl" />
@@ -109,7 +115,10 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
         </div>
 
         <div className="flex gap-2 shrink-0">
-          {!membership && (
+          {!membership && community.visibility === "PUBLIC" && (
+            <JoinButton slug={params.slug} />
+          )}
+          {!membership && community.visibility !== "PUBLIC" && (
             <Button asChild>
               <Link href={`/communities/${params.slug}/apply`}>Candidater</Link>
             </Button>

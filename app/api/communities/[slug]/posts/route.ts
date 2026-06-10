@@ -17,7 +17,7 @@ export async function GET(req: Request, { params }: { params: { slug: string } }
 
   const community = await prisma.community.findUnique({
     where: { slug: params.slug },
-    select: { id: true, isPublic: true },
+    select: { id: true, visibility: true },
   })
   if (!community) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
@@ -27,7 +27,7 @@ export async function GET(req: Request, { params }: { params: { slug: string } }
       })
     : null
 
-  if (!community.isPublic && !membership) {
+  if (community.visibility === "INVISIBLE" && !membership) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 

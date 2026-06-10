@@ -29,7 +29,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
 
   const community = await prisma.community.findUnique({
     where: { slug: params.slug },
-    select: { id: true, name: true, isPublic: true },
+    select: { id: true, name: true, visibility: true },
   })
   if (!community) notFound()
 
@@ -39,7 +39,7 @@ export default async function CommunityEventsPage({ params, searchParams }: Page
       })
     : null
 
-  if (!community.isPublic && !membership) redirect(`/communities/${params.slug}`)
+  if (community.visibility === "INVISIBLE" && !membership) redirect(`/communities/${params.slug}`)
 
   const isStaff = membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
 

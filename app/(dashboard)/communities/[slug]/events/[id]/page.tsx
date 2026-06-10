@@ -31,7 +31,7 @@ export default async function EventDetailPage({ params }: PageProps) {
   const event = await prisma.event.findFirst({
     where: { id: params.id, community: { slug: params.slug } },
     include: {
-      community: { select: { id: true, name: true, isPublic: true } },
+      community: { select: { id: true, name: true, visibility: true } },
       participants: {
         include: {
           user: {
@@ -60,7 +60,7 @@ export default async function EventDetailPage({ params }: PageProps) {
       })
     : null
 
-  if (!event.community.isPublic && !membership) notFound()
+  if (event.community.visibility === "INVISIBLE" && !membership) notFound()
 
   const isStaff = membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
   if (event.status === "DRAFT" && !isStaff) notFound()

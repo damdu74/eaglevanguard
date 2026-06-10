@@ -11,18 +11,26 @@ const createSchema = z.object({
   description: z.string().max(500).optional(),
   game: z.string().min(1),
   language: z.string().default("fr"),
-  isPublic: z.boolean().default(true),
+  visibility: z.enum(["PUBLIC", "WHITELIST", "INVISIBLE"]).default("WHITELIST"),
 })
 
 export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  const userId = session?.user?.id as string | undefined
+  const isNexusTeam = session?.user?.isNexusTeam ?? false
+
   const { searchParams } = new URL(req.url)
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1") || 1)
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "12") || 12))
   const game = searchParams.get("game")
   const search = searchParams.get("search")
 
+  const visibilityFilter = isNexusTeam
+    ? {}
+    : { visibility: { in: ["PUBLIC", "WHITELIST"] as const } }
+
   const where = {
-    isPublic: true,
+    ...visibilityFilter,
     ...(game && { game }),
     ...(search && {
       OR: [
@@ -60,7 +68,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
   }
 
-  const { name, slug, description, game, language, isPublic } = parsed.data
+  const { name, slug, description, game, language, visibility } = parsed.data
 
   const existing = await prisma.community.findUnique({ where: { slug } })
   if (existing) {
@@ -75,7 +83,7 @@ export async function POST(req: NextRequest) {
         description,
         game,
         language,
-        isPublic,
+        visibility,
         creatorId: session.user.id,
         memberships: {
           create: { userId: session.user.id, role: "OWNER" },

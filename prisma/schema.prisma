@@ -165,18 +165,24 @@ model SteamAuthCode {
 
 // ─── COMMUNITIES ──────────────────────────────────────────────────────────────
 
+enum CommunityVisibility {
+  PUBLIC     // visible dans l'annuaire, rejoindre sans candidature
+  WHITELIST  // visible dans l'annuaire, candidature requise
+  INVISIBLE  // non visible dans l'annuaire (sauf membres + NEXUS Team)
+}
+
 model Community {
-  id          String   @id @default(cuid())
+  id          String              @id @default(cuid())
   name        String
-  slug        String   @unique
-  description String?  @db.Text
+  slug        String              @unique
+  description String?             @db.Text
   logoUrl     String?
   bannerUrl   String?
-  game        String   @default("ARMA 3")
-  language    String   @default("fr")
-  isPublic    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  game        String              @default("ARMA 3")
+  language    String              @default("fr")
+  visibility  CommunityVisibility @default(WHITELIST)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
   creatorId   String
 
   discordGuildId  String?

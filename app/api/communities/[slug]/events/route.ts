@@ -13,7 +13,7 @@ type Params = { params: { slug: string } }
 async function getCommunityAndMembership(slug: string, userId?: string) {
   const community = await prisma.community.findUnique({
     where: { slug },
-    select: { id: true, isPublic: true },
+    select: { id: true, visibility: true },
   })
   if (!community) return { community: null, membership: null }
 
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   const { community, membership } = await getCommunityAndMembership(params.slug, userId)
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
-  if (!community.isPublic && !membership) {
+  if (community.visibility === "INVISIBLE" && !membership) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
   }
 

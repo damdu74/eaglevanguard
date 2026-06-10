@@ -12,7 +12,7 @@ const patchSchema = z.object({
   description: z.string().max(10000).nullable().optional(),
   logoUrl: z.string().url().max(500).nullable().optional(),
   bannerUrl: z.string().url().max(500).nullable().optional(),
-  isPublic: z.boolean().optional(),
+  visibility: z.enum(["PUBLIC", "WHITELIST", "INVISIBLE"]).optional(),
   discordGuildId: z.string().regex(/^\d{17,20}$/).nullable().optional(),
 })
 
@@ -74,7 +74,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(body.description !== undefined && { description: body.description }),
       ...(body.logoUrl !== undefined && { logoUrl: body.logoUrl }),
       ...(body.bannerUrl !== undefined && { bannerUrl: body.bannerUrl }),
-      ...(body.isPublic !== undefined && { isPublic: body.isPublic }),
+      ...(body.visibility !== undefined && { visibility: body.visibility }),
       ...(body.discordGuildId !== undefined && { discordGuildId: body.discordGuildId }),
     },
   })

@@ -24,7 +24,7 @@ export default async function CommunitySettingsPage({ params }: PageProps) {
 
   const community = await prisma.community.findUnique({
     where: { slug: params.slug },
-    select: { id: true, name: true, slug: true, description: true, game: true, isPublic: true, creatorId: true, logoUrl: true, discordGuildId: true },
+    select: { id: true, name: true, slug: true, description: true, game: true, visibility: true, creatorId: true, logoUrl: true, discordGuildId: true },
   })
   if (!community) notFound()
 

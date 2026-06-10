@@ -33,7 +33,7 @@ export default async function PublicProfilePage({ params, searchParams }: { para
       where: { id: params.id },
       include: {
         memberships: {
-          include: { community: { select: { id: true, name: true, slug: true, logoUrl: true, isPublic: true } } },
+          include: { community: { select: { id: true, name: true, slug: true, logoUrl: true, visibility: true } } },
           orderBy: { joinedAt: "asc" },
         },
         nexusRank: true,
@@ -126,7 +126,7 @@ export default async function PublicProfilePage({ params, searchParams }: { para
     ? { icon: Globe, label: "Profil public" }
     : { icon: Users, label: "Profil amis" }
 
-  const visibleCommunities = target.memberships.filter(m => m.community.isPublic || viewerCommunityIds.has(m.communityId))
+  const visibleCommunities = target.memberships.filter(m => m.community.visibility !== "INVISIBLE" || viewerCommunityIds.has(m.communityId))
   const sharedCommunities = visibleCommunities.filter(m => viewerCommunityIds.has(m.communityId))
   const otherCommunities = visibleCommunities.filter(m => !viewerCommunityIds.has(m.communityId))
 

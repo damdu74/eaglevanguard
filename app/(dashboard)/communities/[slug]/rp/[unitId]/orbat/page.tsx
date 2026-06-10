@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps) {
 export default async function RpUnitOrbatPage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
 
-  const community = await prisma.community.findUnique({ where: { slug: params.slug }, select: { id: true, name: true, isPublic: true } })
+  const community = await prisma.community.findUnique({ where: { slug: params.slug }, select: { id: true, name: true, visibility: true } })
   if (!community) notFound()
 
   const membership = session?.user?.id
@@ -31,7 +31,7 @@ export default async function RpUnitOrbatPage({ params, searchParams }: PageProp
       })
     : null
 
-  if (!community.isPublic && !membership) redirect(`/communities/${params.slug}`)
+  if (community.visibility === "INVISIBLE" && !membership) redirect(`/communities/${params.slug}`)
 
   const unit = await prisma.rpUnit.findUnique({
     where: { id: params.unitId },

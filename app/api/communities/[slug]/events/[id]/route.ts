@@ -23,7 +23,7 @@ async function getEventWithAccess(slug: string, eventId: string, userId?: string
   const event = await prisma.event.findFirst({
     where: { id: eventId, community: { slug } },
     include: {
-      community: { select: { id: true, isPublic: true } },
+      community: { select: { id: true, visibility: true } },
       participants: {
         include: {
           user: {
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   const { event, membership } = await getEventWithAccess(params.slug, params.id, userId)
   if (!event) return NextResponse.json({ error: "Événement introuvable" }, { status: 404 })
 
-  if (!event.community.isPublic && !membership) {
+  if (event.community.visibility === "INVISIBLE" && !membership) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
   }
 

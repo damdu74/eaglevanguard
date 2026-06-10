@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { PaginationBar } from "@/components/ui/pagination-bar"
 import { CommunitySearch } from "@/components/community/community-search"
 import Link from "next/link"
-import { Users, Calendar, Plus, Shield, Lock, Globe } from "lucide-react"
+import { Users, Calendar, Plus, Shield, Globe, Users2, EyeOff } from "lucide-react"
 import { CommunityLogo } from "@/components/community/community-logo"
 
 export const dynamic = "force-dynamic"
@@ -25,13 +25,20 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
   const q = searchParams.q?.trim() ?? ""
   const gameFilter = searchParams.game?.trim() ?? ""
   const userId = session?.user?.id as string | undefined
+  const isNexusTeam = session?.user?.isNexusTeam ?? false
+
+  const visibilityFilter = isNexusTeam
+    ? {}
+    : { visibility: { in: ["PUBLIC", "WHITELIST"] as const } }
 
   const where = {
-    isPublic: true,
+    ...visibilityFilter,
     ...(userId ? { memberships: { none: { userId } } } : {}),
     ...(q ? { name: { contains: q, mode: "insensitive" as const } } : {}),
     ...(gameFilter ? { game: gameFilter } : {}),
   }
+
+  const gamesWhere = isNexusTeam ? {} : { visibility: { in: ["PUBLIC", "WHITELIST"] as const } }
 
   const [total, communities, allGames] = await Promise.all([
     prisma.community.count({ where }),
@@ -45,12 +52,18 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
       take: PER_PAGE,
     }),
     prisma.community.findMany({
-      where: { isPublic: true },
+      where: gamesWhere,
       select: { game: true },
       distinct: ["game"],
       orderBy: { game: "asc" },
     }).then((rows) => rows.map((r) => r.game)),
   ])
+
+  const VISIBILITY_BADGE = {
+    PUBLIC:    { icon: Globe,   label: "Ouverte",       className: "text-green-600" },
+    WHITELIST: { icon: Users2,  label: "Sur candidature", className: "" },
+    INVISIBLE: { icon: EyeOff,  label: "Invisible",     className: "text-muted-foreground" },
+  }
 
   return (
     <div className="space-y-6">
@@ -113,7 +126,8 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {communities.map((community) => {
-              const isPrivate = !community.isPublic
+              const vis = VISIBILITY_BADGE[community.visibility]
+              const VisIcon = vis.icon
 
               return (
                 <Link key={community.id} href={`/communities/${community.slug}`}>
@@ -147,11 +161,9 @@ export default async function CommunitiesPage({ searchParams }: PageProps) {
                             {community._count.events} événement{community._count.events > 1 ? "s" : ""}
                           </span>
                         </div>
-                        <span className="flex items-center gap-1">
-                          {isPrivate
-                            ? <><Lock className="h-3 w-3" />Privée</>
-                            : <><Globe className="h-3 w-3" />Publique</>
-                          }
+                        <span className={`flex items-center gap-1 ${vis.className}`}>
+                          <VisIcon className="h-3 w-3" />
+                          {vis.label}
                         </span>
                       </div>
                     </CardContent>

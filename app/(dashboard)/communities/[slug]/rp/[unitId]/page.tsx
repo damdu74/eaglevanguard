@@ -30,7 +30,7 @@ export default async function RpUnitPage({ params }: PageProps) {
       })
     : null
 
-  if (!community.isPublic && !membership) redirect(`/communities/${params.slug}`)
+  if (community.visibility === "INVISIBLE" && !membership) redirect(`/communities/${params.slug}`)
 
   const unit = await prisma.rpUnit.findUnique({ where: { id: params.unitId } })
   if (!unit || unit.communityId !== community.id) notFound()
