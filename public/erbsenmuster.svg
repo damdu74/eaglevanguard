@@ -1,46 +1,142 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80">
-  <!-- Base olive -->
-  <rect width="120" height="80" fill="#7a7a32"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="130">
+  <!-- Fond très sombre (presque noir brun) -->
+  <rect width="200" height="130" fill="#1a0c06"/>
 
-  <!-- Taches vertes foncées -->
-  <ellipse cx="10" cy="12" rx="14" ry="9" fill="#3d4e1e"/>
-  <ellipse cx="45" cy="8" rx="18" ry="11" fill="#3d4e1e"/>
-  <ellipse cx="85" cy="18" rx="20" ry="12" fill="#3d4e1e"/>
-  <ellipse cx="110" cy="5" rx="14" ry="8" fill="#3d4e1e"/>
-  <ellipse cx="25" cy="55" rx="16" ry="10" fill="#3d4e1e"/>
-  <ellipse cx="70" cy="65" rx="22" ry="12" fill="#3d4e1e"/>
-  <ellipse cx="108" cy="58" rx="16" ry="10" fill="#3d4e1e"/>
-  <ellipse cx="0" cy="40" rx="10" ry="14" fill="#3d4e1e"/>
-  <ellipse cx="120" cy="40" rx="10" ry="14" fill="#3d4e1e"/>
+  <!-- Grandes taches brunes organiques -->
+  <ellipse cx="30"  cy="20"  rx="32" ry="20" fill="#6b2e0f" opacity="0.95"/>
+  <ellipse cx="90"  cy="15"  rx="28" ry="18" fill="#6b2e0f" opacity="0.95"/>
+  <ellipse cx="150" cy="25"  rx="35" ry="22" fill="#6b2e0f" opacity="0.95"/>
+  <ellipse cx="185" cy="12"  rx="22" ry="16" fill="#6b2e0f" opacity="0.95"/>
+  <ellipse cx="10"  cy="55"  rx="20" ry="28" fill="#5a2408" opacity="0.90"/>
+  <ellipse cx="60"  cy="60"  rx="38" ry="25" fill="#6b2e0f" opacity="0.90"/>
+  <ellipse cx="130" cy="55"  rx="32" ry="22" fill="#5a2408" opacity="0.90"/>
+  <ellipse cx="185" cy="60"  rx="25" ry="30" fill="#6b2e0f" opacity="0.90"/>
+  <ellipse cx="40"  cy="100" rx="35" ry="22" fill="#6b2e0f" opacity="0.95"/>
+  <ellipse cx="105" cy="105" rx="30" ry="20" fill="#5a2408" opacity="0.90"/>
+  <ellipse cx="165" cy="108" rx="38" ry="22" fill="#6b2e0f" opacity="0.95"/>
+  <ellipse cx="5"   cy="115" rx="18" ry="14" fill="#5a2408" opacity="0.85"/>
 
-  <!-- Taches marron -->
-  <ellipse cx="30" cy="25" rx="15" ry="9" fill="#7a4e1e"/>
-  <ellipse cx="68" cy="35" rx="19" ry="11" fill="#7a4e1e"/>
-  <ellipse cx="102" cy="30" rx="16" ry="10" fill="#7a4e1e"/>
-  <ellipse cx="12" cy="68" rx="14" ry="9" fill="#7a4e1e"/>
-  <ellipse cx="50" cy="72" rx="17" ry="8" fill="#7a4e1e"/>
-  <ellipse cx="95" cy="75" rx="20" ry="7" fill="#7a4e1e"/>
+  <!-- Petits pois VERTS (ovales caractéristiques Erbsenmuster) -->
+  <ellipse cx="12"  cy="8"   rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="28"  cy="5"   rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="45"  cy="10"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="62"  cy="6"   rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="78"  cy="12"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="98"  cy="4"   rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="115" cy="9"   rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="135" cy="6"   rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="155" cy="10"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="172" cy="5"   rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="190" cy="9"   rx="4" ry="2.5" fill="#3d5c10"/>
 
-  <!-- "Petits pois" — points ronds caractéristiques -->
-  <circle cx="8"   cy="30" r="2.5" fill="#2a3010"/>
-  <circle cx="22"  cy="42" r="2"   fill="#2a3010"/>
-  <circle cx="38"  cy="14" r="2.5" fill="#2a3010"/>
-  <circle cx="55"  cy="48" r="2"   fill="#2a3010"/>
-  <circle cx="60"  cy="22" r="2.5" fill="#2a3010"/>
-  <circle cx="78"  cy="52" r="2"   fill="#2a3010"/>
-  <circle cx="90"  cy="8"  r="2.5" fill="#2a3010"/>
-  <circle cx="100" cy="45" r="2"   fill="#2a3010"/>
-  <circle cx="115" cy="68" r="2.5" fill="#2a3010"/>
-  <circle cx="35"  cy="68" r="2"   fill="#2a3010"/>
-  <circle cx="16"  cy="52" r="2"   fill="#2a3010"/>
-  <circle cx="48"  cy="35" r="2.5" fill="#2a3010"/>
-  <circle cx="75"  cy="15" r="2"   fill="#2a3010"/>
-  <circle cx="112" cy="22" r="2.5" fill="#2a3010"/>
+  <ellipse cx="5"   cy="28"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="20"  cy="32"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="38"  cy="28"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="55"  cy="35"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="72"  cy="28"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="88"  cy="33"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="105" cy="28"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="122" cy="35"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="140" cy="28"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="158" cy="33"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="175" cy="27"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="193" cy="34"  rx="4" ry="2.5" fill="#3d5c10"/>
 
-  <!-- Reflets clairs sur les pois -->
-  <circle cx="7"   cy="29" r="1"   fill="#9a9a52" opacity="0.6"/>
-  <circle cx="37"  cy="13" r="1"   fill="#9a9a52" opacity="0.6"/>
-  <circle cx="59"  cy="21" r="1"   fill="#9a9a52" opacity="0.6"/>
-  <circle cx="89"  cy="7"  r="1"   fill="#9a9a52" opacity="0.6"/>
-  <circle cx="99"  cy="44" r="1"   fill="#9a9a52" opacity="0.6"/>
+  <ellipse cx="8"   cy="48"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="25"  cy="52"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="42"  cy="47"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="60"  cy="44"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="78"  cy="50"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="95"  cy="46"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="112" cy="52"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="130" cy="45"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="148" cy="50"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="165" cy="44"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="182" cy="49"  rx="4" ry="2.5" fill="#3d5c10"/>
+
+  <ellipse cx="15"  cy="68"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="32"  cy="72"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="50"  cy="67"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="68"  cy="73"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="85"  cy="67"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="102" cy="72"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="120" cy="66"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="138" cy="72"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="155" cy="67"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="172" cy="72"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="190" cy="66"  rx="3" ry="2"   fill="#4a6a18"/>
+
+  <ellipse cx="6"   cy="88"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="22"  cy="92"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="40"  cy="87"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="57"  cy="93"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="75"  cy="88"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="92"  cy="93"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="110" cy="87"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="128" cy="92"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="145" cy="87"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="163" cy="93"  rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="180" cy="87"  rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="197" cy="92"  rx="3" ry="2"   fill="#4a6a18"/>
+
+  <ellipse cx="12"  cy="110" rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="30"  cy="115" rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="48"  cy="108" rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="65"  cy="114" rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="83"  cy="108" rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="100" cy="115" rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="118" cy="109" rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="135" cy="114" rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="153" cy="108" rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="170" cy="115" rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="188" cy="109" rx="3" ry="2"   fill="#4a6a18"/>
+
+  <ellipse cx="5"   cy="126" rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="22"  cy="128" rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="40"  cy="125" rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="58"  cy="128" rx="3" ry="2"   fill="#4a6a18"/>
+  <ellipse cx="76"  cy="125" rx="4" ry="2.5" fill="#3d5c10"/>
+  <ellipse cx="93"  cy="128" rx="3" ry="2"   fill="#4a6a18"/>
+
+  <!-- Petits pois TAN/OCRE -->
+  <ellipse cx="18"  cy="18"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="52"  cy="22"  rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="82"  cy="18"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="118" cy="20"  rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="145" cy="16"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="178" cy="20"  rx="3"   ry="2" fill="#8a5c1a"/>
+
+  <ellipse cx="30"  cy="42"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="65"  cy="38"  rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="100" cy="40"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="135" cy="38"  rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="168" cy="41"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="195" cy="39"  rx="3"   ry="2" fill="#8a5c1a"/>
+
+  <ellipse cx="15"  cy="62"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="48"  cy="58"  rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="82"  cy="62"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="118" cy="58"  rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="152" cy="62"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="185" cy="58"  rx="3"   ry="2" fill="#8a5c1a"/>
+
+  <ellipse cx="25"  cy="80"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="58"  cy="82"  rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="92"  cy="79"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="125" cy="82"  rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="160" cy="80"  rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="192" cy="82"  rx="3"   ry="2" fill="#8a5c1a"/>
+
+  <ellipse cx="18"  cy="100" rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="52"  cy="102" rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="88"  cy="100" rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="122" cy="102" rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="158" cy="100" rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="192" cy="102" rx="3"   ry="2" fill="#8a5c1a"/>
+
+  <ellipse cx="35"  cy="122" rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="72"  cy="120" rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="108" cy="122" rx="3.5" ry="2" fill="#9a6820"/>
+  <ellipse cx="145" cy="120" rx="3"   ry="2" fill="#8a5c1a"/>
+  <ellipse cx="182" cy="122" rx="3.5" ry="2" fill="#9a6820"/>
 </svg>
