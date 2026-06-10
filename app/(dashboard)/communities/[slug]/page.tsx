@@ -11,6 +11,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Users, Calendar, GitBranch, Settings, Sword, ClipboardList, ChevronLeft, Megaphone, ShieldAlert, ScrollText, Globe, EyeOff } from "lucide-react"
 import { JoinButton } from "@/components/community/join-button"
+import { LeaveCommunityButton } from "@/components/community/leave-community-button"
 
 export const dynamic = "force-dynamic"
 
@@ -170,8 +171,11 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
           </div>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm">Mon statut</CardTitle>
+              {membership.role !== "OWNER" && (
+                <LeaveCommunityButton slug={params.slug} communityName={community.name} />
+              )}
             </CardHeader>
             <CardContent className="flex gap-4 text-sm">
               <div>
