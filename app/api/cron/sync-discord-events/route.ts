@@ -15,7 +15,7 @@ function discordStatusToEagleVanguard(status: number): EventStatus {
 
 // Mapping entity_type Discord → type Eagle Vanguard
 // Discord: 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
-function discordEntityTypeToEagle Vanguard(entityType: number): string {
+function discordEntityTypeToEagleVanguard(entityType: number): string {
   if (entityType === 1) return "Stage"
   if (entityType === 2) return "Vocal"
   return "Événement"
@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
             communityId: community.id,
             title: de.name,
             description: de.description ?? null,
-            type: discordEntityTypeToEagle Vanguard(de.entity_type),
+            type: discordEntityTypeToEagleVanguard(de.entity_type),
             status: eagleVanguardStatus,
             startDate: new Date(de.scheduled_start_time),
             endDate: de.scheduled_end_time ? new Date(de.scheduled_end_time) : null,
