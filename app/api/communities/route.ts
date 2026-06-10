@@ -16,7 +16,6 @@ const createSchema = z.object({
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  const userId = session?.user?.id as string | undefined
   const isNexusTeam = session?.user?.isNexusTeam ?? false
 
   const { searchParams } = new URL(req.url)
