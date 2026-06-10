@@ -41,16 +41,14 @@ function UserCard({ user }: { user: {
   return (
     <Link href={`/profile/${user.id}?from=players`}>
       <Card className="h-full transition-colors hover:bg-muted/50">
-        <CardContent className="flex items-start gap-3 p-4">
-          <Avatar className="h-10 w-10 shrink-0 mt-0.5">
+        <CardContent className="flex flex-col items-center justify-center gap-2 p-4 text-center">
+          <Avatar className="h-12 w-12">
             <AvatarImage src={avatar ?? undefined} />
             <AvatarFallback className="text-sm">
               {displayName.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="font-medium text-sm leading-tight truncate">{displayName}</p>
-          </div>
+          <p className="font-medium text-sm leading-tight truncate w-full">{displayName}</p>
         </CardContent>
       </Card>
     </Link>
