@@ -3,13 +3,12 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RichTextContent } from "@/components/ui/rich-text-content"
 import { CommunityLogo } from "@/components/community/community-logo"
 import Image from "next/image"
 import Link from "next/link"
-import { Users, Settings, ChevronLeft, Megaphone, ShieldAlert, ScrollText, EyeOff } from "lucide-react"
+import { Users, ChevronLeft, Megaphone, ShieldAlert, ScrollText, EyeOff } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -104,13 +103,6 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
           </div>
         </div>
 
-        {isAdmin && (
-          <Button variant="outline" size="icon" asChild>
-            <Link href={`/communities/${params.slug}/settings`}>
-              <Settings className="h-4 w-4" />
-            </Link>
-          </Button>
-        )}
       </div>
 
       {/* Contenu réservé aux membres */}
