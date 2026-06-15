@@ -77,13 +77,6 @@ export function EagleVanguardTeamManager({ stats }: Props) {
             <span className="text-sm font-medium">Rôles et Fonctions</span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>
-          <Link
-            href="/eagle-vanguard/team/players"
-            className="flex items-center justify-between px-6 py-3 hover:bg-muted/50 transition-colors"
-          >
-            <span className="text-sm font-medium">Joueurs</span>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </Link>
         </CardContent>
       </Card>
 
