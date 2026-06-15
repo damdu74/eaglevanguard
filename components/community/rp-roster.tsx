@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
-import { Loader2, Plus, Trash2, Pencil, Sword, Users, ChevronRight } from "lucide-react"
+import { Loader2, Plus, Trash2, Settings, Sword, Users, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -163,16 +163,18 @@ async function createUnit() {
               </Link>
 
               {isStaff && (
-                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-2 right-2 flex gap-1">
                   <button
                     onClick={(e) => openEdit(unit, e)}
-                    className="p-1 rounded hover:text-primary text-muted-foreground"
+                    className="p-1 rounded text-muted-foreground hover:text-primary transition-colors"
+                    title="Paramètres"
                   >
-                    <Pencil className="h-3.5 w-3.5" />
+                    <Settings className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={(e) => deleteUnit(unit.id, e)}
-                    className="p-1 rounded hover:text-destructive text-muted-foreground"
+                    className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                    title="Supprimer"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>

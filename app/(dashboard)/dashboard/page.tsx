@@ -1,11 +1,7 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Card, CardContent } from "@/components/ui/card"
-import { CommunityLogo } from "@/components/community/community-logo"
-import { RpRoster } from "@/components/community/rp-roster"
-import { GitBranch } from "lucide-react"
-import Link from "next/link"
+import { DashboardTabs } from "@/components/dashboard/dashboard-tabs"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Tableau de bord" }
@@ -67,52 +63,65 @@ export default async function DashboardPage() {
     })
   )
 
+  const orbatData = isEV
+    ? await Promise.all(
+        allCommunities.map(async (community) => {
+          const [communityOrbat, rpUnits, unitOrbatRoots] = await Promise.all([
+            prisma.community.findUnique({
+              where: { id: community.id },
+              select: { orbat: true, orbatEdges: true },
+            }),
+            prisma.rpUnit.findMany({
+              where: { communityId: community.id },
+              select: { id: true, name: true, game: true },
+              orderBy: { createdAt: "asc" },
+            }),
+            prisma.rpUnitOrbatNode.findMany({
+              where: { rpUnit: { communityId: community.id }, nodeId: "root" },
+              select: { rpUnitId: true, label: true, data: true },
+            }),
+          ])
+
+          const unitRootData: Record<string, Record<string, unknown>> = {}
+          for (const root of unitOrbatRoots) {
+            unitRootData[root.rpUnitId] = {
+              ...((root.data as Record<string, unknown>) ?? {}),
+              label: root.label,
+            }
+          }
+
+          const nodes = (communityOrbat?.orbat ?? []).map((n) => ({
+            id: n.nodeId,
+            type: n.type ?? undefined,
+            position: { x: n.positionX, y: n.positionY },
+            data: { ...((n.data as Record<string, unknown>) ?? { label: n.label }), locked: n.locked },
+          }))
+
+          const edges = (communityOrbat?.orbatEdges ?? []).map((e) => ({
+            id: e.edgeId,
+            source: e.source,
+            target: e.target,
+            ...((e.data as object) ?? {}),
+          }))
+
+          return { community, nodes, edges, rpUnits, unitRootData }
+        })
+      )
+    : []
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold">Tableau de bord</h1>
         <p className="text-sm text-muted-foreground">Bienvenue, {displayName}</p>
       </div>
 
-      {isEV && allCommunities.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <GitBranch className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Organigramme</h2>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {allCommunities.map((community) => (
-              <Link key={community.id} href={`/communities/${community.slug}/orbat`}>
-                <Card className="h-full transition-colors hover:bg-muted/50">
-                  <CardContent className="flex items-center gap-3 py-4 px-4">
-                    <CommunityLogo url={community.logoUrl} name={community.name} size="sm" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">Organigramme</p>
-                      <p className="text-xs text-muted-foreground truncate">{community.name}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {communitiesWithUnits.map(({ community, units, isStaff }) => (
-        <div key={community.id} className="space-y-3">
-          <div className="flex items-center gap-3">
-            <CommunityLogo url={community.logoUrl} name={community.name} size="sm" />
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              {community.name} — Unités
-            </h2>
-          </div>
-          <RpRoster
-            communitySlug={community.slug}
-            units={units}
-            isStaff={isStaff}
-          />
-        </div>
-      ))}
+      <DashboardTabs
+        isEV={!!isEV}
+        allCommunities={allCommunities}
+        communitiesWithUnits={communitiesWithUnits}
+        orbatData={orbatData}
+      />
     </div>
   )
 }

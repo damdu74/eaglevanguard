@@ -20,6 +20,7 @@ import "reactflow/dist/style.css"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -37,7 +38,7 @@ import {
 import { OrbatUnitNode, type OrbatRole } from "./orbat-unit-node"
 import { OrbatGameNode } from "./orbat-game-node"
 import { NATO_TYPES, NATO_SIZES, NATO_MODIFIERS } from "./nato-symbol"
-import { Download, Loader2, Plus, Save, Trash2, Upload } from "lucide-react"
+import { Download, Loader2, Plus, Save, Settings, Trash2, Upload } from "lucide-react"
 import { toast } from "sonner"
 import { toPng } from "html-to-image"
 
@@ -73,20 +74,24 @@ function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, tar
   )
 }
 
+const GAMES = [{ value: "arma3", label: "Arma 3" }]
+
 const ROOT_ID = "root"
 const SNAP_GRID: [number, number] = [20, 20]
 const GAME_LABELS: Record<string, string> = { arma3: "Arma 3" }
 
 // Dimensions du layout hiérarchique (px canvas)
-const LY_NODE_W  = 360
-const LY_H_GAP   = 40
-const LY_SLOT_W  = LY_NODE_W + LY_H_GAP
-const LY_ROOT_H  = 140
-const LY_GAME_H  = 60
-const LY_V_GAP   = 60
-const LY_GAME_Y  = Math.round((LY_ROOT_H + LY_V_GAP) / 20) * 20           // 200
-const LY_UNIT_Y  = Math.round((LY_GAME_Y + LY_GAME_H + LY_V_GAP) / 20) * 20 // 320
-const LY_ROOT_CX = LY_NODE_W / 2                                            // 180
+const LY_NODE_W      = 360
+const LY_H_GAP       = 40
+const LY_SLOT_W      = LY_NODE_W + LY_H_GAP
+const LY_ROOT_H      = 140
+const LY_GAME_H      = 60
+const LY_V_GAP       = 60
+const LY_GAME_Y      = Math.round((LY_ROOT_H + LY_V_GAP) / 20) * 20           // 200
+const LY_UNIT_Y      = Math.round((LY_GAME_Y + LY_GAME_H + 20) / 20) * 20 // 280
+const LY_ROOT_CX     = LY_NODE_W / 2                                            // 180
+const LY_MAX_COL     = 10   // max unités par colonne sous un groupe de jeu
+const LY_UNIT_ROW_H  = 100  // pas vertical entre nœuds d'une même colonne (≈ hauteur nœud + gap)
 
 type CommunityUnit = { id: string; name: string; game?: string | null }
 
@@ -127,12 +132,13 @@ function buildGameLayout(
     })
   }
 
-  // Calculer les sous-arbres par jeu
+  // Calculer les sous-arbres par jeu (colonnes verticales de LY_MAX_COL unités max)
   const gameInfos = games.map((game) => {
     const unitIds  = new Set(units.filter((u) => u.game === game).map((u) => u.id))
     const count    = result.filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId)).length
-    const subtreeW = count > 0 ? count * LY_SLOT_W - LY_H_GAP : LY_NODE_W
-    return { game, gameNodeId: `game-${game}`, count, subtreeW }
+    const numCols  = Math.max(1, Math.ceil(count / LY_MAX_COL))
+    const subtreeW = numCols * LY_NODE_W + (numCols - 1) * LY_H_GAP
+    return { game, gameNodeId: `game-${game}`, count, numCols, subtreeW }
   })
 
   const totalW = gameInfos.reduce((s, g) => s + g.subtreeW, 0) + (gameInfos.length - 1) * LY_H_GAP
@@ -152,19 +158,21 @@ function buildGameLayout(
       result.push({ id: gi.gameNodeId, type: "game-group", position: { x: gameX, y: LY_GAME_Y }, data: { label: GAME_LABELS[gi.game] ?? gi.game } })
     }
 
-    // Redistribuer les unités liées horizontalement sous le game-group
+    // Redistribuer les unités en colonnes verticales (LY_MAX_COL max par colonne, nouvelle colonne à droite)
     if (gi.count > 0) {
       const unitIds   = new Set(units.filter((u) => u.game === gi.game).map((u) => u.id))
       const linked    = result
         .filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId))
-        .sort((a, b) => a.position.x - b.position.x)
-      const totalUnitsW = linked.length * LY_NODE_W + (linked.length - 1) * LY_H_GAP
-      const startX      = centerX - totalUnitsW / 2
+        .sort((a, b) => a.position.x - b.position.x || a.position.y - b.position.y)
+      const subLeft   = centerX - gi.subtreeW / 2
 
       for (let ui = 0; ui < linked.length; ui++) {
-        const unitX  = snapVal(startX + ui * LY_SLOT_W)
-        const idx    = result.findIndex((n) => n.id === linked[ui].id)
-        if (idx >= 0) result[idx] = { ...result[idx], position: { x: unitX, y: LY_UNIT_Y } }
+        const col   = Math.floor(ui / LY_MAX_COL)
+        const row   = ui % LY_MAX_COL
+        const unitX = snapVal(subLeft + col * LY_SLOT_W)
+        const unitY = snapVal(LY_UNIT_Y + row * LY_UNIT_ROW_H)
+        const idx   = result.findIndex((n) => n.id === linked[ui].id)
+        if (idx >= 0) result[idx] = { ...result[idx], position: { x: unitX, y: unitY } }
       }
     }
   }
@@ -198,6 +206,40 @@ function buildAutoEdges(eds: Edge[], nds: Node[], units: CommunityUnit[]): Edge[
   return changed ? next : eds
 }
 
+/** Positionne les nœuds manuels en grille sous la hiérarchie auto-générée. */
+function buildManualNodesLayout(nds: Node[]): Node[] {
+  const manualNodes = nds.filter((n) => !!n.data?.manualNode)
+  if (!manualNodes.length) return nds
+
+  const autoNodes = nds.filter((n) => !n.data?.manualNode && n.id !== ROOT_ID && n.type !== "game-group")
+  const maxAutoY = autoNodes.length > 0 ? Math.max(...autoNodes.map((n) => n.position.y)) : LY_GAME_Y
+  const baseY = snapVal(maxAutoY + 400)
+
+  const PER_ROW = 3
+  const result = [...nds]
+
+  manualNodes.forEach((node, i) => {
+    const row = Math.floor(i / PER_ROW)
+    const col = i % PER_ROW
+    const rowStart = row * PER_ROW
+    const rowCount = Math.min(PER_ROW, manualNodes.length - rowStart)
+    const rowW = rowCount * LY_NODE_W + (rowCount - 1) * LY_H_GAP
+    const rowStartX = snapVal(LY_ROOT_CX - rowW / 2)
+    const idx = result.findIndex((n) => n.id === node.id)
+    if (idx >= 0) {
+      result[idx] = {
+        ...result[idx],
+        position: {
+          x: snapVal(rowStartX + col * LY_SLOT_W),
+          y: snapVal(baseY + row * LY_UNIT_ROW_H),
+        },
+      }
+    }
+  })
+
+  return result
+}
+
 function makeRootNode(label = "Commandement", imageUrl = "", communityRoot = false): Node {
   return {
     id: ROOT_ID,
@@ -219,6 +261,7 @@ interface OrbatEditorProps {
   initialNodes?: Node[]
   initialEdges?: Edge[]
   readOnly?: boolean
+  fromParam?: string
 }
 
 function mergeUnitRoot(node: Node, unitRootData?: Record<string, Record<string, unknown>>): Node {
@@ -252,6 +295,8 @@ interface EditState {
   modifier: string
   roles: OrbatRole[]
   rpUnitId: string
+  manualNode?: boolean
+  isNewNode?: boolean
 }
 
 export function OrbatEditor({
@@ -264,6 +309,7 @@ export function OrbatEditor({
   initialNodes = [],
   initialEdges = [],
   readOnly = false,
+  fromParam,
 }: OrbatEditorProps) {
   const apiBase = unitId
     ? `/api/communities/${communitySlug}/rp/units/${unitId}/orbat`
@@ -298,13 +344,57 @@ export function OrbatEditor({
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsName, setSettingsName] = useState(rootLabel ?? "")
+  const [settingsDesc, setSettingsDesc] = useState("")
+  const [settingsEra, setSettingsEra] = useState("")
+  const [settingsGame, setSettingsGame] = useState("")
+  const [settingsSaving, setSettingsSaving] = useState(false)
+
+  const openSettings = useCallback(async () => {
+    if (!unitId) return
+    try {
+      const res = await fetch(`/api/communities/${communitySlug}/rp/units/${unitId}`)
+      if (res.ok) {
+        const u = await res.json()
+        setSettingsName(u.name ?? "")
+        setSettingsDesc(u.description ?? "")
+        setSettingsEra(u.era ?? "")
+        setSettingsGame(u.game ?? "")
+      }
+    } catch { /* ignore */ }
+    setSettingsOpen(true)
+  }, [communitySlug, unitId])
+
+  const saveSettings = useCallback(async () => {
+    if (!unitId) return
+    setSettingsSaving(true)
+    try {
+      const res = await fetch(`/api/communities/${communitySlug}/rp/units/${unitId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: settingsName.trim(), description: settingsDesc.trim() || null, era: settingsEra.trim() || null, game: settingsGame || null }),
+      })
+      if (!res.ok) throw new Error()
+      toast.success("Unité mise à jour")
+      setSettingsOpen(false)
+    } catch {
+      toast.error("Erreur lors de la mise à jour")
+    } finally {
+      setSettingsSaving(false)
+    }
+  }, [communitySlug, unitId, settingsName, settingsDesc, settingsEra, settingsGame])
+
   // Layout hiérarchique au montage (ORBAT général uniquement)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!isCommunityOrbat) return
     const units = liveUnitsRef.current
-    if (!units.some((u) => u.game)) return
-    const newNodes = buildGameLayout(nodesRef.current, units, unitRootData)
+    let newNodes = nodesRef.current
+    if (units.some((u) => u.game)) {
+      newNodes = buildGameLayout(newNodes, units, unitRootData)
+    }
+    newNodes = buildManualNodesLayout(newNodes)
     setNodes(newNodes)
     setEdges((eds) => buildAutoEdges(eds, newNodes, units))
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -450,7 +540,8 @@ export function OrbatEditor({
     const hasNewUnits = liveUnits.some((u) => u.game && !currentRpIds.has(u.id))
     if (!hasNewUnits) return
 
-    const newNodes = buildGameLayout(nodesRef.current, liveUnits, unitRootData)
+    let newNodes = buildGameLayout(nodesRef.current, liveUnits, unitRootData)
+    newNodes = buildManualNodesLayout(newNodes)
     setNodes(newNodes)
     setEdges((eds) => buildAutoEdges(eds, newNodes, liveUnits))
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -496,10 +587,10 @@ export function OrbatEditor({
         id: newId,
         type: "unit",
         position,
-        data: { label: "Nouvelle unité", type: "", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: null },
+        data: { label: "Nouvelle unité", type: "", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: null, manualNode: true },
       },
     ])
-    setEditState({ nodeId: newId, nodeType: "unit", initialRoleCount: 0, label: "Nouvelle unité", type: "", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "" })
+    setEditState({ nodeId: newId, nodeType: "unit", initialRoleCount: 0, label: "Nouvelle unité", type: "", size: "", callsign: "", imageUrl: "", modifier: "", roles: [], rpUnitId: "", manualNode: true, isNewNode: true })
   }, [setNodes])
 
 const toggleLock = useCallback((nodeId: string) => {
@@ -525,6 +616,7 @@ const toggleLock = useCallback((nodeId: string) => {
       modifier: node.data.modifier ?? "",
       roles,
       rpUnitId: node.data.rpUnitId ?? "",
+      manualNode: !!node.data.manualNode,
     })
   }, [])
 
@@ -535,43 +627,51 @@ const toggleLock = useCallback((nodeId: string) => {
         return {
           ...n,
           draggable: isCommunityOrbat || isGameGroup || n.id === ROOT_ID ? false : !n.data.locked,
-          deletable: !isGameGroup && n.id !== ROOT_ID,
+          deletable: !isGameGroup && n.id !== ROOT_ID && (!isCommunityOrbat || !!n.data?.manualNode),
           selectable: !isGameGroup,
           data: {
             ...n.data,
             readOnly,
             communitySlug,
+            communityOrbat: isCommunityOrbat,
             hideHandles: isCommunityOrbat,
+            fromParam: fromParam ?? (isCommunityOrbat ? "orbat-general" : undefined),
             onToggleLock: readOnly || isGameGroup || isCommunityOrbat ? undefined : toggleLock,
-            onEdit: readOnly || isGameGroup || isCommunityOrbat ? undefined : openEdit,
+            onEdit: readOnly || isGameGroup ? undefined : openEdit,
           },
         }
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nodes, readOnly]
+    [nodes, readOnly, isCommunityOrbat, communitySlug, fromParam]
   )
 
   const nodeTypes = useMemo(() => ({ unit: OrbatUnitNode, "game-group": OrbatGameNode }), [])
   const edgeTypes = useMemo(() => ({ orbat: OrbatEdge }), [])
 
   const removeSelected = useCallback(() => {
-    setNodes((nds) => nds.filter((n) => !n.selected || n.id === ROOT_ID || n.type === "game-group"))
-    // Dans l'ORBAT général les liens sont gérés automatiquement, on ne les supprime pas manuellement
+    setNodes((nds) => {
+      const filtered = nds.filter((n) => {
+        if (!n.selected) return true
+        if (n.id === ROOT_ID || n.type === "game-group") return true
+        if (isCommunityOrbat && !n.data?.manualNode) return true
+        return false
+      })
+      return isCommunityOrbat ? buildManualNodesLayout(filtered) : filtered
+    })
     if (!isCommunityOrbat) setEdges((eds) => eds.filter((e) => !e.selected))
   }, [setNodes, setEdges, isCommunityOrbat])
 
   const applyEdit = useCallback(() => {
     if (!editState) return
 
+    const isNew = !!editState.isNewNode
     const ROLE_ROW_H = 28
     const deltaRoles = editState.roles.length - editState.initialRoleCount
-    const shift = deltaRoles * ROLE_ROW_H
-
-    // Y du nœud édité : tout ce qui est strictement en dessous doit décaler
+    const shift = isCommunityOrbat ? 0 : deltaRoles * ROLE_ROW_H
     const editedY = nodesRef.current.find((n) => n.id === editState.nodeId)?.position.y ?? 0
 
-    setNodes((nds) =>
-      nds.map((n) => {
+    setNodes((nds) => {
+      const mapped = nds.map((n) => {
         const isEdited = n.id === editState.nodeId
         const shouldShift = shift !== 0 && !isEdited && n.position.y > editedY
         if (!isEdited) {
@@ -593,7 +693,15 @@ const toggleLock = useCallback((nodeId: string) => {
         }
         return isCommunityOrbat ? mergeUnitRoot(updatedNode, unitRootData) : updatedNode
       })
-    )
+      return (isCommunityOrbat && isNew) ? buildManualNodesLayout(mapped) : mapped
+    })
+    setEditState(null)
+  }, [editState, setNodes])
+
+  const cancelEdit = useCallback(() => {
+    if (editState?.isNewNode) {
+      setNodes((nds) => nds.filter((n) => n.id !== editState.nodeId))
+    }
     setEditState(null)
   }, [editState, setNodes])
 
@@ -671,6 +779,10 @@ const toggleLock = useCallback((nodeId: string) => {
     }
   }
 
+  const unitAlreadyUsed = isCommunityOrbat && !!editState?.rpUnitId && nodes.some(
+    (n) => n.id !== editState?.nodeId && n.data?.rpUnitId === editState?.rpUnitId
+  )
+
   return (
     <>
       <div className="h-[72vh] w-full rounded-lg border">
@@ -697,16 +809,18 @@ const toggleLock = useCallback((nodeId: string) => {
 
           {!readOnly && (
             <Panel position="top-right" className="flex gap-2">
-              {!isCommunityOrbat && (
-                <Button size="sm" onClick={addNode} className="bg-green-600 hover:bg-green-700 text-white border-0">
-                  <Plus className="mr-1 h-4 w-4" />
-                  Ajouter
-                </Button>
-              )}
-              {!isCommunityOrbat && (
-                <Button size="sm" variant="outline" onClick={removeSelected}>
-                  <Trash2 className="mr-1 h-4 w-4" />
-                  Supprimer la sélection
+              <Button size="sm" onClick={addNode} className="bg-green-600 hover:bg-green-700 text-white border-0">
+                <Plus className="mr-1 h-4 w-4" />
+                Nouveau nœud
+              </Button>
+              <Button size="sm" variant="outline" onClick={removeSelected}>
+                <Trash2 className="mr-1 h-4 w-4" />
+                Supprimer la sélection
+              </Button>
+              {!isCommunityOrbat && unitId && (
+                <Button size="sm" variant="outline" onClick={openSettings}>
+                  <Settings className="mr-1 h-4 w-4" />
+                  Paramètres
                 </Button>
               )}
               <Button size="sm" onClick={save} disabled={saving}>
@@ -730,7 +844,7 @@ const toggleLock = useCallback((nodeId: string) => {
         </ReactFlow>
       </div>
 
-      <Dialog open={!!editState} onOpenChange={(open) => { if (!open) setEditState(null) }}>
+      <Dialog open={!!editState} onOpenChange={(open) => { if (!open) cancelEdit() }}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
@@ -755,12 +869,19 @@ const toggleLock = useCallback((nodeId: string) => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Les informations (nom, image, symbole, postes) sont récupérées automatiquement depuis la case principale de l&apos;ORBAT de cette unité.
-                  </p>
+                  {unitAlreadyUsed && (
+                    <p className="text-xs text-destructive font-medium">
+                      Cette unité est déjà présente dans l&apos;organigramme.
+                    </p>
+                  )}
+                  {!unitAlreadyUsed && (
+                    <p className="text-xs text-muted-foreground">
+                      Les informations (nom, image, symbole, postes) sont récupérées automatiquement depuis la case principale de l&apos;ORBAT de cette unité.
+                    </p>
+                  )}
                 </div>
               ) : (
-                /* ORBAT d'unité : formulaire complet */
+                /* Nœud manuel en ORBAT général ou ORBAT d'unité : formulaire complet */
                 <>
                   {/* Image */}
                   <div className="space-y-2">
@@ -881,8 +1002,45 @@ const toggleLock = useCallback((nodeId: string) => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditState(null)}>Annuler</Button>
-            <Button onClick={applyEdit}>Appliquer</Button>
+            <Button variant="outline" onClick={cancelEdit}>Annuler</Button>
+            <Button onClick={applyEdit} disabled={unitAlreadyUsed}>Appliquer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Paramètres de l&apos;unité</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label>Nom de l&apos;unité</Label>
+              <Input value={settingsName} onChange={(e) => setSettingsName(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label>Genre <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+              <Input value={settingsEra} onChange={(e) => setSettingsEra(e.target.value)} placeholder="Ex: WW2, Guerre Froide, Moderne…" />
+            </div>
+            <div className="space-y-1">
+              <Label>Jeu <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+              <Select value={settingsGame || "__none__"} onValueChange={(v) => setSettingsGame(v === "__none__" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Aucun</SelectItem>
+                  {GAMES.map((g) => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label>Description <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+              <Textarea value={settingsDesc} onChange={(e) => setSettingsDesc(e.target.value)} rows={2} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSettingsOpen(false)}>Annuler</Button>
+            <Button onClick={saveSettings} disabled={settingsSaving || !settingsName.trim()}>
+              {settingsSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sauvegarder
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

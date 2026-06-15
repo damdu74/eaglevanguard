@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef } from "react"
 import { Handle, Position, type NodeProps } from "reactflow"
-import { Lock, LockOpen, Network } from "lucide-react"
+import { Lock, LockOpen, Settings } from "lucide-react"
 import { NatoSymbol } from "./nato-symbol"
 import { cn } from "@/lib/utils"
 
@@ -37,7 +37,9 @@ interface UnitNodeData {
   hideHandles?: boolean
   locked?: boolean
   communitySlug?: string
+  communityOrbat?: boolean
   rpUnitId?: string
+  fromParam?: string
   roles?: OrbatRole[]
   onToggleLock?: (id: string) => void
   onEdit?: (id: string) => void
@@ -56,7 +58,12 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
     if (!el) return
     const handler = (e: Event) => {
       e.stopPropagation()
-      data.onEdit?.(id)
+      if (data.communityOrbat && data.rpUnitId && data.communitySlug) {
+        const from = data.fromParam ? `?from=${data.fromParam}` : ""
+        window.location.href = `/communities/${data.communitySlug}/rp/${data.rpUnitId}/orbat${from}`
+      } else {
+        data.onEdit?.(id)
+      }
     }
     el.addEventListener("dblclick", handler)
     return () => el.removeEventListener("dblclick", handler)
@@ -86,15 +93,15 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
       )}
       {/* Case racine communauté : seulement le bas */}
 
-      {data.rpUnitId && data.communitySlug && (
-        <a
-          href={`/communities/${data.communitySlug}/rp/${data.rpUnitId}/orbat?from=orbat-general`}
-          onClick={(e) => e.stopPropagation()}
-          title="Voir l'ORBAT de l'unité"
-          className="absolute -top-2.5 left-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 border border-violet-600 text-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+      {data.communityOrbat && data.rpUnitId && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); data.onEdit?.(id) }}
+          title="Paramètres du nœud"
+          className="absolute -top-2.5 -right-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-background border border-border text-muted-foreground shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:text-foreground"
         >
-          <Network className="h-3 w-3" />
-        </a>
+          <Settings className="h-3 w-3" />
+        </button>
       )}
 
       {!data.readOnly && !data.isRoot && !!data.onToggleLock && (

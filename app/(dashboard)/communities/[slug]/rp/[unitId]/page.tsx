@@ -58,9 +58,9 @@ export default async function RpUnitPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <Link href={`/communities/${params.slug}/rp`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
+        <Link href="/dashboard" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
           <ChevronLeft className="h-4 w-4" />
-          Registre des effectifs
+          Tableau de bord
         </Link>
         <div className="flex items-center gap-2 flex-wrap">
           <h1 className="text-2xl font-bold">{unit.name}</h1>
