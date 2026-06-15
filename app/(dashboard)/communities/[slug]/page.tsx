@@ -9,7 +9,7 @@ import { RichTextContent } from "@/components/ui/rich-text-content"
 import { CommunityLogo } from "@/components/community/community-logo"
 import Image from "next/image"
 import Link from "next/link"
-import { Users, Settings, Sword, ChevronLeft, Megaphone, ShieldAlert, ScrollText, EyeOff } from "lucide-react"
+import { Users, Settings, ChevronLeft, Megaphone, ShieldAlert, ScrollText, EyeOff } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -125,7 +125,6 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
               { href: `/communities/${params.slug}/news`, label: "Annonces", icon: Megaphone, count: postsCount, highlight: false },
               ...(isStaff ? [{ href: `/communities/${params.slug}/moderation`, label: "Modération", icon: ShieldAlert, count: null, highlight: false }] : []),
               ...(isStaff ? [{ href: `/communities/${params.slug}/logs`, label: "Logs", icon: ScrollText, count: null, highlight: false }] : []),
-              { href: `/communities/${params.slug}/rp`, label: "Registre des effectifs", icon: Sword, count: null, highlight: false },
             ].map(({ href, label, icon: Icon, count, highlight }) => (
               <Link key={href} href={href} className="h-full">
                 <Card className="h-full transition-colors hover:bg-muted/50">
