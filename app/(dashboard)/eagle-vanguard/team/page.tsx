@@ -12,9 +12,8 @@ export default async function EagleVanguardTeamPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isEagleVanguardTeam) redirect("/dashboard")
 
-  const [totalUsers, totalCommunities, pendingApplications, teamSize] = await Promise.all([
+  const [totalUsers, pendingApplications, teamSize] = await Promise.all([
     prisma.user.count(),
-    prisma.community.count(),
     prisma.application.count({ where: { status: "PENDING" } }),
     prisma.user.count({ where: { isEagleVanguardTeam: true } }),
   ])
@@ -27,7 +26,7 @@ export default async function EagleVanguardTeamPage() {
       </div>
       <EagleVanguardNav />
       <EagleVanguardTeamManager
-        stats={{ totalUsers, totalCommunities, pendingApplications, teamSize }}
+        stats={{ totalUsers, pendingApplications, teamSize }}
       />
     </div>
   )

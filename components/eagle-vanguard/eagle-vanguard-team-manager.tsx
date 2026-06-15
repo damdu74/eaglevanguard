@@ -3,12 +3,11 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 
 import Link from "next/link"
-import { Users, Building2, FileText, Shield, ChevronRight } from "lucide-react"
+import { Users, FileText, Shield, ChevronRight } from "lucide-react"
 import { EagleVanguardModerateSearch } from "@/components/eagle-vanguard/eagle-vanguard-moderate-search"
 
 interface Stats {
   totalUsers: number
-  totalCommunities: number
   pendingApplications: number
   teamSize: number
 }
@@ -22,7 +21,6 @@ export function EagleVanguardTeamManager({ stats }: Props) {
   const statItems = [
     { label: "Membres Eagle Vanguard", value: stats.teamSize, icon: Shield, color: "text-indigo-400" },
     { label: "Utilisateurs", value: stats.totalUsers, icon: Users, color: "text-blue-400" },
-    { label: "Communautés", value: stats.totalCommunities, icon: Building2, color: "text-emerald-400" },
     { label: "Candidatures en attente", value: stats.pendingApplications, icon: FileText, color: "text-orange-400" },
   ]
 
