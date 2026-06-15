@@ -41,7 +41,6 @@ export default async function CommunityPage({ params, searchParams }: PageProps)
         include: { rank: true },
       })
     : null
-  const isAdmin = membership && ["OWNER", "ADMIN"].includes(membership.role)
   const isStaff = membership && ["OWNER", "ADMIN", "MODERATOR"].includes(membership.role)
 
   const postsCount = membership
