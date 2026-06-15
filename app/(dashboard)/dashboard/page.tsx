@@ -78,7 +78,7 @@ export default async function DashboardPage() {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <GitBranch className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">ORBAT Général</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Organigramme</h2>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {allCommunities.map((community) => (
@@ -88,7 +88,7 @@ export default async function DashboardPage() {
                     <CommunityLogo url={community.logoUrl} name={community.name} size="sm" />
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{community.name}</p>
-                      <p className="text-xs text-muted-foreground">{community.game}</p>
+                      <p className="text-xs text-muted-foreground">Organigramme</p>
                     </div>
                   </CardContent>
                 </Card>

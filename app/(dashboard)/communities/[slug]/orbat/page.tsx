@@ -13,7 +13,7 @@ interface PageProps {
 }
 
 export async function generateMetadata() {
-  return { title: "ORBAT Général" }
+  return { title: "Organigramme" }
 }
 
 export default async function OrbatPage({ params }: PageProps) {
@@ -84,7 +84,7 @@ export default async function OrbatPage({ params }: PageProps) {
           <ChevronLeft className="h-4 w-4" />
           {community.name}
         </Link>
-        <h1 className="text-2xl font-bold">ORBAT Général — {community.name}</h1>
+        <h1 className="text-2xl font-bold">Organigramme — {community.name}</h1>
         <p className="text-sm text-muted-foreground">Ordre de bataille général de la communauté</p>
       </div>
       <OrbatEditor

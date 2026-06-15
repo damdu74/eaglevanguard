@@ -68,7 +68,7 @@ export default async function RpUnitOrbatPage({ params, searchParams }: PageProp
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1"
         >
           <ChevronLeft className="h-4 w-4" />
-          {searchParams?.from === "orbat-general" ? "ORBAT Général" : unit.name}
+          {searchParams?.from === "orbat-general" ? "Organigramme" : unit.name}
         </Link>
         <h1 className="text-2xl font-bold">ORBAT — {unit.name}</h1>
         <p className="text-sm text-muted-foreground">Ordre de bataille de l&apos;unité</p>
