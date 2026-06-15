@@ -12,7 +12,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const userId = session.user?.id as string | undefined
 
-  const [pendingFriendsCount, pendingApplicationsCount] = userId
+  const [pendingFriendsCount, pendingApplicationsCount, membershipCount] = userId
     ? await Promise.all([
         prisma.friendship.count({ where: { receiverId: userId, status: "PENDING" } }),
         prisma.application.count({
@@ -31,14 +31,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
             },
           },
         }),
-      ]).catch(() => [0, 0] as [number, number])
-    : [0, 0]
+        prisma.membership.count({ where: { userId } }),
+      ]).catch(() => [0, 0, 0] as [number, number, number])
+    : [0, 0, 0]
+
+  const hasMembership = membershipCount > 0
 
   return (
     <div className="flex h-screen flex-col">
       <Navbar user={session.user} pendingFriendsCount={pendingFriendsCount} pendingApplicationsCount={pendingApplicationsCount} />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar isEagleVanguardTeam={session.user?.isEagleVanguardTeam} />
+        <Sidebar isEagleVanguardTeam={session.user?.isEagleVanguardTeam} hasMembership={hasMembership} />
         <main className="flex-1 overflow-auto p-6">
           <div className="mx-auto max-w-7xl">
             {children}

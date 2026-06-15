@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Users, UserCheck, ShieldAlert, MessageCircle } from "lucide-react"
+import { LayoutDashboard, Users, UserCheck, ShieldAlert, MessageCircle, ClipboardList } from "lucide-react"
 
 const navSections = [
   {
@@ -27,16 +27,31 @@ const eagleVanguardSections = [
   },
 ]
 
+const candidatureSections = [
+  {
+    label: "Candidature",
+    items: [
+      { href: "/candidatures", label: "Mes candidatures", icon: ClipboardList, exact: false },
+    ],
+  },
+]
+
 interface SidebarProps {
   isEagleVanguardTeam?: boolean
+  hasMembership?: boolean
 }
 
-export function Sidebar({ isEagleVanguardTeam }: SidebarProps) {
+export function Sidebar({ isEagleVanguardTeam, hasMembership }: SidebarProps) {
   const pathname = usePathname()
 
-  const sections = isEagleVanguardTeam
-    ? [...eagleVanguardSections, ...navSections]
-    : navSections
+  let sections
+  if (!hasMembership && !isEagleVanguardTeam) {
+    sections = candidatureSections
+  } else if (isEagleVanguardTeam) {
+    sections = [...eagleVanguardSections, ...navSections]
+  } else {
+    sections = navSections
+  }
 
   return (
     <aside className="hidden w-56 shrink-0 border-r bg-muted/30 md:flex flex-col p-3 gap-4">
