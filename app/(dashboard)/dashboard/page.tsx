@@ -87,8 +87,8 @@ export default async function DashboardPage() {
                   <CardContent className="flex items-center gap-3 py-4 px-4">
                     <CommunityLogo url={community.logoUrl} name={community.name} size="sm" />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{community.name}</p>
-                      <p className="text-xs text-muted-foreground">Organigramme</p>
+                      <p className="text-sm font-medium truncate">Organigramme</p>
+                      <p className="text-xs text-muted-foreground truncate">{community.name}</p>
                     </div>
                   </CardContent>
                 </Card>
