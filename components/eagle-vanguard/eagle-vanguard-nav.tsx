@@ -8,7 +8,7 @@ import { Users, ShieldAlert, Gamepad2 } from "lucide-react"
 const links = [
   { href: "/eagle-vanguard/team", label: "Équipe", icon: Users },
   { href: "/eagle-vanguard/moderation", label: "Modération", icon: ShieldAlert },
-  { href: "/eagle-vanguard/team/players", label: "Joueurs", icon: Gamepad2 },
+  { href: "/eagle-vanguard/team/players", label: "Membres", icon: Gamepad2 },
 ]
 
 export function EagleVanguardNav() {

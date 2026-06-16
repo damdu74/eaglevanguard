@@ -6,7 +6,7 @@ import { EagleVanguardPlayersManager } from "@/components/eagle-vanguard/eagle-v
 import { EagleVanguardNav } from "@/components/eagle-vanguard/eagle-vanguard-nav"
 
 export const dynamic = "force-dynamic"
-export const metadata = { title: "Joueurs — Eagle Vanguard Team" }
+export const metadata = { title: "Membres — Eagle Vanguard Team" }
 
 interface PageProps {
   searchParams: { q?: string }

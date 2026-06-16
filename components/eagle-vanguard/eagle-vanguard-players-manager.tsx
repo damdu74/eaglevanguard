@@ -52,7 +52,7 @@ export function EagleVanguardPlayersManager({ players, total, initialQuery }: Pr
         <Input
           defaultValue={initialQuery}
           onChange={handleSearch}
-          placeholder="Rechercher un joueur…"
+          placeholder="Rechercher un membre…"
           className="pl-9"
         />
       </div>
@@ -60,14 +60,14 @@ export function EagleVanguardPlayersManager({ players, total, initialQuery }: Pr
       <p className="text-sm text-muted-foreground">
         {initialQuery.length >= 2
           ? `${total} résultat${total > 1 ? "s" : ""} pour « ${initialQuery} »`
-          : `${total} joueur${total > 1 ? "s" : ""}`}
+          : `${total} membre${total > 1 ? "s" : ""}`}
       </p>
 
       {players.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground text-center">
           <Users className="h-10 w-10" />
           <p className="text-sm font-medium">
-            {initialQuery.length >= 2 ? "Aucun joueur trouvé" : "Aucun joueur inscrit"}
+            {initialQuery.length >= 2 ? "Aucun membre trouvé" : "Aucun membre inscrit"}
           </p>
         </div>
       ) : (
