@@ -5,18 +5,32 @@ import { useTheme } from "next-themes"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Sun, Moon, Monitor, Loader2, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+function calcAge(dob: string): number | null {
+  if (!dob) return null
+  const birth = new Date(dob)
+  if (isNaN(birth.getTime())) return null
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age > 0 && age < 120 ? age : null
+}
+
 interface SettingsFormProps {
   theme: string
   genre: string | null
+  birthDate: string | null
 }
 
-export function SettingsForm({ theme: initialTheme, genre: initialGenre }: SettingsFormProps) {
+export function SettingsForm({ theme: initialTheme, genre: initialGenre, birthDate: initialBirthDate }: SettingsFormProps) {
   const [selectedTheme, setSelectedTheme] = useState(initialTheme)
   const [genre, setGenre] = useState(initialGenre ?? "")
+  const [birthDate, setBirthDate] = useState(initialBirthDate ?? "")
   const [saved, setSaved] = useState(false)
   const [isPending, setIsPending] = useState(false)
   const { setTheme } = useTheme()
@@ -31,7 +45,7 @@ export function SettingsForm({ theme: initialTheme, genre: initialGenre }: Setti
     await fetch("/api/profile/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ theme: selectedTheme, genre: genre || null }),
+      body: JSON.stringify({ theme: selectedTheme, genre: genre || null, birthDate: birthDate || null }),
     })
     setIsPending(false)
     setSaved(true)
@@ -52,6 +66,23 @@ export function SettingsForm({ theme: initialTheme, genre: initialGenre }: Setti
           <CardDescription>Informations personnelles.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="birthDate">Date de naissance</Label>
+            <div className="flex items-center gap-3">
+              <Input
+                id="birthDate"
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
+                className="w-44"
+              />
+              {calcAge(birthDate) !== null && (
+                <span className="text-sm text-muted-foreground">{calcAge(birthDate)} ans</span>
+              )}
+            </div>
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="genre">Genre</Label>
             <Select value={genre} onValueChange={setGenre}>

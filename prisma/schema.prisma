@@ -70,6 +70,7 @@ model User {
   customAvatar  String?
   bio           String?           @db.Text
   genre         String?
+  birthDate     DateTime?
   theme         String            @default("system")
   visibility    ProfileVisibility @default(PUBLIC)
   discordId     String?           @unique

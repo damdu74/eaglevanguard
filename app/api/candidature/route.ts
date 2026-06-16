@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
 
   const userId = session.user.id as string
-  const { message, age } = await req.json()
+  const { message } = await req.json()
 
   const community = await prisma.community.findFirst({ orderBy: { createdAt: "asc" } })
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
@@ -25,7 +25,6 @@ export async function POST(req: Request) {
     data: {
       communityId: community.id,
       userId,
-      age: typeof age === "number" && age > 0 ? age : null,
       message: message?.trim() || null,
     },
   })
