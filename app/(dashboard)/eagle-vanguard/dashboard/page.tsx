@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { EagleVanguardNav } from "@/components/eagle-vanguard/eagle-vanguard-nav"
-import { Users, FileText, Shield, UserPlus, Clock, ArrowRight } from "lucide-react"
+import { Users, FileText, Shield, UserPlus, Clock } from "lucide-react"
 import Link from "next/link"
 
 export const dynamic = "force-dynamic"
@@ -73,7 +73,6 @@ export default async function EagleVanguardDashboardPage() {
                     <Icon className={`h-4 w-4 shrink-0 ${color}`} />
                     <p className="text-xl font-bold leading-none">{value}</p>
                   </div>
-                  <ArrowRight className="h-3 w-3 text-muted-foreground" />
                 </CardContent>
               </Link>
             ) : (
