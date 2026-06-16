@@ -97,7 +97,7 @@ export function CandidatureForm({ steamName }: Props) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="message">Message de motivation <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+        <Label htmlFor="message">Motivation</Label>
         <Textarea
           id="message"
           value={message}
