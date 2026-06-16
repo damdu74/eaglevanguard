@@ -344,46 +344,6 @@ export function OrbatEditor({
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [settingsName, setSettingsName] = useState(rootLabel ?? "")
-  const [settingsDesc, setSettingsDesc] = useState("")
-  const [settingsEra, setSettingsEra] = useState("")
-  const [settingsGame, setSettingsGame] = useState("")
-  const [settingsSaving, setSettingsSaving] = useState(false)
-
-  const openSettings = useCallback(async () => {
-    if (!unitId) return
-    try {
-      const res = await fetch(`/api/communities/${communitySlug}/rp/units/${unitId}`)
-      if (res.ok) {
-        const u = await res.json()
-        setSettingsName(u.name ?? "")
-        setSettingsDesc(u.description ?? "")
-        setSettingsEra(u.era ?? "")
-        setSettingsGame(u.game ?? "")
-      }
-    } catch { /* ignore */ }
-    setSettingsOpen(true)
-  }, [communitySlug, unitId])
-
-  const saveSettings = useCallback(async () => {
-    if (!unitId) return
-    setSettingsSaving(true)
-    try {
-      const res = await fetch(`/api/communities/${communitySlug}/rp/units/${unitId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: settingsName.trim(), description: settingsDesc.trim() || null, era: settingsEra.trim() || null, game: settingsGame || null }),
-      })
-      if (!res.ok) throw new Error()
-      toast.success("Unité mise à jour")
-      setSettingsOpen(false)
-    } catch {
-      toast.error("Erreur lors de la mise à jour")
-    } finally {
-      setSettingsSaving(false)
-    }
-  }, [communitySlug, unitId, settingsName, settingsDesc, settingsEra, settingsGame])
 
   // Layout hiérarchique au montage (ORBAT général uniquement)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1002,42 +962,6 @@ const toggleLock = useCallback((nodeId: string) => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Paramètres de l&apos;unité</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <Label>Nom de l&apos;unité</Label>
-              <Input value={settingsName} onChange={(e) => setSettingsName(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label>Genre <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-              <Input value={settingsEra} onChange={(e) => setSettingsEra(e.target.value)} placeholder="Ex: WW2, Guerre Froide, Moderne…" />
-            </div>
-            <div className="space-y-1">
-              <Label>Jeu <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-              <Select value={settingsGame || "__none__"} onValueChange={(v) => setSettingsGame(v === "__none__" ? "" : v)}>
-                <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Aucun</SelectItem>
-                  {GAMES.map((g) => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label>Description <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-              <Textarea value={settingsDesc} onChange={(e) => setSettingsDesc(e.target.value)} rows={2} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSettingsOpen(false)}>Annuler</Button>
-            <Button onClick={saveSettings} disabled={settingsSaving || !settingsName.trim()}>
-              {settingsSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sauvegarder
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   )
 }
