@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CandidatureForm } from "@/components/candidature/candidature-form"
+import { Button } from "@/components/ui/button"
 import { Clock, CheckCircle2, XCircle, ClipboardList } from "lucide-react"
+import Link from "next/link"
 
 interface Application {
   status: string
@@ -69,7 +70,7 @@ export function NonMemberDashboard({ displayName, communityName, application }: 
                 {application.status === "PENDING" && (
                   <div className="px-4 py-2.5 border-t">
                     <p className="text-xs text-muted-foreground">
-                      Votre candidature est en cours d&apos;examen. Vous serez notifié dès qu&apos;une décision sera prise.
+                      Votre candidature est en cours d&apos;examen.
                     </p>
                   </div>
                 )}
@@ -79,9 +80,12 @@ export function NonMemberDashboard({ displayName, communityName, application }: 
                     <p className="text-sm">Bienvenue dans la communauté !</p>
                   </div>
                 )}
-                {application.status === "REJECTED" && application.response && (
-                  <div className="px-4 py-2.5 border-t">
-                    <p className="text-xs text-muted-foreground">{application.response}</p>
+                {application.status === "REJECTED" && (
+                  <div className="flex items-center gap-2 px-4 py-2.5 border-t">
+                    <XCircle className="h-4 w-4 text-destructive shrink-0" />
+                    <p className="text-xs text-muted-foreground">
+                      {application.response ?? "Vous pouvez soumettre une nouvelle candidature."}
+                    </p>
                   </div>
                 )}
               </>
@@ -89,62 +93,28 @@ export function NonMemberDashboard({ displayName, communityName, application }: 
           </CardContent>
         </Card>
 
-        {/* Candidature info */}
-        {application?.status === "PENDING" && (
+        {/* Rejoindre la communauté */}
+        {canApply && (
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
                 <ClipboardList className="h-4 w-4 text-blue-400" />
-                Votre message
+                Rejoindre {communityName}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-0 p-0">
-              {application.message ? (
-                <div className="px-4 py-2.5 border-t">
-                  <p className="text-sm">{application.message}</p>
-                </div>
-              ) : (
-                <div className="px-4 py-2.5 border-t">
-                  <p className="text-sm text-muted-foreground">Aucun message joint.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {application?.status === "REJECTED" && (
-          <Card className="border-destructive/40">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <XCircle className="h-4 w-4 text-destructive" />
-                Candidature refusée
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-0 p-0">
-              <div className="px-4 py-2.5 border-t">
-                <p className="text-sm text-muted-foreground">
-                  Vous pouvez soumettre une nouvelle candidature ci-dessous.
+              <div className="px-4 py-3 border-t">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Soumettez votre candidature pour rejoindre la communauté.
                 </p>
+                <Button asChild size="sm">
+                  <Link href="/candidatures">Envoyer une candidature</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
         )}
       </div>
-
-      {/* Formulaire */}
-      {canApply && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-              <ClipboardList className="h-4 w-4 text-blue-400" />
-              Postuler — {communityName}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-2">
-            <CandidatureForm />
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }
