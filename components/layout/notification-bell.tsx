@@ -112,7 +112,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
         >
           <Bell className="h-4 w-4" />
           {total > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+            <span className={`absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-white ${unreadCount > 0 || friendRequests > 0 || unreadMessages > 0 ? "bg-red-600" : "bg-blue-500"}`}>
               {total > 9 ? "9+" : total}
             </span>
           )}
@@ -227,9 +227,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Link>
                 )}
-                {!n.read && (
-                  <span className="h-2 w-2 rounded-full bg-red-500 shrink-0 mt-2" />
-                )}
+                <span className={`h-2 w-2 rounded-full shrink-0 mt-2 ${!n.read ? "bg-red-500" : "bg-blue-400"}`} />
               </div>
             ))
           ) : (
