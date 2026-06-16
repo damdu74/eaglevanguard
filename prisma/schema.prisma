@@ -589,6 +589,7 @@ model Application {
   communityId String
   userId      String
   status      ApplicationStatus @default(PENDING)
+  age         Int?
   message     String?           @db.Text
   response    String?           @db.Text
   createdAt   DateTime          @default(now())

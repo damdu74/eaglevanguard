@@ -80,6 +80,12 @@ export default async function CandidaturesPage() {
                   <p className="text-sm text-muted-foreground">Envoyée le</p>
                   <p className="text-sm">{new Date(current.createdAt).toLocaleDateString("fr-FR")}</p>
                 </div>
+                {(current as { age?: number | null }).age != null && (
+                  <div className="flex items-center justify-between px-4 py-2.5 border-t">
+                    <p className="text-sm text-muted-foreground">Âge</p>
+                    <p className="text-sm">{(current as { age?: number | null }).age} ans</p>
+                  </div>
+                )}
                 {current.message && (
                   <div className="px-4 py-2.5 border-t">
                     <p className="text-xs text-muted-foreground mb-1">Votre message</p>
