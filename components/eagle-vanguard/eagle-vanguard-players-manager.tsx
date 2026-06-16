@@ -1,12 +1,14 @@
 "use client"
 
 import { useRouter, usePathname } from "next/navigation"
-import { useCallback, useTransition } from "react"
+import { useCallback, useTransition, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Search, Users } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Search, Users, UserMinus, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { toast } from "sonner"
 
 interface Player {
   id: string
@@ -17,6 +19,7 @@ interface Player {
   steamAvatar: string | null
   discordAvatar: string | null
   image: string | null
+  isMember: boolean
   _count: { memberships: number }
 }
 
@@ -26,10 +29,12 @@ interface Props {
   initialQuery: string
 }
 
-export function EagleVanguardPlayersManager({ players, total, initialQuery }: Props) {
+export function EagleVanguardPlayersManager({ players: initialPlayers, total, initialQuery }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const [, startTransition] = useTransition()
+  const [players, setPlayers] = useState<Player[]>(initialPlayers)
+  const [removingId, setRemovingId] = useState<string | null>(null)
 
   const handleSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,6 +49,22 @@ export function EagleVanguardPlayersManager({ players, total, initialQuery }: Pr
     },
     [router, pathname]
   )
+
+  async function removeMembership(player: Player) {
+    const name = player.steamName ?? player.discordName ?? player.name ?? "ce joueur"
+    if (!confirm(`Retirer ${name} de la communauté ? Il devra repostuler pour revenir.`)) return
+    setRemovingId(player.id)
+    try {
+      const res = await fetch(`/api/eagle-vanguard/members/${player.id}/membership`, { method: "DELETE" })
+      if (!res.ok) throw new Error()
+      setPlayers(prev => prev.map(p => p.id === player.id ? { ...p, isMember: false, _count: { memberships: 0 } } : p))
+      toast.success(`${name} a été retiré de la communauté`)
+    } catch {
+      toast.error("Erreur lors du retrait")
+    } finally {
+      setRemovingId(null)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -76,24 +97,39 @@ export function EagleVanguardPlayersManager({ players, total, initialQuery }: Pr
             const displayName = player.steamName ?? player.discordName ?? player.name ?? "Joueur"
             const avatar = player.customAvatar ?? player.steamAvatar ?? player.discordAvatar ?? player.image
             return (
-              <Link
-                key={player.id}
-                href={`/profile/${player.id}`}
-                className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
+              <div key={player.id} className="flex items-center justify-between px-4 py-3">
+                <Link
+                  href={`/profile/${player.id}`}
+                  className="flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity"
+                >
                   <Avatar className="h-8 w-8 shrink-0">
                     <AvatarImage src={avatar ?? undefined} />
                     <AvatarFallback className="text-xs">{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium">{displayName}</span>
+                  <span className="text-sm font-medium truncate">{displayName}</span>
+                </Link>
+                <div className="flex items-center gap-2 shrink-0">
+                  {player.isMember ? (
+                    <Badge variant="default" className="text-xs">Membre</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-xs text-muted-foreground">Non membre</Badge>
+                  )}
+                  {player.isMember && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeMembership(player)}
+                      disabled={removingId === player.id}
+                      title="Retirer de la communauté"
+                    >
+                      {removingId === player.id
+                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        : <UserMinus className="h-3.5 w-3.5" />}
+                    </Button>
+                  )}
                 </div>
-                {player._count.memberships > 0 && (
-                  <Badge variant="outline" className="text-xs shrink-0">
-                    {player._count.memberships} communauté{player._count.memberships > 1 ? "s" : ""}
-                  </Badge>
-                )}
-              </Link>
+              </div>
             )
           })}
         </div>

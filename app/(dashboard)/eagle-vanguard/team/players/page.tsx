@@ -28,21 +28,31 @@ export default async function EagleVanguardPlayersPage({ searchParams }: PagePro
       }
     : {}
 
-  const players = await prisma.user.findMany({
-    where: { isEagleVanguardTeam: false, ...searchFilter },
-    select: {
-      id: true,
-      steamName: true,
-      discordName: true,
-      name: true,
-      customAvatar: true,
-      steamAvatar: true,
-      discordAvatar: true,
-      image: true,
-      _count: { select: { memberships: true } },
-    },
-    orderBy: { createdAt: "asc" },
-  })
+  const [community, players] = await Promise.all([
+    prisma.community.findFirst({ orderBy: { createdAt: "asc" }, select: { id: true } }),
+    prisma.user.findMany({
+      where: { isEagleVanguardTeam: false, ...searchFilter },
+      select: {
+        id: true,
+        steamName: true,
+        discordName: true,
+        name: true,
+        customAvatar: true,
+        steamAvatar: true,
+        discordAvatar: true,
+        image: true,
+        memberships: { where: {}, select: { communityId: true }, take: 1 },
+        _count: { select: { memberships: true } },
+      },
+      orderBy: { createdAt: "asc" },
+    }),
+  ])
+
+  const communityId = community?.id ?? null
+  const playersWithMembership = players.map(p => ({
+    ...p,
+    isMember: communityId ? p.memberships.some(m => m.communityId === communityId) : false,
+  }))
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -52,8 +62,8 @@ export default async function EagleVanguardPlayersPage({ searchParams }: PagePro
       </div>
       <EagleVanguardNav />
       <EagleVanguardPlayersManager
-        players={players}
-        total={players.length}
+        players={playersWithMembership}
+        total={playersWithMembership.length}
         initialQuery={q}
       />
     </div>
