@@ -597,6 +597,7 @@ model Application {
   community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([communityId, userId])
+  @@index([communityId, userId])
   @@index([communityId, status])
+  @@index([userId, communityId])
 }

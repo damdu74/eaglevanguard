@@ -37,8 +37,9 @@ export default async function DashboardPage() {
   if (!isEV && membershipRows.length === 0) {
     const community = await prisma.community.findFirst({ orderBy: { createdAt: "asc" } })
     const application = community
-      ? await prisma.application.findUnique({
-          where: { communityId_userId: { communityId: community.id, userId } },
+      ? await prisma.application.findFirst({
+          where: { communityId: community.id, userId },
+          orderBy: { createdAt: "desc" },
         })
       : null
 

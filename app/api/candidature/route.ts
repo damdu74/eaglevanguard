@@ -13,20 +13,12 @@ export async function POST(req: Request) {
   const community = await prisma.community.findFirst({ orderBy: { createdAt: "asc" } })
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
-  const existing = await prisma.application.findUnique({
-    where: { communityId_userId: { communityId: community.id, userId } },
+  const existing = await prisma.application.findFirst({
+    where: { communityId: community.id, userId, status: "PENDING" },
   })
 
-  if (existing && existing.status === "PENDING") {
-    return NextResponse.json({ error: "Candidature déjà en cours" }, { status: 409 })
-  }
-
   if (existing) {
-    const updated = await prisma.application.update({
-      where: { id: existing.id },
-      data: { status: "PENDING", message: message?.trim() || null, response: null },
-    })
-    return NextResponse.json(updated, { status: 200 })
+    return NextResponse.json({ error: "Candidature déjà en cours" }, { status: 409 })
   }
 
   const application = await prisma.application.create({
