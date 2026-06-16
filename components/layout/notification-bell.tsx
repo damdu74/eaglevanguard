@@ -38,11 +38,27 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
   const [unreadCount, setUnreadCount] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState(initialUnreadMessages)
   const [open, setOpen] = useState(false)
-  const [seen, setSeen] = useState(false)
 
   const total = friendRequests + pendingApplications + unreadCount + unreadMessages
-  const hasUnread = unreadCount > 0 || friendRequests > 0 || unreadMessages > 0
-  const bellColor = total === 0 ? null : (!seen || hasUnread) ? "bg-red-600" : "bg-blue-500"
+
+  function getSeenCounts() {
+    try {
+      return JSON.parse(localStorage.getItem("notif-seen") ?? "null") as { fr: number; pa: number; um: number; uc: number } | null
+    } catch { return null }
+  }
+
+  function saveSeenCounts() {
+    localStorage.setItem("notif-seen", JSON.stringify({ fr: friendRequests, pa: pendingApplications, um: unreadMessages, uc: unreadCount }))
+  }
+
+  function isNew() {
+    const s = getSeenCounts()
+    if (!s) return total > 0
+    return friendRequests > s.fr || pendingApplications > s.pa || unreadMessages > s.um || unreadCount > s.uc
+  }
+
+  const bellColor = total === 0 ? null : isNew() ? "bg-red-600" : "bg-blue-500"
+  const itemsAreNew = isNew()
 
   useEffect(() => {
     let fallbackInterval: ReturnType<typeof setInterval> | null = null
@@ -78,17 +94,11 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
 
   useEffect(() => {
     if (open) {
-      setSeen(true)
+      saveSeenCounts()
       if (unreadCount > 0) markAllRead()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
-
-  // Reset seen when new unread arrives
-  useEffect(() => {
-    if (hasUnread) setSeen(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [unreadCount, friendRequests, unreadMessages])
 
   async function fetchAll() {
     try {
@@ -164,7 +174,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
                 </p>
                 <p className="text-xs text-muted-foreground">Voir les messages</p>
               </div>
-              <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shrink-0 ${!seen ? "bg-red-600" : "bg-blue-500"}`}>
+              <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shrink-0 ${itemsAreNew ? "bg-red-600" : "bg-blue-500"}`}>
                 {unreadMessages > 9 ? "9+" : unreadMessages}
               </span>
             </Link>
@@ -188,7 +198,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
                     </p>
                     <p className="text-xs text-muted-foreground">En attente de réponse</p>
                   </div>
-                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shrink-0 ${!seen ? "bg-red-600" : "bg-blue-500"}`}>
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shrink-0 ${itemsAreNew ? "bg-red-600" : "bg-blue-500"}`}>
                     {friendRequests > 9 ? "9+" : friendRequests}
                   </span>
                 </Link>
@@ -208,7 +218,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
                     </p>
                     <p className="text-xs text-muted-foreground">À traiter</p>
                   </div>
-                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shrink-0 ${!seen ? "bg-red-600" : "bg-blue-500"}`}>
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shrink-0 ${itemsAreNew ? "bg-red-600" : "bg-blue-500"}`}>
                     {pendingApplications > 9 ? "9+" : pendingApplications}
                   </span>
                 </Link>
