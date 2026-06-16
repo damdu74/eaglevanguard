@@ -43,7 +43,7 @@ export default async function CandidaturesPage() {
   const current = applications.find((a) => a.status === "PENDING") ?? applications[0] ?? null
   const history = applications.filter((a) => a.id !== current?.id)
 
-  const canApply = !applications.some((a) => a.status === "PENDING")
+  const canApply = applications.length === 0
 
   return (
     <div className="space-y-6">

@@ -14,11 +14,11 @@ export async function POST(req: Request) {
   if (!community) return NextResponse.json({ error: "Communauté introuvable" }, { status: 404 })
 
   const existing = await prisma.application.findFirst({
-    where: { communityId: community.id, userId, status: "PENDING" },
+    where: { communityId: community.id, userId },
   })
 
   if (existing) {
-    return NextResponse.json({ error: "Candidature déjà en cours" }, { status: 409 })
+    return NextResponse.json({ error: "Vous avez déjà soumis une candidature" }, { status: 409 })
   }
 
   const application = await prisma.application.create({

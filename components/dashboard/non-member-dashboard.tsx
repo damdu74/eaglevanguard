@@ -32,7 +32,7 @@ const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | 
 }
 
 export function NonMemberDashboard({ displayName, communityName, application }: Props) {
-  const canApply = !application || application.status === "REJECTED" || application.status === "WITHDRAWN"
+  const canApply = !application
 
   return (
     <div className="space-y-6 max-w-4xl">
