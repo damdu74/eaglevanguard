@@ -242,7 +242,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
                       <ExternalLink className="h-3.5 w-3.5" />
                     </Link>
                   )}
-                  <span className={`h-2 w-2 rounded-full ${!n.read ? "bg-red-500" : "bg-blue-400"}`} />
+                  {!n.read && <span className="h-2 w-2 rounded-full bg-red-500" />}
                   <button
                     onClick={() => dismiss(n.id)}
                     className="text-muted-foreground hover:text-foreground transition-colors"
