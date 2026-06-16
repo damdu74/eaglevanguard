@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Users, UserCheck, ShieldAlert, MessageCircle, ClipboardList } from "lucide-react"
+import { LayoutDashboard, Users, UserCheck, ShieldAlert, MessageCircle, ClipboardList, Shield, Award, Gamepad2 } from "lucide-react"
 
 const navSections = [
   {
@@ -21,7 +21,10 @@ const eagleVanguardSections = [
   {
     label: "Eagle Vanguard Team",
     items: [
-      { href: "/eagle-vanguard/team", label: "Équipe", icon: Users, exact: false },
+      { href: "/eagle-vanguard/team", label: "Équipe", icon: Users, exact: true },
+      { href: "/eagle-vanguard/team/members", label: "Membres", icon: Shield, exact: false },
+      { href: "/eagle-vanguard/team/ranks", label: "Grades", icon: Award, exact: false },
+      { href: "/eagle-vanguard/team/players", label: "Joueurs", icon: Gamepad2, exact: false },
       { href: "/eagle-vanguard/moderation", label: "Modération", icon: ShieldAlert, exact: false },
     ],
   },
