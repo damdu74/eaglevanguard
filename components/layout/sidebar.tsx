@@ -11,7 +11,7 @@ const navSections = [
     items: [
       { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard, exact: true },
       { href: "/messages", label: "Messages", icon: MessageCircle, exact: false },
-      { href: "/players", label: "Membres", icon: Users, exact: true },
+      { href: "/players", label: "Joueurs", icon: Users, exact: true },
       { href: "/players/friends", label: "Mes amis", icon: UserCheck, exact: true },
     ],
   },
