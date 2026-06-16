@@ -67,21 +67,21 @@ export default async function EagleVanguardDashboardPage() {
           <Card key={label} className={href ? "hover:bg-muted/50 transition-colors" : ""}>
             {href ? (
               <Link href={href}>
-                <CardContent className="flex items-center gap-3 py-4 px-4">
-                  <Icon className={`h-5 w-5 shrink-0 ${color}`} />
-                  <div className="flex-1">
-                    <p className="text-2xl font-bold leading-none">{value}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{label}</p>
+                <CardContent className="flex flex-col items-center py-5 px-4 gap-3">
+                  <p className="text-xs font-medium text-muted-foreground text-center">{label}</p>
+                  <div className="flex items-center gap-2">
+                    <Icon className={`h-6 w-6 shrink-0 ${color}`} />
+                    <p className="text-3xl font-bold leading-none">{value}</p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
                 </CardContent>
               </Link>
             ) : (
-              <CardContent className="flex items-center gap-3 py-4 px-4">
-                <Icon className={`h-5 w-5 shrink-0 ${color}`} />
-                <div>
-                  <p className="text-2xl font-bold leading-none">{value}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{label}</p>
+              <CardContent className="flex flex-col items-center py-5 px-4 gap-3">
+                <p className="text-xs font-medium text-muted-foreground text-center">{label}</p>
+                <div className="flex items-center gap-2">
+                  <Icon className={`h-6 w-6 shrink-0 ${color}`} />
+                  <p className="text-3xl font-bold leading-none">{value}</p>
                 </div>
               </CardContent>
             )}
