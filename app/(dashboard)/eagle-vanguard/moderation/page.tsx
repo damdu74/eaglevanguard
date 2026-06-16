@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { ModerationPanel } from "@/components/moderation/moderation-panel"
 import { LogsPanel } from "@/components/logs/logs-panel"
+import { EagleVanguardNav } from "@/components/eagle-vanguard/eagle-vanguard-nav"
 import { checkEagleVanguardPermission } from "@/lib/eagle-vanguard-auth"
 
 export const dynamic = "force-dynamic"
@@ -25,6 +26,7 @@ export default async function EagleVanguardModerationPage() {
         <h1 className="text-2xl font-bold">Eagle Vanguard Team</h1>
         <p className="text-sm text-muted-foreground">Gestion du staff de la plateforme</p>
       </div>
+      <EagleVanguardNav />
       {canModerate
         ? <ModerationPanel mode="eagle-vanguard" isEagleVanguardTeam={true} showLogs={canViewLogs} />
         : <LogsPanel mode="eagle-vanguard" />
