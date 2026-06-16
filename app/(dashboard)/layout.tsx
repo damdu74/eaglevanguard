@@ -1,10 +1,13 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
+import { headers } from "next/headers"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Navbar } from "@/components/layout/navbar"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Footer } from "@/components/layout/footer"
+
+const MEMBER_ONLY_PATHS = ["/dashboard", "/candidatures"]
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
@@ -36,6 +39,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
     : [0, 0, 0]
 
   const hasMembership = membershipCount > 0
+  const isEagleVanguardTeam = session.user?.isEagleVanguardTeam
+
+  if (!hasMembership && !isEagleVanguardTeam) {
+    const headersList = await headers()
+    const pathname = headersList.get("x-pathname") ?? ""
+    const allowed = MEMBER_ONLY_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))
+    if (!allowed) redirect("/candidatures")
+  }
 
   return (
     <div className="flex h-screen flex-col">

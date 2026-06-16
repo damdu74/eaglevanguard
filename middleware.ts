@@ -3,6 +3,8 @@ import { getToken } from "next-auth/jwt"
 
 const PROTECTED_PREFIXES = [
   "/dashboard",
+  "/candidatures",
+  "/messages",
   "/profile",
   "/settings",
   "/communities",
@@ -37,7 +39,9 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set("x-pathname", pathname)
+  return NextResponse.next({ request: { headers: requestHeaders } })
 }
 
 export const config = {

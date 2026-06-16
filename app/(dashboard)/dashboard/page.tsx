@@ -2,6 +2,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Tableau de bord" }
@@ -32,6 +34,23 @@ export default async function DashboardPage() {
         orderBy: { joinedAt: "asc" },
       })
     : []
+
+  if (!isEV && membershipRows.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-2xl font-bold">Tableau de bord</h1>
+          <p className="text-sm text-muted-foreground">Bienvenue, {displayName}</p>
+        </div>
+        <div className="flex flex-col items-center gap-4 py-20 text-center">
+          <p className="text-muted-foreground text-sm">Votre candidature est en attente d&apos;examen.</p>
+          <Button asChild variant="outline">
+            <Link href="/candidatures">Voir ma candidature</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   const communitiesWithUnits = await Promise.all(
     (isEV ? allCommunities : membershipRows.map(m => m.community)).map(async (community) => {
