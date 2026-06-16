@@ -38,7 +38,7 @@ import {
 import { OrbatUnitNode, type OrbatRole } from "./orbat-unit-node"
 import { OrbatGameNode } from "./orbat-game-node"
 import { NATO_TYPES, NATO_SIZES, NATO_MODIFIERS } from "./nato-symbol"
-import { Download, Loader2, Plus, Save, Settings, Trash2, Upload } from "lucide-react"
+import { Download, Loader2, Plus, Save, Trash2, Upload } from "lucide-react"
 import { toast } from "sonner"
 import { toPng } from "html-to-image"
 
@@ -817,12 +817,6 @@ const toggleLock = useCallback((nodeId: string) => {
                 <Trash2 className="mr-1 h-4 w-4" />
                 Supprimer la sélection
               </Button>
-              {!isCommunityOrbat && unitId && (
-                <Button size="sm" variant="outline" onClick={openSettings}>
-                  <Settings className="mr-1 h-4 w-4" />
-                  Paramètres
-                </Button>
-              )}
               <Button size="sm" onClick={save} disabled={saving}>
                 <Save className="mr-1 h-4 w-4" />
                 {saving ? "Sauvegarde..." : "Sauvegarder"}
