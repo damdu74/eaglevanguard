@@ -54,12 +54,12 @@ function PlayerRow({ player, onRemove, removingId }: {
       </Link>
       <div className="flex items-center gap-2 shrink-0">
         {player.eagleVanguardRank && (
-          <span
-            className="text-xs font-medium px-2 py-0.5 rounded-full text-white"
+          <Badge
+            className="text-xs text-white"
             style={{ backgroundColor: player.eagleVanguardRank.color }}
           >
             {player.eagleVanguardRank.name}
-          </span>
+          </Badge>
         )}
         {!player.isEagleVanguardTeam && (player.isMember ? (
           <Badge variant="default" className="text-xs">Membre</Badge>
