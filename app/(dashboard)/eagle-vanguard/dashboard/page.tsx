@@ -70,8 +70,8 @@ export default async function EagleVanguardDashboardPage() {
                 <CardContent className="flex flex-col items-center py-5 px-4 gap-3">
                   <p className="text-xs font-medium text-muted-foreground text-center">{label}</p>
                   <div className="flex items-center gap-2">
-                    <Icon className={`h-6 w-6 shrink-0 ${color}`} />
-                    <p className="text-3xl font-bold leading-none">{value}</p>
+                    <Icon className={`h-4 w-4 shrink-0 ${color}`} />
+                    <p className="text-xl font-bold leading-none">{value}</p>
                   </div>
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
                 </CardContent>
@@ -80,8 +80,8 @@ export default async function EagleVanguardDashboardPage() {
               <CardContent className="flex flex-col items-center py-5 px-4 gap-3">
                 <p className="text-xs font-medium text-muted-foreground text-center">{label}</p>
                 <div className="flex items-center gap-2">
-                  <Icon className={`h-6 w-6 shrink-0 ${color}`} />
-                  <p className="text-3xl font-bold leading-none">{value}</p>
+                  <Icon className={`h-4 w-4 shrink-0 ${color}`} />
+                  <p className="text-xl font-bold leading-none">{value}</p>
                 </div>
               </CardContent>
             )}
