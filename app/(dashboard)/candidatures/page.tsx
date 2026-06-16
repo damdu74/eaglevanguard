@@ -68,7 +68,7 @@ export default async function CandidaturesPage() {
         )}
 
         {/* Candidature en cours — droite */}
-        <Card className={!canApply ? "sm:col-span-2" : ""}>
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-semibold">
               <Clock className="h-4 w-4 text-orange-400" />
