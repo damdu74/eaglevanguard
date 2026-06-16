@@ -54,9 +54,21 @@ export default async function CandidaturesPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {/* Candidature en cours */}
-        <Card>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {/* Formulaire nouvelle candidature — gauche, large */}
+        {canApply && (
+          <Card className="sm:col-span-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">Postuler</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2">
+              <CandidatureForm steamName={steamName} />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Candidature en cours — droite, étroite */}
+        <Card className={canApply ? "sm:col-span-1" : "sm:col-span-3"}>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-semibold">
               <Clock className="h-4 w-4 text-orange-400" />
@@ -94,14 +106,14 @@ export default async function CandidaturesPage() {
                 )}
                 {current.message && (
                   <div className="px-4 py-2.5 border-t">
-                    <p className="text-xs text-muted-foreground mb-1">Votre message</p>
+                    <p className="text-xs text-muted-foreground mb-1">Motivation</p>
                     <p className="text-sm">{current.message}</p>
                   </div>
                 )}
                 {current.status === "PENDING" && (
                   <div className="px-4 py-2.5 border-t">
                     <p className="text-xs text-muted-foreground">
-                      Votre candidature est en cours d&apos;examen. Vous serez notifié dès qu&apos;une décision sera prise.
+                      En cours d&apos;examen. Vous serez notifié dès qu&apos;une décision sera prise.
                     </p>
                   </div>
                 )}
@@ -123,18 +135,6 @@ export default async function CandidaturesPage() {
             )}
           </CardContent>
         </Card>
-
-        {/* Formulaire nouvelle candidature */}
-        {canApply && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Postuler</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-2">
-              <CandidatureForm steamName={steamName} />
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Historique */}
