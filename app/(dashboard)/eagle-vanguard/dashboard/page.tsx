@@ -67,17 +67,17 @@ export default async function EagleVanguardDashboardPage() {
           <Card key={label} className={href ? "hover:bg-muted/50 transition-colors" : ""}>
             {href ? (
               <Link href={href}>
-                <CardContent className="flex flex-col items-center py-5 px-4 gap-3">
+                <CardContent className="flex flex-col items-center py-3 px-4 gap-1.5">
                   <p className="text-xs font-medium text-muted-foreground text-center">{label}</p>
                   <div className="flex items-center gap-2">
                     <Icon className={`h-4 w-4 shrink-0 ${color}`} />
                     <p className="text-xl font-bold leading-none">{value}</p>
                   </div>
-                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                  <ArrowRight className="h-3 w-3 text-muted-foreground" />
                 </CardContent>
               </Link>
             ) : (
-              <CardContent className="flex flex-col items-center py-5 px-4 gap-3">
+              <CardContent className="flex flex-col items-center py-3 px-4 gap-1.5">
                 <p className="text-xs font-medium text-muted-foreground text-center">{label}</p>
                 <div className="flex items-center gap-2">
                   <Icon className={`h-4 w-4 shrink-0 ${color}`} />
