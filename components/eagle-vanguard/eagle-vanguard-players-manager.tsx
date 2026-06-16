@@ -139,7 +139,7 @@ export function EagleVanguardPlayersManager({ staff, members: initialMembers, in
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-semibold">
               <Shield className="h-4 w-4 text-indigo-400" />
-              Staff Eagle Vanguard ({staff.length})
+              Equipe Eagle Vanguard ({staff.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-0 p-0">
