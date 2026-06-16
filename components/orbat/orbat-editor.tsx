@@ -20,7 +20,6 @@ import "reactflow/dist/style.css"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -73,8 +72,6 @@ function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, tar
     />
   )
 }
-
-const GAMES = [{ value: "arma3", label: "Arma 3" }]
 
 const ROOT_ID = "root"
 const SNAP_GRID: [number, number] = [20, 20]
