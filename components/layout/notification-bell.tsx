@@ -47,10 +47,6 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
     } catch { return null }
   }
 
-  function saveSeenCounts() {
-    localStorage.setItem("notif-seen", JSON.stringify({ fr: friendRequests, pa: pendingApplications, um: unreadMessages, uc: unreadCount }))
-  }
-
   function isNew() {
     const s = getSeenCounts()
     if (!s) return total > 0
@@ -94,11 +90,16 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
 
   useEffect(() => {
     if (open) {
-      saveSeenCounts()
-      if (unreadCount > 0) markAllRead()
+      localStorage.setItem("notif-seen", JSON.stringify({ fr: friendRequests, pa: pendingApplications, um: unreadMessages, uc: unreadCount }))
+      if (unreadCount > 0) {
+        fetch("/api/notifications", { method: "PATCH" }).then(() => {
+          setUnreadCount(0)
+          setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+        })
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open])
+  }, [open, friendRequests, pendingApplications, unreadMessages, unreadCount])
 
   async function fetchAll() {
     try {
