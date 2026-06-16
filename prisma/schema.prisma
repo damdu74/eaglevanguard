@@ -590,6 +590,7 @@ model Application {
   userId      String
   status      ApplicationStatus @default(PENDING)
   age         Int?
+  genre       String?
   message     String?           @db.Text
   response    String?           @db.Text
   createdAt   DateTime          @default(now())
