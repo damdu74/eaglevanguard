@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Users, UserCheck, ShieldAlert, MessageCircle, LayoutGrid } from "lucide-react"
+import { LayoutDashboard, Users, UserCheck, ShieldAlert, MessageCircle, LayoutGrid, ClipboardList } from "lucide-react"
 
 const navSections = [
   {
@@ -33,6 +33,7 @@ const candidatureSections = [
     label: "Communauté",
     items: [
       { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard, exact: true },
+      { href: "/candidatures", label: "Mes candidatures", icon: ClipboardList, exact: true },
     ],
   },
 ]
