@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CandidatureForm } from "@/components/candidature/candidature-form"
-import { ClipboardList, Clock, CheckCircle2, XCircle } from "lucide-react"
+import { Clock, CheckCircle2, XCircle } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Candidature" }
@@ -51,7 +51,6 @@ export default async function CandidaturesPage() {
 
       {!community ? (
         <div className="flex flex-col items-center gap-3 py-20 text-muted-foreground text-center">
-          <ClipboardList className="h-10 w-10" />
           <p className="text-sm">Aucune communauté disponible pour le moment.</p>
         </div>
       ) : application?.status === "PENDING" ? (
