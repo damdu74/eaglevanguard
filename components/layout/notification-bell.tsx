@@ -181,7 +181,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
               )}
               {pendingApplications > 0 && (
                 <Link
-                  href="/dashboard"
+                  href="/eagle-vanguard/candidatures"
                   className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
                   onClick={() => setOpen(false)}
                 >
