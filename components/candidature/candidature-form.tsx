@@ -4,9 +4,14 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-export function CandidatureForm() {
+interface Props {
+  steamName?: string | null
+}
+
+export function CandidatureForm({ steamName }: Props) {
   const router = useRouter()
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
@@ -37,6 +42,12 @@ export function CandidatureForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {steamName && (
+        <div className="space-y-1.5">
+          <Label htmlFor="steamName">Pseudo Steam</Label>
+          <Input id="steamName" value={steamName} readOnly className="bg-muted text-muted-foreground cursor-default" />
+        </div>
+      )}
       <div className="space-y-1.5">
         <Label htmlFor="message">Message de motivation <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
         <Textarea

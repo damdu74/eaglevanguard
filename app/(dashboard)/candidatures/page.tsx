@@ -29,6 +29,7 @@ export default async function CandidaturesPage() {
   if (!session?.user?.id) redirect("/auth/signin")
 
   const userId = session.user.id as string
+  const steamName = session.user.name ?? null
 
   const community = await prisma.community.findFirst({ orderBy: { createdAt: "asc" } })
 
@@ -118,7 +119,7 @@ export default async function CandidaturesPage() {
               <CardTitle className="text-sm font-semibold">Postuler</CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
-              <CandidatureForm />
+              <CandidatureForm steamName={steamName} />
             </CardContent>
           </Card>
         )}
