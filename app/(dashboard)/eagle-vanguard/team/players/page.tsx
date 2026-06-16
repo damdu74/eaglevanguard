@@ -42,6 +42,7 @@ export default async function EagleVanguardPlayersPage({ searchParams }: PagePro
         discordAvatar: true,
         image: true,
         isEagleVanguardTeam: true,
+        eagleVanguardRank: { select: { name: true, color: true } },
         memberships: { where: {}, select: { communityId: true }, take: 1 },
         _count: { select: { memberships: true } },
       },

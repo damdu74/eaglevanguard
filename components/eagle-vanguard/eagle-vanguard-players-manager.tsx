@@ -21,6 +21,7 @@ interface Player {
   discordAvatar: string | null
   image: string | null
   isEagleVanguardTeam: boolean
+  eagleVanguardRank?: { name: string; color: string } | null
   isMember: boolean
   _count: { memberships: number }
 }
@@ -52,11 +53,19 @@ function PlayerRow({ player, onRemove, removingId }: {
         <span className="text-sm font-medium truncate">{displayName}</span>
       </Link>
       <div className="flex items-center gap-2 shrink-0">
-        {player.isMember ? (
+        {player.eagleVanguardRank && (
+          <span
+            className="text-xs font-medium px-2 py-0.5 rounded-full text-white"
+            style={{ backgroundColor: player.eagleVanguardRank.color }}
+          >
+            {player.eagleVanguardRank.name}
+          </span>
+        )}
+        {!player.isEagleVanguardTeam && (player.isMember ? (
           <Badge variant="default" className="text-xs">Membre</Badge>
         ) : (
           <Badge variant="outline" className="text-xs text-muted-foreground">Non membre</Badge>
-        )}
+        ))}
         {player.isMember && onRemove && (
           <Button
             size="icon"
