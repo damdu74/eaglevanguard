@@ -109,7 +109,7 @@ function ApplicationRow({ app }: { app: Application }) {
           <div className="flex gap-2">
             <Button
               size="sm"
-              className="flex-1"
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
               onClick={() => handle("ACCEPTED")}
               disabled={!!loading}
             >
@@ -119,7 +119,7 @@ function ApplicationRow({ app }: { app: Application }) {
             <Button
               size="sm"
               variant="destructive"
-              className="flex-1"
+              className="flex-1 text-white"
               onClick={() => handle("REJECTED")}
               disabled={!!loading}
             >
