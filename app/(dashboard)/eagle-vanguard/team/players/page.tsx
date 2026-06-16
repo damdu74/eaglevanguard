@@ -41,6 +41,7 @@ export default async function EagleVanguardPlayersPage({ searchParams }: PagePro
         steamAvatar: true,
         discordAvatar: true,
         image: true,
+        isEagleVanguardTeam: true,
         memberships: { where: {}, select: { communityId: true }, take: 1 },
         _count: { select: { memberships: true } },
       },
@@ -54,6 +55,9 @@ export default async function EagleVanguardPlayersPage({ searchParams }: PagePro
     isMember: communityId ? p.memberships.some(m => m.communityId === communityId) : false,
   }))
 
+  const staff = playersWithMembership.filter(p => p.isEagleVanguardTeam)
+  const members = playersWithMembership.filter(p => !p.isEagleVanguardTeam)
+
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
@@ -62,8 +66,8 @@ export default async function EagleVanguardPlayersPage({ searchParams }: PagePro
       </div>
       <EagleVanguardNav />
       <EagleVanguardPlayersManager
-        players={playersWithMembership}
-        total={playersWithMembership.length}
+        staff={staff}
+        members={members}
         initialQuery={q}
       />
     </div>

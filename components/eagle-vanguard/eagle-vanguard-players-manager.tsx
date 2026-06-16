@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Search, Users, UserMinus, Loader2 } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Search, Shield, Users, UserMinus, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 
@@ -19,21 +20,67 @@ interface Player {
   steamAvatar: string | null
   discordAvatar: string | null
   image: string | null
+  isEagleVanguardTeam: boolean
   isMember: boolean
   _count: { memberships: number }
 }
 
 interface Props {
-  players: Player[]
-  total: number
+  staff: Player[]
+  members: Player[]
   initialQuery: string
 }
 
-export function EagleVanguardPlayersManager({ players: initialPlayers, total, initialQuery }: Props) {
+function PlayerRow({ player, onRemove, removingId }: {
+  player: Player
+  onRemove?: (player: Player) => void
+  removingId: string | null
+}) {
+  const displayName = player.steamName ?? player.discordName ?? player.name ?? "Joueur"
+  const avatar = player.customAvatar ?? player.steamAvatar ?? player.discordAvatar ?? player.image
+
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t first:border-t-0">
+      <Link
+        href={`/profile/${player.id}`}
+        className="flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity"
+      >
+        <Avatar className="h-8 w-8 shrink-0">
+          <AvatarImage src={avatar ?? undefined} />
+          <AvatarFallback className="text-xs">{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <span className="text-sm font-medium truncate">{displayName}</span>
+      </Link>
+      <div className="flex items-center gap-2 shrink-0">
+        {player.isMember ? (
+          <Badge variant="default" className="text-xs">Membre</Badge>
+        ) : (
+          <Badge variant="outline" className="text-xs text-muted-foreground">Non membre</Badge>
+        )}
+        {player.isMember && onRemove && (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+            onClick={() => onRemove(player)}
+            disabled={removingId === player.id}
+            title="Retirer de la communauté"
+          >
+            {removingId === player.id
+              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              : <UserMinus className="h-3.5 w-3.5" />}
+          </Button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export function EagleVanguardPlayersManager({ staff, members: initialMembers, initialQuery }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const [, startTransition] = useTransition()
-  const [players, setPlayers] = useState<Player[]>(initialPlayers)
+  const [members, setMembers] = useState<Player[]>(initialMembers)
   const [removingId, setRemovingId] = useState<string | null>(null)
 
   const handleSearch = useCallback(
@@ -57,7 +104,7 @@ export function EagleVanguardPlayersManager({ players: initialPlayers, total, in
     try {
       const res = await fetch(`/api/eagle-vanguard/members/${player.id}/membership`, { method: "DELETE" })
       if (!res.ok) throw new Error()
-      setPlayers(prev => prev.map(p => p.id === player.id ? { ...p, isMember: false, _count: { memberships: 0 } } : p))
+      setMembers(prev => prev.map(p => p.id === player.id ? { ...p, isMember: false, _count: { memberships: 0 } } : p))
       toast.success(`${name} a été retiré de la communauté`)
     } catch {
       toast.error("Erreur lors du retrait")
@@ -66,6 +113,8 @@ export function EagleVanguardPlayersManager({ players: initialPlayers, total, in
     }
   }
 
+  const total = staff.length + members.length
+
   return (
     <div className="space-y-4">
       <div className="relative">
@@ -73,7 +122,7 @@ export function EagleVanguardPlayersManager({ players: initialPlayers, total, in
         <Input
           defaultValue={initialQuery}
           onChange={handleSearch}
-          placeholder="Rechercher un membre…"
+          placeholder="Rechercher…"
           className="pl-9"
         />
       </div>
@@ -81,59 +130,46 @@ export function EagleVanguardPlayersManager({ players: initialPlayers, total, in
       <p className="text-sm text-muted-foreground">
         {initialQuery.length >= 2
           ? `${total} résultat${total > 1 ? "s" : ""} pour « ${initialQuery} »`
-          : `${total} membre${total > 1 ? "s" : ""}`}
+          : `${total} utilisateur${total > 1 ? "s" : ""}`}
       </p>
 
-      {players.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground text-center">
-          <Users className="h-10 w-10" />
-          <p className="text-sm font-medium">
-            {initialQuery.length >= 2 ? "Aucun membre trouvé" : "Aucun membre inscrit"}
-          </p>
-        </div>
-      ) : (
-        <div className="rounded-md border divide-y">
-          {players.map((player) => {
-            const displayName = player.steamName ?? player.discordName ?? player.name ?? "Joueur"
-            const avatar = player.customAvatar ?? player.steamAvatar ?? player.discordAvatar ?? player.image
-            return (
-              <div key={player.id} className="flex items-center justify-between px-4 py-3">
-                <Link
-                  href={`/profile/${player.id}`}
-                  className="flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity"
-                >
-                  <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarImage src={avatar ?? undefined} />
-                    <AvatarFallback className="text-xs">{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium truncate">{displayName}</span>
-                </Link>
-                <div className="flex items-center gap-2 shrink-0">
-                  {player.isMember ? (
-                    <Badge variant="default" className="text-xs">Membre</Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs text-muted-foreground">Non membre</Badge>
-                  )}
-                  {player.isMember && (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeMembership(player)}
-                      disabled={removingId === player.id}
-                      title="Retirer de la communauté"
-                    >
-                      {removingId === player.id
-                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        : <UserMinus className="h-3.5 w-3.5" />}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+      {/* Staff */}
+      {staff.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+              <Shield className="h-4 w-4 text-indigo-400" />
+              Staff Eagle Vanguard ({staff.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-0 p-0">
+            {staff.map(player => (
+              <PlayerRow key={player.id} player={player} removingId={removingId} />
+            ))}
+          </CardContent>
+        </Card>
       )}
+
+      {/* Membres */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+            <Users className="h-4 w-4 text-blue-400" />
+            Membres ({members.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-0 p-0">
+          {members.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-muted-foreground border-t">
+              {initialQuery.length >= 2 ? "Aucun membre trouvé" : "Aucun membre inscrit"}
+            </p>
+          ) : (
+            members.map(player => (
+              <PlayerRow key={player.id} player={player} onRemove={removeMembership} removingId={removingId} />
+            ))
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
