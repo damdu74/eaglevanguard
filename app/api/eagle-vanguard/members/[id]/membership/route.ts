@@ -20,7 +20,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   ])
 
   await createAuditLog({
-    action: "COMMUNITY_MEMBER_REMOVED",
+    action: "MEMBER_KICKED",
     description: `Membre retiré de la communauté par le staff EV`,
     actorId: session.user.id as string,
     targetId: params.id,
