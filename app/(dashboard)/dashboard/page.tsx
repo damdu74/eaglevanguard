@@ -36,6 +36,13 @@ export default async function DashboardPage() {
     : []
 
   if (!isEV && membershipRows.length === 0) {
+    const community = await prisma.community.findFirst({ orderBy: { createdAt: "asc" } })
+    const application = community
+      ? await prisma.application.findUnique({
+          where: { communityId_userId: { communityId: community.id, userId } },
+        })
+      : null
+
     return (
       <div className="space-y-4">
         <div>
@@ -43,10 +50,21 @@ export default async function DashboardPage() {
           <p className="text-sm text-muted-foreground">Bienvenue, {displayName}</p>
         </div>
         <div className="flex flex-col items-center gap-4 py-20 text-center">
-          <p className="text-muted-foreground text-sm">Votre candidature est en attente d&apos;examen.</p>
-          <Button asChild variant="outline">
-            <Link href="/candidatures">Voir ma candidature</Link>
-          </Button>
+          {application?.status === "PENDING" ? (
+            <>
+              <p className="text-muted-foreground text-sm">Votre candidature est en attente d&apos;examen.</p>
+              <Button asChild variant="outline">
+                <Link href="/candidatures">Voir ma candidature</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-muted-foreground text-sm">Vous n&apos;êtes pas encore membre de la communauté.</p>
+              <Button asChild>
+                <Link href="/candidatures">Faire une candidature</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     )
