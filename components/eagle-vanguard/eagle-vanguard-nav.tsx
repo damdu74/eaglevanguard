@@ -3,9 +3,10 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Users, ShieldAlert, Gamepad2 } from "lucide-react"
+import { Users, ShieldAlert, Gamepad2, LayoutDashboard } from "lucide-react"
 
 const links = [
+  { href: "/eagle-vanguard/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/eagle-vanguard/team", label: "Équipe", icon: Users },
   { href: "/eagle-vanguard/moderation", label: "Modération", icon: ShieldAlert },
   { href: "/eagle-vanguard/team/players", label: "Membres", icon: Gamepad2 },
