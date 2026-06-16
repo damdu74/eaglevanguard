@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Bell, Users, ClipboardList, CheckCheck, ExternalLink, MessageCircle } from "lucide-react"
+import { Bell, Users, ClipboardList, CheckCheck, ExternalLink, MessageCircle, X } from "lucide-react"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
@@ -38,8 +38,11 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
   const [unreadCount, setUnreadCount] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState(initialUnreadMessages)
   const [open, setOpen] = useState(false)
+  const [seen, setSeen] = useState(false)
 
   const total = friendRequests + pendingApplications + unreadCount + unreadMessages
+  const hasUnread = unreadCount > 0 || friendRequests > 0 || unreadMessages > 0
+  const bellColor = total === 0 ? null : (!seen || hasUnread) ? "bg-red-600" : "bg-blue-500"
 
   useEffect(() => {
     let fallbackInterval: ReturnType<typeof setInterval> | null = null
@@ -74,11 +77,18 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
   }, [])
 
   useEffect(() => {
-    if (open && unreadCount > 0) {
-      markAllRead()
+    if (open) {
+      setSeen(true)
+      if (unreadCount > 0) markAllRead()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
+
+  // Reset seen when new unread arrives
+  useEffect(() => {
+    if (hasUnread) setSeen(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unreadCount, friendRequests, unreadMessages])
 
   async function fetchAll() {
     try {
@@ -100,6 +110,10 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
   }
 
+  function dismiss(id: string) {
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
+  }
+
   const hasActionable = friendRequests > 0 || pendingApplications > 0
   const hasNotifs = notifications.length > 0
 
@@ -111,8 +125,8 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
           title={total > 0 ? `${total} notification${total > 1 ? "s" : ""}` : "Notifications"}
         >
           <Bell className="h-4 w-4" />
-          {total > 0 && (
-            <span className={`absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-white ${unreadCount > 0 || friendRequests > 0 || unreadMessages > 0 ? "bg-red-600" : "bg-blue-500"}`}>
+          {bellColor && (
+            <span className={`absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-white ${bellColor}`}>
               {total > 9 ? "9+" : total}
             </span>
           )}
@@ -150,7 +164,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
                 </p>
                 <p className="text-xs text-muted-foreground">Voir les messages</p>
               </div>
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shrink-0">
+              <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shrink-0 ${!seen ? "bg-red-600" : "bg-blue-500"}`}>
                 {unreadMessages > 9 ? "9+" : unreadMessages}
               </span>
             </Link>
@@ -174,7 +188,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
                     </p>
                     <p className="text-xs text-muted-foreground">En attente de réponse</p>
                   </div>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shrink-0">
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shrink-0 ${!seen ? "bg-red-600" : "bg-blue-500"}`}>
                     {friendRequests > 9 ? "9+" : friendRequests}
                   </span>
                 </Link>
@@ -194,7 +208,7 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
                     </p>
                     <p className="text-xs text-muted-foreground">À traiter</p>
                   </div>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shrink-0">
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shrink-0 ${!seen ? "bg-red-600" : "bg-blue-500"}`}>
                     {pendingApplications > 9 ? "9+" : pendingApplications}
                   </span>
                 </Link>
@@ -218,20 +232,29 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
                     {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: fr })}
                   </p>
                 </div>
-                {n.link && (
-                  <Link
-                    href={n.link}
-                    onClick={() => setOpen(false)}
-                    className="shrink-0 text-muted-foreground hover:text-foreground mt-0.5"
+                <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                  {n.link && (
+                    <Link
+                      href={n.link}
+                      onClick={() => setOpen(false)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Link>
+                  )}
+                  <span className={`h-2 w-2 rounded-full ${!n.read ? "bg-red-500" : "bg-blue-400"}`} />
+                  <button
+                    onClick={() => dismiss(n.id)}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    title="Supprimer"
                   >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </Link>
-                )}
-                <span className={`h-2 w-2 rounded-full shrink-0 mt-2 ${!n.read ? "bg-red-500" : "bg-blue-400"}`} />
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             ))
           ) : (
-            !hasActionable && (
+            !hasActionable && !unreadMessages && (
               <div className="px-4 py-8 text-center text-sm text-muted-foreground">
                 Aucune notification
               </div>
