@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { EagleVanguardNav } from "@/components/eagle-vanguard/eagle-vanguard-nav"
-import { Users, FileText, Shield, UserPlus, Clock } from "lucide-react"
+import { Users, FileText, Shield, UserPlus, Clock, ArrowRight } from "lucide-react"
 import Link from "next/link"
 
 export const dynamic = "force-dynamic"
@@ -48,9 +48,9 @@ export default async function EagleVanguardDashboardPage() {
   ])
 
   const statItems = [
-    { label: "Membres Eagle Vanguard", value: teamSize, icon: Shield, color: "text-indigo-400" },
-    { label: "Utilisateurs inscrits", value: totalUsers, icon: Users, color: "text-blue-400" },
-    { label: "Candidatures en attente", value: pendingApplications, icon: FileText, color: "text-orange-400" },
+    { label: "Membres Eagle Vanguard", value: teamSize, icon: Shield, color: "text-indigo-400", href: null },
+    { label: "Utilisateurs inscrits", value: totalUsers, icon: Users, color: "text-blue-400", href: null },
+    { label: "Candidatures en attente", value: pendingApplications, icon: FileText, color: "text-orange-400", href: "/eagle-vanguard/candidatures" },
   ]
 
   return (
@@ -63,15 +63,28 @@ export default async function EagleVanguardDashboardPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        {statItems.map(({ label, value, icon: Icon, color }) => (
-          <Card key={label}>
-            <CardContent className="flex items-center gap-3 py-4 px-4">
-              <Icon className={`h-5 w-5 shrink-0 ${color}`} />
-              <div>
-                <p className="text-2xl font-bold leading-none">{value}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{label}</p>
-              </div>
-            </CardContent>
+        {statItems.map(({ label, value, icon: Icon, color, href }) => (
+          <Card key={label} className={href ? "hover:bg-muted/50 transition-colors" : ""}>
+            {href ? (
+              <Link href={href}>
+                <CardContent className="flex items-center gap-3 py-4 px-4">
+                  <Icon className={`h-5 w-5 shrink-0 ${color}`} />
+                  <div className="flex-1">
+                    <p className="text-2xl font-bold leading-none">{value}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{label}</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                </CardContent>
+              </Link>
+            ) : (
+              <CardContent className="flex items-center gap-3 py-4 px-4">
+                <Icon className={`h-5 w-5 shrink-0 ${color}`} />
+                <div>
+                  <p className="text-2xl font-bold leading-none">{value}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{label}</p>
+                </div>
+              </CardContent>
+            )}
           </Card>
         ))}
       </div>
