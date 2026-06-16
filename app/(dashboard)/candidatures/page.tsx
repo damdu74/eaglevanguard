@@ -46,7 +46,7 @@ export default async function CandidaturesPage() {
   const canApply = !applications.some((a) => a.status === "PENDING")
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Mes candidatures</h1>
         <p className="text-sm text-muted-foreground">
