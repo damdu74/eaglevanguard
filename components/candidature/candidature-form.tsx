@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Props {
   steamName?: string | null
@@ -26,7 +25,6 @@ function calcAge(dob: string): number | null {
 export function CandidatureForm({ steamName }: Props) {
   const router = useRouter()
   const [dob, setDob] = useState("")
-  const [genre, setGenre] = useState("")
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +39,7 @@ export function CandidatureForm({ steamName }: Props) {
       const res = await fetch("/api/candidature", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, age, genre: genre || null }),
+        body: JSON.stringify({ message, age }),
       })
       if (!res.ok) {
         const data = await res.json()
@@ -80,20 +78,6 @@ export function CandidatureForm({ steamName }: Props) {
             <span className="text-sm text-muted-foreground">{age} ans</span>
           )}
         </div>
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="genre">Genre</Label>
-        <Select value={genre} onValueChange={setGenre}>
-          <SelectTrigger id="genre" className="w-44">
-            <SelectValue placeholder="Sélectionner…" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Homme">Homme</SelectItem>
-            <SelectItem value="Femme">Femme</SelectItem>
-            <SelectItem value="Autre">Autre</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="space-y-1.5">

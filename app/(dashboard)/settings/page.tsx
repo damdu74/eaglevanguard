@@ -14,7 +14,7 @@ export default async function SettingsPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { theme: true },
+    select: { theme: true, genre: true },
   })
 
   if (!user) redirect("/auth/signin")
@@ -28,7 +28,7 @@ export default async function SettingsPage() {
         </Link>
         <h1 className="text-2xl font-bold">Paramètres</h1>
       </div>
-      <SettingsForm theme={user.theme} />
+      <SettingsForm theme={user.theme} genre={user.genre ?? null} />
     </div>
   )
 }

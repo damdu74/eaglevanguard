@@ -69,6 +69,7 @@ model User {
   steamAvatar   String?
   customAvatar  String?
   bio           String?           @db.Text
+  genre         String?
   theme         String            @default("system")
   visibility    ProfileVisibility @default(PUBLIC)
   discordId     String?           @unique

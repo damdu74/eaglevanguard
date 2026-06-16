@@ -11,7 +11,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
   }
 
-  const { bio, visibility, theme } = await req.json()
+  const { bio, visibility, theme, genre } = await req.json()
 
   const validVisibility = ["PUBLIC", "FRIENDS", "PRIVATE"]
   const validThemes = ["light", "dark", "system"]
@@ -22,6 +22,7 @@ export async function PATCH(req: NextRequest) {
       ...(bio !== undefined && { bio: bio.trim() || null }),
       ...(visibility && validVisibility.includes(visibility) && { visibility }),
       ...(theme && validThemes.includes(theme) && { theme }),
+      ...(genre !== undefined && { genre: ["Homme", "Femme", "Autre"].includes(genre) ? genre : null }),
     },
   })
 
