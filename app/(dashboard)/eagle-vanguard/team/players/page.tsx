@@ -31,7 +31,7 @@ export default async function EagleVanguardPlayersPage({ searchParams }: PagePro
   const [community, players] = await Promise.all([
     prisma.community.findFirst({ orderBy: { createdAt: "asc" }, select: { id: true } }),
     prisma.user.findMany({
-      where: { isEagleVanguardTeam: false, ...searchFilter },
+      where: { ...searchFilter },
       select: {
         id: true,
         steamName: true,
