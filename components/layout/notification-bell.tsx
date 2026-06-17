@@ -38,11 +38,15 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
   const [unreadCount, setUnreadCount] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState(initialUnreadMessages)
   const [open, setOpen] = useState(false)
-  const [seenCounts, setSeenCounts] = useState<{ fr: number; pa: number; um: number; uc: number } | null>(() => {
+  const [seenCounts, setSeenCounts] = useState<{ fr: number; pa: number; um: number; uc: number } | null>(null)
+
+  // Lecture localStorage après hydration (évite les erreurs SSR)
+  useEffect(() => {
     try {
-      return JSON.parse(localStorage.getItem("notif-seen") ?? "null")
-    } catch { return null }
-  })
+      const saved = JSON.parse(localStorage.getItem("notif-seen") ?? "null")
+      setSeenCounts(saved)
+    } catch {}
+  }, [])
 
   const total = friendRequests + pendingApplications + unreadCount + unreadMessages
 
