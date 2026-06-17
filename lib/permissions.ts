@@ -54,6 +54,7 @@ export const ROLE_LABELS: Record<MemberRole, string> = {
 
 export const EAGLE_VANGUARD_PERMISSIONS = [
   "MANAGE_TEAM",         // ajouter/retirer des membres Eagle Vanguard, changer leurs rôles
+  "MANAGE_ROLES",        // définir qui peut attribuer quels rôles
   "MANAGE_RANKS",        // créer/modifier/supprimer les rangs Eagle Vanguard
   "GLOBAL_MODERATION",   // accès à la modération globale (WARN, KICK, BAN)
   "BAN_PLATFORM",        // bannir/débannir de la plateforme
@@ -64,6 +65,7 @@ export type EagleVanguardPermission = typeof EAGLE_VANGUARD_PERMISSIONS[number]
 
 export const EAGLE_VANGUARD_PERMISSION_LABELS: Record<EagleVanguardPermission, string> = {
   MANAGE_TEAM:       "Gérer l'équipe Eagle Vanguard",
+  MANAGE_ROLES:      "Gérer les rôles",
   MANAGE_RANKS:      "Gérer les fonctions",
   GLOBAL_MODERATION: "Modération globale",
   BAN_PLATFORM:      "Bannir de la plateforme",
