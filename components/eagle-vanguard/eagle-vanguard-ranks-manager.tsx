@@ -280,6 +280,7 @@ function RolesSection({ ranks, setRanks }: {
                     <div key={perm}>
                       <div className="flex items-center justify-between px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-sm">{EAGLE_VANGUARD_PERMISSION_LABELS[perm]}</span>
                           {perm === "MANAGE_TEAM" && (
                             <button
                               onClick={() => setAssignableOpen(o => !o)}
@@ -288,7 +289,6 @@ function RolesSection({ ranks, setRanks }: {
                               <ChevronRight className={`h-3.5 w-3.5 transition-transform ${assignableOpen ? "rotate-90" : ""}`} />
                             </button>
                           )}
-                          <span className="text-sm">{EAGLE_VANGUARD_PERMISSION_LABELS[perm]}</span>
                         </div>
                         <Switch checked={selectedRank.permissions.includes(perm)} onCheckedChange={() => togglePermission(perm)} />
                       </div>
