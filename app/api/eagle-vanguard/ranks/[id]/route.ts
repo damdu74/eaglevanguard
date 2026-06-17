@@ -19,7 +19,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!rank) return NextResponse.json({ error: "Grade introuvable" }, { status: 404 })
   if (rank.isProtected) return NextResponse.json({ error: "Ce grade est protégé" }, { status: 403 })
 
-  const { name, abbreviation, order, color, category, permissions } = await req.json()
+  const { name, abbreviation, order, color, category, permissions, assignableRankIds } = await req.json()
 
   const updated = await prisma.eagleVanguardRank.update({
     where: { id: params.id },
@@ -32,6 +32,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(Array.isArray(permissions) && {
         permissions: permissions.filter((p: string) => EAGLE_VANGUARD_PERMISSIONS.includes(p as typeof EAGLE_VANGUARD_PERMISSIONS[number])),
       }),
+      ...(Array.isArray(assignableRankIds) && { assignableRankIds }),
     },
   })
 
