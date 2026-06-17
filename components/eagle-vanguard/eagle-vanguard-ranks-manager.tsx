@@ -340,7 +340,7 @@ function RolesSection({ ranks, setRanks, isSuperAdmin }: {
                       )}
                       {perm === "MANAGE_ROLES" && assignableOpen && (
                         <div className="ml-6 mb-1 border-l pl-3 space-y-0.5">
-                          {roleRanks.filter(r => r.id !== selectedRank.id).map(r => (
+                          {roleRanks.filter(r => r.id !== selectedRank.id && !r.isHidden).map(r => (
                             <div key={r.id} className="flex items-center justify-between px-2 py-2 rounded-md hover:bg-muted/50 transition-colors">
                               <div className="flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
