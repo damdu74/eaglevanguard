@@ -28,7 +28,7 @@ export default async function EagleVanguardPlayersPage({ searchParams }: PagePro
       }
     : {}
 
-  const [community, players] = await Promise.all([
+  const [community, players, pendingApps] = await Promise.all([
     prisma.community.findFirst({ orderBy: { createdAt: "asc" }, select: { id: true } }),
     prisma.user.findMany({
       where: { ...searchFilter },
@@ -48,12 +48,18 @@ export default async function EagleVanguardPlayersPage({ searchParams }: PagePro
       },
       orderBy: { createdAt: "asc" },
     }),
+    prisma.application.findMany({
+      where: { status: "PENDING" },
+      select: { userId: true },
+    }),
   ])
 
   const communityId = community?.id ?? null
+  const pendingUserIds = new Set(pendingApps.map(a => a.userId))
   const playersWithMembership = players.map(p => ({
     ...p,
     isMember: communityId ? p.memberships.some(m => m.communityId === communityId) : false,
+    hasPendingApplication: pendingUserIds.has(p.id),
   }))
 
   const staff = playersWithMembership.filter(p => p.isEagleVanguardTeam)
