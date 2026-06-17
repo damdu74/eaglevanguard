@@ -12,6 +12,22 @@ export async function GET() {
   return NextResponse.json(ranks)
 }
 
+export async function PUT(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+  if (!await checkEagleVanguardPermission(session.user.id, "MANAGE_RANKS")) {
+    return NextResponse.json({ error: "Permission MANAGE_RANKS requise" }, { status: 403 })
+  }
+
+  const items: { id: string; order: number }[] = await req.json()
+  await Promise.all(
+    items.map(({ id, order }) =>
+      prisma.eagleVanguardRank.update({ where: { id }, data: { order } })
+    )
+  )
+  return NextResponse.json({ ok: true })
+}
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
