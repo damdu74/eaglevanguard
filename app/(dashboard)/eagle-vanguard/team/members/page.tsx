@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { EagleVanguardMembersManager } from "@/components/eagle-vanguard/eagle-vanguard-members-manager"
 import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, Settings } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Membres — Eagle Vanguard Team" }
