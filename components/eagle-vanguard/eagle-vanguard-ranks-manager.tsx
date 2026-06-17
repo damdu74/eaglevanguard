@@ -81,11 +81,12 @@ async function saveOrder(items: EagleVanguardRank[]) {
   }
 }
 
-function RolesSection({ ranks, setRanks }: {
+function RolesSection({ ranks, setRanks, isSuperAdmin }: {
   ranks: EagleVanguardRank[]
   setRanks: React.Dispatch<React.SetStateAction<EagleVanguardRank[]>>
+  isSuperAdmin: boolean
 }) {
-  const roleRanks = ranks.filter(r => r.category === "ROLE")
+  const roleRanks = ranks.filter(r => r.category === "ROLE" && (!r.isHidden || isSuperAdmin))
 
   const [selectedId, setSelectedId] = useState<string | null>(roleRanks[0]?.id ?? null)
   const selectedRank = roleRanks.find(r => r.id === selectedId) ?? null
