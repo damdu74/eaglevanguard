@@ -33,6 +33,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         permissions: permissions.filter((p: string) => EAGLE_VANGUARD_PERMISSIONS.includes(p as typeof EAGLE_VANGUARD_PERMISSIONS[number])),
       }),
       ...(Array.isArray(assignableRankIds) && { assignableRankIds }),
+      ...(Array.isArray(assignableFunctionIds) && { assignableFunctionIds }),
     },
   })
 
