@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
-import { Loader2, Plus, Trash2, Check, Lock } from "lucide-react"
+import { Loader2, Plus, Trash2, Check, Lock, GripVertical } from "lucide-react"
 import { EAGLE_VANGUARD_PERMISSIONS, EAGLE_VANGUARD_PERMISSION_LABELS, type EagleVanguardPermission } from "@/lib/permissions"
 
 interface EagleVanguardRank {
@@ -25,6 +25,58 @@ interface Props {
   initialRanks: EagleVanguardRank[]
 }
 
+function useSortable(
+  items: EagleVanguardRank[],
+  onReorder: (reordered: EagleVanguardRank[]) => void
+) {
+  const [dragId, setDragId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
+
+  function onDragStart(e: React.DragEvent, id: string) {
+    setDragId(id)
+    e.dataTransfer.effectAllowed = "move"
+  }
+
+  function onDragOver(e: React.DragEvent, id: string) {
+    e.preventDefault()
+    if (id !== dragId) setDragOverId(id)
+  }
+
+  function onDrop(e: React.DragEvent, id: string) {
+    e.preventDefault()
+    if (!dragId || dragId === id) return
+    const fromIdx = items.findIndex(r => r.id === dragId)
+    const toIdx = items.findIndex(r => r.id === id)
+    if (fromIdx < 0 || toIdx < 0) return
+    const next = [...items]
+    const [moved] = next.splice(fromIdx, 1)
+    next.splice(toIdx, 0, moved)
+    onReorder(next.map((r, i) => ({ ...r, order: i })))
+    setDragId(null)
+    setDragOverId(null)
+  }
+
+  function onDragEnd() {
+    setDragId(null)
+    setDragOverId(null)
+  }
+
+  return { dragId, dragOverId, onDragStart, onDragOver, onDrop, onDragEnd }
+}
+
+async function saveOrder(items: EagleVanguardRank[]) {
+  try {
+    const res = await fetch("/api/eagle-vanguard/ranks", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(items.map(r => ({ id: r.id, order: r.order }))),
+    })
+    if (!res.ok) throw new Error()
+  } catch {
+    toast.error("Erreur lors de la sauvegarde de l'ordre")
+  }
+}
+
 function RolesSection({ ranks, setRanks }: {
   ranks: EagleVanguardRank[]
   setRanks: React.Dispatch<React.SetStateAction<EagleVanguardRank[]>>
@@ -38,10 +90,20 @@ function RolesSection({ ranks, setRanks }: {
   const [editColor, setEditColor] = useState(selectedRank?.color ?? "#6366f1")
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
-
   const [newName, setNewName] = useState("")
   const [newColor, setNewColor] = useState("#6366f1")
   const [creating, setCreating] = useState(false)
+
+  const { dragId, dragOverId, onDragStart, onDragOver, onDrop, onDragEnd } = useSortable(
+    roleRanks,
+    (reordered) => {
+      setRanks(prev => {
+        const others = prev.filter(r => r.category !== "ROLE")
+        return [...others, ...reordered]
+      })
+      saveOrder(reordered)
+    }
+  )
 
   function selectRole(rank: EagleVanguardRank) {
     setSelectedId(rank.id)
@@ -130,15 +192,27 @@ function RolesSection({ ranks, setRanks }: {
           <div className="w-44 border-r flex flex-col shrink-0">
             <div className="flex-1 overflow-y-auto">
               {roleRanks.map(rank => (
-                <button
+                <div
                   key={rank.id}
-                  onClick={() => selectRole(rank)}
-                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-muted/50 ${selectedId === rank.id ? "bg-muted" : ""}`}
+                  draggable
+                  onDragStart={e => onDragStart(e, rank.id)}
+                  onDragOver={e => onDragOver(e, rank.id)}
+                  onDrop={e => onDrop(e, rank.id)}
+                  onDragEnd={onDragEnd}
+                  className={`flex items-center gap-1 transition-colors border-t-2 first:border-t-0 ${dragOverId === rank.id ? "border-t-primary" : "border-t-transparent"} ${dragId === rank.id ? "opacity-40" : ""}`}
                 >
-                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: rank.color }} />
-                  <span className="text-sm truncate flex-1">{rank.name}</span>
-                  {rank.isProtected && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
-                </button>
+                  <span className="pl-1 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground shrink-0">
+                    <GripVertical className="h-3.5 w-3.5" />
+                  </span>
+                  <button
+                    onClick={() => selectRole(rank)}
+                    className={`flex-1 flex items-center gap-2 pr-3 py-2.5 text-left transition-colors hover:bg-muted/50 min-w-0 ${selectedId === rank.id ? "bg-muted" : ""}`}
+                  >
+                    <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: rank.color }} />
+                    <span className="text-sm truncate flex-1">{rank.name}</span>
+                    {rank.isProtected && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
+                  </button>
+                </div>
               ))}
             </div>
 
@@ -184,49 +258,23 @@ function RolesSection({ ranks, setRanks }: {
               </div>
             ) : (
               <div className="space-y-4">
-                {/* Éditeur nom + couleur */}
                 <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={editColor}
-                    onChange={e => setEditColor(e.target.value)}
-                    className="h-8 w-8 cursor-pointer rounded border border-border shrink-0"
-                  />
-                  <Input
-                    value={editName}
-                    onChange={e => setEditName(e.target.value)}
-                    className="h-8 text-sm font-semibold"
-                  />
+                  <input type="color" value={editColor} onChange={e => setEditColor(e.target.value)} className="h-8 w-8 cursor-pointer rounded border border-border shrink-0" />
+                  <Input value={editName} onChange={e => setEditName(e.target.value)} className="h-8 text-sm font-semibold" />
                 </div>
-
                 <Separator />
-
-                {/* Permissions */}
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Permissions</p>
                 <div className="space-y-0.5">
                   {EAGLE_VANGUARD_PERMISSIONS.map(perm => (
-                    <div
-                      key={perm}
-                      className="flex items-center justify-between px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors"
-                    >
+                    <div key={perm} className="flex items-center justify-between px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors">
                       <span className="text-sm">{EAGLE_VANGUARD_PERMISSION_LABELS[perm]}</span>
-                      <Switch
-                        checked={selectedRank.permissions.includes(perm)}
-                        onCheckedChange={() => togglePermission(perm)}
-                      />
+                      <Switch checked={selectedRank.permissions.includes(perm)} onCheckedChange={() => togglePermission(perm)} />
                     </div>
                   ))}
                 </div>
-
                 <Separator />
-
                 <div className="flex items-center justify-between">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={deleteRole}
-                    disabled={deleting || saving}
-                  >
+                  <Button variant="destructive" size="sm" onClick={deleteRole} disabled={deleting || saving}>
                     {deleting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Trash2 className="h-3 w-3 mr-1" />}
                     Supprimer
                   </Button>
@@ -257,10 +305,20 @@ function FunctionsSection({ ranks, setRanks }: {
   const [editColor, setEditColor] = useState(selectedFn?.color ?? "#6366f1")
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
-
   const [newName, setNewName] = useState("")
   const [newColor, setNewColor] = useState("#6366f1")
   const [creating, setCreating] = useState(false)
+
+  const { dragId, dragOverId, onDragStart, onDragOver, onDrop, onDragEnd } = useSortable(
+    fnRanks,
+    (reordered) => {
+      setRanks(prev => {
+        const others = prev.filter(r => r.category !== "FUNCTION")
+        return [...others, ...reordered]
+      })
+      saveOrder(reordered)
+    }
+  )
 
   function selectFn(rank: EagleVanguardRank) {
     setSelectedId(rank.id)
@@ -343,14 +401,26 @@ function FunctionsSection({ ranks, setRanks }: {
                 <p className="text-xs text-muted-foreground px-3 py-4 text-center">Aucune fonction.</p>
               )}
               {fnRanks.map(rank => (
-                <button
+                <div
                   key={rank.id}
-                  onClick={() => selectFn(rank)}
-                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-muted/50 ${selectedId === rank.id ? "bg-muted" : ""}`}
+                  draggable
+                  onDragStart={e => onDragStart(e, rank.id)}
+                  onDragOver={e => onDragOver(e, rank.id)}
+                  onDrop={e => onDrop(e, rank.id)}
+                  onDragEnd={onDragEnd}
+                  className={`flex items-center gap-1 transition-colors border-t-2 first:border-t-0 ${dragOverId === rank.id ? "border-t-primary" : "border-t-transparent"} ${dragId === rank.id ? "opacity-40" : ""}`}
                 >
-                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: rank.color }} />
-                  <span className="text-sm truncate flex-1">{rank.name}</span>
-                </button>
+                  <span className="pl-1 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground shrink-0">
+                    <GripVertical className="h-3.5 w-3.5" />
+                  </span>
+                  <button
+                    onClick={() => selectFn(rank)}
+                    className={`flex-1 flex items-center gap-2 pr-3 py-2.5 text-left transition-colors hover:bg-muted/50 min-w-0 ${selectedId === rank.id ? "bg-muted" : ""}`}
+                  >
+                    <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: rank.color }} />
+                    <span className="text-sm truncate flex-1">{rank.name}</span>
+                  </button>
+                </div>
               ))}
             </div>
 
@@ -379,32 +449,14 @@ function FunctionsSection({ ranks, setRanks }: {
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={editColor}
-                    onChange={e => setEditColor(e.target.value)}
-                    className="h-8 w-8 cursor-pointer rounded border border-border shrink-0"
-                  />
-                  <Input
-                    value={editName}
-                    onChange={e => setEditName(e.target.value)}
-                    className="h-8 text-sm font-semibold"
-                  />
+                  <input type="color" value={editColor} onChange={e => setEditColor(e.target.value)} className="h-8 w-8 cursor-pointer rounded border border-border shrink-0" />
+                  <Input value={editName} onChange={e => setEditName(e.target.value)} className="h-8 text-sm font-semibold" />
                 </div>
-
                 <Separator />
-
                 <p className="text-xs text-muted-foreground">Les fonctions sont décoratives et n&apos;accordent aucune permission sur la plateforme.</p>
-
                 <Separator />
-
                 <div className="flex items-center justify-between">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={deleteFn}
-                    disabled={deleting || saving}
-                  >
+                  <Button variant="destructive" size="sm" onClick={deleteFn} disabled={deleting || saving}>
                     {deleting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Trash2 className="h-3 w-3 mr-1" />}
                     Supprimer
                   </Button>
