@@ -67,7 +67,7 @@ function PlayerRow({ player, onRemove, removingId }: {
         ) : (
           <>
             {player.hasPendingApplication && (
-              <span title="Candidature en attente"><Hourglass className="h-3.5 w-3.5 text-orange-400 animate-pulse" /></span>
+              <span title="Candidature en attente"><Hourglass className="h-3.5 w-3.5 text-orange-400 animate-hourglass" /></span>
             )}
             <Badge variant="outline" className="text-xs text-muted-foreground">Non membre</Badge>
           </>
