@@ -356,19 +356,19 @@ function FunctionsSection({ ranks, setRanks }: {
 
             {/* Ajout d'une nouvelle fonction */}
             <div className="border-t p-2 space-y-1.5">
-              <Input
-                value={newName}
-                onChange={e => setNewName(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && createFn()}
-                placeholder="Nouvelle fonction"
-                className="h-7 text-xs"
-              />
               <div className="flex items-center gap-1.5">
-                <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="h-7 w-8 cursor-pointer rounded border border-border" />
-                <Button size="sm" className="h-7 flex-1 text-xs px-2" onClick={createFn} disabled={creating || !newName.trim()}>
-                  {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Plus className="h-3 w-3 mr-1" />Créer</>}
-                </Button>
+                <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="h-7 w-8 cursor-pointer rounded border border-border shrink-0" />
+                <Input
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && createFn()}
+                  placeholder="Nouvelle fonction"
+                  className="h-7 text-xs"
+                />
               </div>
+              <Button size="sm" className="h-7 w-full text-xs" onClick={createFn} disabled={creating || !newName.trim()}>
+                {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Plus className="h-3 w-3 mr-1" />Créer</>}
+              </Button>
             </div>
           </div>
 
