@@ -60,7 +60,7 @@ export default async function EagleVanguardMembersPage({
             <p className="text-sm text-muted-foreground">Gérez les membres, leurs rôles et fonctions.</p>
           </div>
           <Link
-            href="/eagle-vanguard/team/ranks"
+            href={`/eagle-vanguard/team/ranks?from=${searchParams.from ?? "team"}`}
             className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted transition-colors"
             title="Rôles et Fonctions"
           >
