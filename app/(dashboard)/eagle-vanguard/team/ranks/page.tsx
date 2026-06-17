@@ -19,9 +19,17 @@ export default async function EagleVanguardRanksPage({
   const session = await getServerSession(authOptions)
   if (!session?.user?.isEagleVanguardTeam) redirect("/dashboard")
 
-  const isSuperAdmin = session.user.email === CREATOR_EMAIL
+  const [ranks, currentUser] = await Promise.all([
+    prisma.eagleVanguardRank.findMany({ orderBy: { order: "asc" } }),
+    prisma.user.findUnique({
+      where: { id: session.user.id as string },
+      select: { eagleVanguardRank: { select: { isHidden: true } } },
+    }),
+  ])
 
-  const ranks = await prisma.eagleVanguardRank.findMany({ orderBy: { order: "asc" } })
+  const isSuperAdmin =
+    session.user.email === CREATOR_EMAIL ||
+    (currentUser?.eagleVanguardRank?.isHidden ?? false)
 
   const backHref = `/eagle-vanguard/team/members${searchParams.from ? `?from=${searchParams.from}` : ""}`
 
