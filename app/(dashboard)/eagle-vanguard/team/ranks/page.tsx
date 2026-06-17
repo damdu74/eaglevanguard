@@ -14,8 +14,12 @@ export default async function EagleVanguardRanksPage({
 }: {
   searchParams: { from?: string }
 }) {
+  const CREATOR_EMAIL = "dam.moutou@gmail.com"
+
   const session = await getServerSession(authOptions)
   if (!session?.user?.isEagleVanguardTeam) redirect("/dashboard")
+
+  const isSuperAdmin = session.user.email === CREATOR_EMAIL
 
   const ranks = await prisma.eagleVanguardRank.findMany({ orderBy: { order: "asc" } })
 
@@ -35,7 +39,7 @@ export default async function EagleVanguardRanksPage({
         <p className="text-sm text-muted-foreground">Hiérarchie interne du staff de la plateforme.</p>
       </div>
 
-      <EagleVanguardRanksManager initialRanks={ranks} />
+      <EagleVanguardRanksManager initialRanks={ranks} isSuperAdmin={isSuperAdmin} />
     </div>
   )
 }
