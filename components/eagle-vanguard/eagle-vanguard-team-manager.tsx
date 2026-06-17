@@ -19,25 +19,37 @@ interface Props {
 export function EagleVanguardTeamManager({ stats }: Props) {
 
   const statItems = [
-    { label: "Eagle Vanguard Team", value: stats.teamSize, icon: Shield, color: "text-indigo-400" },
-    { label: "Membres", value: stats.totalUsers, icon: Users, color: "text-blue-400" },
-    { label: "Candidatures en attente", value: stats.pendingApplications, icon: FileText, color: "text-orange-400" },
+    { label: "Eagle Vanguard Team", value: stats.teamSize, icon: Shield, color: "text-indigo-400", href: null },
+    { label: "Membres", value: stats.totalUsers, icon: Users, color: "text-blue-400", href: "/eagle-vanguard/team/players" },
+    { label: "Candidatures en attente", value: stats.pendingApplications, icon: FileText, color: "text-orange-400", href: "/eagle-vanguard/candidatures" },
   ]
 
   return (
     <div className="space-y-6">
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {statItems.map(({ label, value, icon: Icon, color }) => (
-          <Card key={label}>
-            <CardContent className="flex items-center gap-3 py-4 px-4">
-              <Icon className={`h-5 w-5 shrink-0 ${color}`} />
-              <div>
-                <p className="text-xl font-bold leading-none">{value}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{label}</p>
-              </div>
-            </CardContent>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {statItems.map(({ label, value, icon: Icon, color, href }) => (
+          <Card key={label} className={href ? "hover:bg-muted/50 transition-colors" : ""}>
+            {href ? (
+              <Link href={href}>
+                <CardContent className="flex flex-col items-center py-3 px-4 gap-1.5">
+                  <p className="text-xs font-medium text-muted-foreground text-center">{label}</p>
+                  <div className="flex items-center gap-2">
+                    <Icon className={`h-4 w-4 shrink-0 ${color}`} />
+                    <p className="text-xl font-bold leading-none">{value}</p>
+                  </div>
+                </CardContent>
+              </Link>
+            ) : (
+              <CardContent className="flex flex-col items-center py-3 px-4 gap-1.5">
+                <p className="text-xs font-medium text-muted-foreground text-center">{label}</p>
+                <div className="flex items-center gap-2">
+                  <Icon className={`h-4 w-4 shrink-0 ${color}`} />
+                  <p className="text-xl font-bold leading-none">{value}</p>
+                </div>
+              </CardContent>
+            )}
           </Card>
         ))}
       </div>
