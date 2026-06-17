@@ -18,6 +18,7 @@ interface EagleVanguardRank {
   order: number
   color: string
   isProtected: boolean
+  isHidden: boolean
   category: string
 }
 
