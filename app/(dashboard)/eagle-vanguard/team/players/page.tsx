@@ -19,6 +19,9 @@ export default async function EagleVanguardPlayersPage({ searchParams }: PagePro
   if (!session?.user?.isEagleVanguardTeam) redirect("/dashboard")
 
   const q = searchParams.q?.trim() ?? ""
+  const fromDashboard = searchParams.from === "dashboard"
+  const backHref = fromDashboard ? "/eagle-vanguard/dashboard" : "/eagle-vanguard/team"
+  const backLabel = fromDashboard ? "Tableau de bord" : "Equipe"
 
   const searchFilter = q.length >= 2
     ? {
