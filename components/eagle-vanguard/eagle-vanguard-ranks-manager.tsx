@@ -564,12 +564,12 @@ function FunctionsSection({ ranks, setRanks }: {
   )
 }
 
-export function EagleVanguardRanksManager({ initialRanks }: Props) {
+export function EagleVanguardRanksManager({ initialRanks, isSuperAdmin }: Props) {
   const [ranks, setRanks] = useState<EagleVanguardRank[]>(initialRanks)
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <RolesSection ranks={ranks} setRanks={setRanks} />
+      <RolesSection ranks={ranks} setRanks={setRanks} isSuperAdmin={isSuperAdmin} />
       <FunctionsSection ranks={ranks} setRanks={setRanks} />
     </div>
   )
