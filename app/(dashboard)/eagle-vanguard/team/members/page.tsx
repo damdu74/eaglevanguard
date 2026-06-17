@@ -83,6 +83,7 @@ export default async function EagleVanguardMembersPage({
         initialRanks={ranks}
         initialMembers={members}
         currentUserId={session.user.id}
+        isSuperAdmin={isSuperAdmin}
       />
     </div>
   )
