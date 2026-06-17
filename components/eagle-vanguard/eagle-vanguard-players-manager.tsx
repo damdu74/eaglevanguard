@@ -65,10 +65,12 @@ function PlayerRow({ player, onRemove, removingId }: {
         {!player.isEagleVanguardTeam && (player.isMember ? (
           <Badge variant="default" className="text-xs">Membre</Badge>
         ) : (
-          <Badge variant="outline" className="text-xs text-muted-foreground flex items-center gap-1">
-            {player.hasPendingApplication && <Hourglass className="h-3 w-3" />}
-            Non membre
-          </Badge>
+          <>
+            {player.hasPendingApplication && (
+              <Hourglass className="h-3.5 w-3.5 text-orange-400" title="Candidature en attente" />
+            )}
+            <Badge variant="outline" className="text-xs text-muted-foreground">Non membre</Badge>
+          </>
         ))}
         {player.isMember && onRemove && (
           <Button
