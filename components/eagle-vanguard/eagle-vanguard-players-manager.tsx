@@ -23,6 +23,7 @@ interface Player {
   isEagleVanguardTeam: boolean
   eagleVanguardRank?: { name: string; color: string } | null
   isMember: boolean
+  hasPendingApplication: boolean
   _count: { memberships: number }
 }
 
