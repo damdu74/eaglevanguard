@@ -48,8 +48,8 @@ export default async function EagleVanguardDashboardPage() {
   ])
 
   const statItems = [
-    { label: "Membres Eagle Vanguard", value: teamSize, icon: Shield, color: "text-indigo-400", href: null },
-    { label: "Utilisateurs inscrits", value: totalUsers, icon: Users, color: "text-blue-400", href: "/eagle-vanguard/team/players" },
+    { label: "Eagle Vanguard Team", value: teamSize, icon: Shield, color: "text-indigo-400", href: null },
+    { label: "Membres", value: totalUsers, icon: Users, color: "text-blue-400", href: "/eagle-vanguard/team/players" },
     { label: "Candidatures en attente", value: pendingApplications, icon: FileText, color: "text-orange-400", href: "/eagle-vanguard/candidatures" },
   ]
 
