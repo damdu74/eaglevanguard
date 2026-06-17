@@ -94,6 +94,7 @@ function RolesSection({ ranks, setRanks }: {
   const [newName, setNewName] = useState("")
   const [newColor, setNewColor] = useState("#6366f1")
   const [creating, setCreating] = useState(false)
+  const [assignableOpen, setAssignableOpen] = useState(false)
 
   const { dragId, dragOverId, onDragStart, onDragOver, onDrop, onDragEnd } = useSortable(
     roleRanks,
