@@ -46,8 +46,19 @@ export default async function EagleVanguardMembersPage() {
           <ChevronLeft className="h-4 w-4" />
           Eagle Vanguard Team
         </Link>
-        <h1 className="text-2xl font-bold">Membres Eagle Vanguard Team</h1>
-        <p className="text-sm text-muted-foreground">Gérez les membres, leurs rôles et fonctions.</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Membres Eagle Vanguard Team</h1>
+            <p className="text-sm text-muted-foreground">Gérez les membres, leurs rôles et fonctions.</p>
+          </div>
+          <Link
+            href="/eagle-vanguard/team/ranks"
+            className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted transition-colors"
+            title="Rôles et Fonctions"
+          >
+            <Settings className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        </div>
       </div>
 
       <EagleVanguardMembersManager
