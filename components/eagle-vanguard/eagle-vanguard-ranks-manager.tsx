@@ -283,6 +283,29 @@ function RolesSection({ ranks, setRanks }: {
                   ))}
                 </div>
                 <Separator />
+
+                {/* Rôles assignables */}
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Peut attribuer</p>
+                <div className="space-y-0.5">
+                  {roleRanks.filter(r => r.id !== selectedRank.id).map(r => (
+                    <div key={r.id} className="flex items-center justify-between px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
+                        <span className="text-sm">{r.name}</span>
+                        {r.isProtected && <Lock className="h-3 w-3 text-muted-foreground" />}
+                      </div>
+                      <Switch
+                        checked={selectedRank.assignableRankIds.includes(r.id)}
+                        onCheckedChange={() => toggleAssignable(r.id)}
+                      />
+                    </div>
+                  ))}
+                  {roleRanks.filter(r => r.id !== selectedRank.id).length === 0 && (
+                    <p className="text-xs text-muted-foreground px-3">Aucun autre rôle disponible.</p>
+                  )}
+                </div>
+
+                <Separator />
                 <div className="flex items-center justify-between">
                   <Button variant="destructive" size="sm" onClick={deleteRole} disabled={deleting || saving}>
                     {deleting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Trash2 className="h-3 w-3 mr-1" />}
