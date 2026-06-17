@@ -20,11 +20,13 @@ interface EagleVanguardRank {
   assignableRankIds: string[]
   assignableFunctionIds: string[]
   isProtected: boolean
+  isHidden: boolean
   category: string
 }
 
 interface Props {
   initialRanks: EagleVanguardRank[]
+  isSuperAdmin: boolean
 }
 
 function useSortable(
