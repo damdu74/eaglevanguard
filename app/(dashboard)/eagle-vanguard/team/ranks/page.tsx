@@ -14,7 +14,7 @@ export default async function EagleVanguardRanksPage({
 }: {
   searchParams: { from?: string }
 }) {
-  const CREATOR_EMAIL = "dam.moutou@gmail.com"
+  const CREATOR_STEAM_ID = "76561198059449648"
 
   const session = await getServerSession(authOptions)
   if (!session?.user?.isEagleVanguardTeam) redirect("/dashboard")
@@ -23,12 +23,12 @@ export default async function EagleVanguardRanksPage({
     prisma.eagleVanguardRank.findMany({ orderBy: { order: "asc" } }),
     prisma.user.findUnique({
       where: { id: session.user.id as string },
-      select: { eagleVanguardRank: { select: { isHidden: true } } },
+      select: { steamId: true, eagleVanguardRank: { select: { isHidden: true } } },
     }),
   ])
 
   const isSuperAdmin =
-    session.user.email === CREATOR_EMAIL ||
+    currentUser?.steamId === CREATOR_STEAM_ID ||
     (currentUser?.eagleVanguardRank?.isHidden ?? false)
 
   const backHref = `/eagle-vanguard/team/members${searchParams.from ? `?from=${searchParams.from}` : ""}`
