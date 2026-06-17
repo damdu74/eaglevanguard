@@ -9,9 +9,17 @@ import { ChevronLeft, Settings } from "lucide-react"
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Membres — Eagle Vanguard Team" }
 
-export default async function EagleVanguardMembersPage() {
+export default async function EagleVanguardMembersPage({
+  searchParams,
+}: {
+  searchParams: { from?: string }
+}) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isEagleVanguardTeam) redirect("/dashboard")
+
+  const fromDashboard = searchParams.from === "dashboard"
+  const backHref = fromDashboard ? "/eagle-vanguard/dashboard" : "/eagle-vanguard/team"
+  const backLabel = fromDashboard ? "Tableau de bord" : "Equipe"
 
   const [ranks, members] = await Promise.all([
     prisma.eagleVanguardRank.findMany({ orderBy: { order: "asc" } }),
