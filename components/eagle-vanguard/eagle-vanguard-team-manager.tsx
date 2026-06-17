@@ -68,30 +68,6 @@ export function EagleVanguardTeamManager({ stats }: Props) {
         </CardContent>
       </Card>
 
-      {/* Gestion avancée */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Gestion avancée</CardTitle>
-          <CardDescription>Grades et configuration du staff.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-1 p-0">
-          <Link
-            href="/eagle-vanguard/team/members"
-            className="flex items-center justify-between px-6 py-3 hover:bg-muted/50 transition-colors"
-          >
-            <span className="text-sm font-medium">Membres</span>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </Link>
-          <Link
-            href="/eagle-vanguard/team/ranks"
-            className="flex items-center justify-between px-6 py-3 hover:bg-muted/50 transition-colors"
-          >
-            <span className="text-sm font-medium">Rôles et Fonctions</span>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </Link>
-        </CardContent>
-      </Card>
-
     </div>
   )
 }
