@@ -20,7 +20,7 @@ export function EagleVanguardTeamManager({ stats }: Props) {
 
   const statItems = [
     { label: "Eagle Vanguard Team", value: stats.teamSize, icon: Shield, color: "text-indigo-400", href: "/eagle-vanguard/team/members?from=team" },
-    { label: "Membres", value: stats.totalUsers, icon: Users, color: "text-blue-400", href: "/eagle-vanguard/team/players" },
+    { label: "Membres", value: stats.totalUsers, icon: Users, color: "text-blue-400", href: "/eagle-vanguard/team/players?from=team" },
     { label: "Candidatures en attente", value: stats.pendingApplications, icon: FileText, color: "text-orange-400", href: "/eagle-vanguard/candidatures" },
   ]
 
