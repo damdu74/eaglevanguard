@@ -149,7 +149,7 @@ function RolesSection({ ranks, setRanks }: {
       const res = await fetch(`/api/eagle-vanguard/ranks/${selectedRank.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName, color: editColor, permissions: selectedRank.permissions, assignableRankIds: selectedRank.assignableRankIds }),
+        body: JSON.stringify({ name: editName, color: editColor, permissions: selectedRank.permissions, assignableRankIds: selectedRank.assignableRankIds, assignableFunctionIds: selectedRank.assignableFunctionIds }),
       })
       if (!res.ok) throw new Error()
       const updated = await res.json()
