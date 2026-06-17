@@ -38,19 +38,17 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
   const [unreadCount, setUnreadCount] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState(initialUnreadMessages)
   const [open, setOpen] = useState(false)
+  const [seenCounts, setSeenCounts] = useState<{ fr: number; pa: number; um: number; uc: number } | null>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("notif-seen") ?? "null")
+    } catch { return null }
+  })
 
   const total = friendRequests + pendingApplications + unreadCount + unreadMessages
 
-  function getSeenCounts() {
-    try {
-      return JSON.parse(localStorage.getItem("notif-seen") ?? "null") as { fr: number; pa: number; um: number; uc: number } | null
-    } catch { return null }
-  }
-
   function isNew() {
-    const s = getSeenCounts()
-    if (!s) return total > 0
-    return friendRequests > s.fr || pendingApplications > s.pa || unreadMessages > s.um || unreadCount > s.uc
+    if (!seenCounts) return total > 0
+    return friendRequests > seenCounts.fr || pendingApplications > seenCounts.pa || unreadMessages > seenCounts.um || unreadCount > seenCounts.uc
   }
 
   const bellColor = total === 0 ? null : isNew() ? "bg-red-600" : "bg-blue-500"
@@ -90,7 +88,9 @@ export function NotificationBell({ initialFriendRequests, initialPendingApplicat
 
   useEffect(() => {
     if (open) {
-      localStorage.setItem("notif-seen", JSON.stringify({ fr: friendRequests, pa: pendingApplications, um: unreadMessages, uc: unreadCount }))
+      const counts = { fr: friendRequests, pa: pendingApplications, um: unreadMessages, uc: unreadCount }
+      localStorage.setItem("notif-seen", JSON.stringify(counts))
+      setSeenCounts(counts)
       if (unreadCount > 0) {
         fetch("/api/notifications", { method: "PATCH" }).then(() => {
           setUnreadCount(0)
