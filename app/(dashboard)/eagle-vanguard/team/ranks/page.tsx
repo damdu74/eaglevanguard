@@ -9,17 +9,23 @@ import { ChevronLeft } from "lucide-react"
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Eagle Vanguard Rôles et Fonctions" }
 
-export default async function EagleVanguardRanksPage() {
+export default async function EagleVanguardRanksPage({
+  searchParams,
+}: {
+  searchParams: { from?: string }
+}) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isEagleVanguardTeam) redirect("/dashboard")
 
   const ranks = await prisma.eagleVanguardRank.findMany({ orderBy: { order: "asc" } })
 
+  const backHref = `/eagle-vanguard/team/members${searchParams.from ? `?from=${searchParams.from}` : ""}`
+
   return (
     <div className="space-y-6">
       <div>
         <Link
-          href="/eagle-vanguard/team/members"
+          href={backHref}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
