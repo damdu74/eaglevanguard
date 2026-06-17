@@ -281,7 +281,7 @@ function RolesSection({ ranks, setRanks }: {
                       <div className="flex items-center justify-between px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className="text-sm">{EAGLE_VANGUARD_PERMISSION_LABELS[perm]}</span>
-                          {perm === "MANAGE_TEAM" && (
+                          {perm === "MANAGE_ROLES" && (
                             <button
                               onClick={() => setAssignableOpen(o => !o)}
                               className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
