@@ -17,6 +17,7 @@ interface EagleVanguardRank {
   order: number
   color: string
   permissions: string[]
+  assignableRankIds: string[]
   isProtected: boolean
   category: string
 }
