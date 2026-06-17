@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic"
 export const metadata = { title: "Membres — Eagle Vanguard Team" }
 
 interface PageProps {
-  searchParams: { q?: string }
+  searchParams: { q?: string; from?: string }
 }
 
 export default async function EagleVanguardPlayersPage({ searchParams }: PageProps) {
