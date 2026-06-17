@@ -237,6 +237,7 @@ export function EagleVanguardMembersManager({ initialRanks, initialMembers, curr
               const avatar = member.customAvatar ?? member.steamAvatar ?? member.discordAvatar
               const isSelf = member.id === currentUserId
               const isProtected = !!member.eagleVanguardRank?.isProtected
+              const isHiddenRank = !!member.eagleVanguardRank?.isHidden
 
               return (
                 <TableRow key={member.id}>
@@ -253,10 +254,12 @@ export function EagleVanguardMembersManager({ initialRanks, initialMembers, curr
 
                   {/* Rôle */}
                   <TableCell>
-                    {isProtected ? (
+                    {isHiddenRank && !isSuperAdmin ? (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    ) : isProtected ? (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Lock className="h-3 w-3" />
-                        Protégé
+                        {isHiddenRank ? "Créateur" : "Protégé"}
                       </div>
                     ) : (
                       <Select
