@@ -292,7 +292,7 @@ function RolesSection({ ranks, setRanks }: {
                         </div>
                         <Switch checked={selectedRank.permissions.includes(perm)} onCheckedChange={() => togglePermission(perm)} />
                       </div>
-                      {perm === "MANAGE_TEAM" && assignableOpen && (
+                      {perm === "MANAGE_ROLES" && assignableOpen && (
                         <div className="ml-6 mb-1 border-l pl-3 space-y-0.5">
                           {roleRanks.filter(r => r.id !== selectedRank.id).map(r => (
                             <div key={r.id} className="flex items-center justify-between px-2 py-2 rounded-md hover:bg-muted/50 transition-colors">
