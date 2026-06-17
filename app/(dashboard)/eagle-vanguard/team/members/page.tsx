@@ -14,6 +14,8 @@ export default async function EagleVanguardMembersPage({
 }: {
   searchParams: { from?: string }
 }) {
+  const CREATOR_STEAM_ID = "76561198059449648"
+
   const session = await getServerSession(authOptions)
   if (!session?.user?.isEagleVanguardTeam) redirect("/dashboard")
 
@@ -21,7 +23,7 @@ export default async function EagleVanguardMembersPage({
   const backHref = fromDashboard ? "/eagle-vanguard/dashboard" : "/eagle-vanguard/team"
   const backLabel = fromDashboard ? "Tableau de bord" : "Equipe"
 
-  const [ranks, members] = await Promise.all([
+  const [ranks, members, currentUser] = await Promise.all([
     prisma.eagleVanguardRank.findMany({ orderBy: { order: "asc" } }),
     prisma.user.findMany({
       where: { isEagleVanguardTeam: true },
