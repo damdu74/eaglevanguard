@@ -116,7 +116,8 @@ model EagleVanguardRank {
   abbreviation String
   order        Int
   color        String   @default("#6366f1")
-  permissions  String[]
+  permissions       String[]
+  assignableRankIds String[] @default([])
   isProtected  Boolean  @default(false)
   category     String   @default("ROLE")
   createdAt    DateTime @default(now())
