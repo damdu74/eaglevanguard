@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes hourglass-flow {
+  /* sable qui coule — sablier immobile */
+  0%   { transform: rotate(0deg); opacity: 1; }
+  35%  { transform: rotate(0deg); opacity: 1; }
+  /* légère pause avant le retournement */
+  42%  { transform: rotate(0deg); opacity: 0.4; }
+  /* retournement rapide 180° */
+  55%  { transform: rotate(180deg); opacity: 0.4; }
+  /* sable qui coule de l'autre côté */
+  62%  { transform: rotate(180deg); opacity: 1; }
+  95%  { transform: rotate(180deg); opacity: 1; }
+  /* légère pause puis retournement retour */
+  100% { transform: rotate(360deg); opacity: 1; }
+}
+
+.animate-hourglass {
+  animation: hourglass-flow 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
