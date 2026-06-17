@@ -39,13 +39,23 @@ export default async function EagleVanguardMembersPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <Link
-          href="/eagle-vanguard/team"
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Eagle Vanguard Team
-        </Link>
+        <div className="flex items-center gap-4 mb-4">
+          <Link
+            href="/eagle-vanguard/dashboard"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Tableau de bord
+          </Link>
+          <span className="text-muted-foreground/40">|</span>
+          <Link
+            href="/eagle-vanguard/team"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Equipe
+          </Link>
+        </div>
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold">Membres Eagle Vanguard Team</h1>
