@@ -121,6 +121,15 @@ function RolesSection({ ranks, setRanks }: {
     }))
   }
 
+  function toggleAssignable(rankId: string) {
+    if (!selectedRank || selectedRank.isProtected) return
+    setRanks(prev => prev.map(r => {
+      if (r.id !== selectedRank.id) return r
+      const has = r.assignableRankIds.includes(rankId)
+      return { ...r, assignableRankIds: has ? r.assignableRankIds.filter(id => id !== rankId) : [...r.assignableRankIds, rankId] }
+    }))
+  }
+
   async function saveRole() {
     if (!selectedRank) return
     setSaving(true)
