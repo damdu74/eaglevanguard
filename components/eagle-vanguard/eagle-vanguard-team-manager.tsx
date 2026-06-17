@@ -19,8 +19,8 @@ interface Props {
 export function EagleVanguardTeamManager({ stats }: Props) {
 
   const statItems = [
-    { label: "Membres Eagle Vanguard", value: stats.teamSize, icon: Shield, color: "text-indigo-400" },
-    { label: "Utilisateurs", value: stats.totalUsers, icon: Users, color: "text-blue-400" },
+    { label: "Eagle Vanguard Team", value: stats.teamSize, icon: Shield, color: "text-indigo-400" },
+    { label: "Membres", value: stats.totalUsers, icon: Users, color: "text-blue-400" },
     { label: "Candidatures en attente", value: stats.pendingApplications, icon: FileText, color: "text-orange-400" },
   ]
 
