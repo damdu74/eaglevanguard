@@ -120,6 +120,7 @@ model EagleVanguardRank {
   assignableRankIds     String[] @default([])
   assignableFunctionIds String[] @default([])
   isProtected  Boolean  @default(false)
+  isHidden     Boolean  @default(false)
   category     String   @default("ROLE")
   createdAt    DateTime @default(now())
 
