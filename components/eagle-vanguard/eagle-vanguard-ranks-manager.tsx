@@ -300,6 +300,14 @@ function RolesSection({ ranks, setRanks }: {
                               <ChevronRight className={`h-3.5 w-3.5 transition-transform ${assignableOpen ? "rotate-90" : ""}`} />
                             </button>
                           )}
+                          {perm === "MANAGE_RANKS" && (
+                            <button
+                              onClick={() => setAssignableFnOpen(o => !o)}
+                              className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                            >
+                              <ChevronRight className={`h-3.5 w-3.5 transition-transform ${assignableFnOpen ? "rotate-90" : ""}`} />
+                            </button>
+                          )}
                         </div>
                         <Switch checked={selectedRank.permissions.includes(perm)} onCheckedChange={() => togglePermission(perm)} />
                       </div>
