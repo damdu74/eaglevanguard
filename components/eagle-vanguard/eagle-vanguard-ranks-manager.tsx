@@ -124,6 +124,15 @@ function RolesSection({ ranks, setRanks }: {
     }))
   }
 
+  function toggleAssignableFunction(fnId: string) {
+    if (!selectedRank || selectedRank.isProtected) return
+    setRanks(prev => prev.map(r => {
+      if (r.id !== selectedRank.id) return r
+      const has = r.assignableFunctionIds.includes(fnId)
+      return { ...r, assignableFunctionIds: has ? r.assignableFunctionIds.filter(id => id !== fnId) : [...r.assignableFunctionIds, fnId] }
+    }))
+  }
+
   function toggleAssignable(rankId: string) {
     if (!selectedRank || selectedRank.isProtected) return
     setRanks(prev => prev.map(r => {
