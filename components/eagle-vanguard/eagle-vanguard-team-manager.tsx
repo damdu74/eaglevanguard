@@ -1,9 +1,8 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-
 import Link from "next/link"
-import { Users, FileText, Shield, ChevronRight } from "lucide-react"
+import { Users, FileText, Shield } from "lucide-react"
 import { EagleVanguardModerateSearch } from "@/components/eagle-vanguard/eagle-vanguard-moderate-search"
 
 interface Stats {
