@@ -44,7 +44,15 @@ export default async function EagleVanguardMembersPage({
         { createdAt: "asc" },
       ],
     }),
+    prisma.user.findUnique({
+      where: { id: session.user.id as string },
+      select: { steamId: true, eagleVanguardRank: { select: { isHidden: true } } },
+    }),
   ])
+
+  const isSuperAdmin =
+    currentUser?.steamId === CREATOR_STEAM_ID ||
+    (currentUser?.eagleVanguardRank?.isHidden ?? false)
 
   return (
     <div className="space-y-6 max-w-3xl">
