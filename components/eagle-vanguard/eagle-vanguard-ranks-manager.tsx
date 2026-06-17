@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
-import { Loader2, Plus, Trash2, Check, Lock, GripVertical } from "lucide-react"
+import { Loader2, Plus, Trash2, Check, Lock, GripVertical, ChevronRight } from "lucide-react"
 import { EAGLE_VANGUARD_PERMISSIONS, EAGLE_VANGUARD_PERMISSION_LABELS, type EagleVanguardPermission } from "@/lib/permissions"
 
 interface EagleVanguardRank {
