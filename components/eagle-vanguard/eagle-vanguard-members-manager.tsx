@@ -254,12 +254,12 @@ export function EagleVanguardMembersManager({ initialRanks, initialMembers, curr
 
                   {/* Rôle */}
                   <TableCell>
-                    {isHiddenRank && !isSuperAdmin ? (
+                    {isHiddenRank ? (
                       <span className="text-xs text-muted-foreground">—</span>
                     ) : isProtected ? (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Lock className="h-3 w-3" />
-                        {isHiddenRank ? "Créateur" : "Protégé"}
+                        Protégé
                       </div>
                     ) : (
                       <Select
