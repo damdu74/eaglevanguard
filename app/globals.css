@@ -11,7 +11,7 @@
 }
 
 .animate-hourglass {
-  animation: hourglass-flow 4s ease-in-out infinite;
+  animation: hourglass-flow 15s ease-in-out infinite;
   transform-origin: center;
 }
 
