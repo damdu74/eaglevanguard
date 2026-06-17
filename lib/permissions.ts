@@ -64,7 +64,7 @@ export type EagleVanguardPermission = typeof EAGLE_VANGUARD_PERMISSIONS[number]
 
 export const EAGLE_VANGUARD_PERMISSION_LABELS: Record<EagleVanguardPermission, string> = {
   MANAGE_TEAM:       "Gérer l'équipe Eagle Vanguard",
-  MANAGE_RANKS:      "Gérer les rangs et fonctions",
+  MANAGE_RANKS:      "Gérer les fonctions",
   GLOBAL_MODERATION: "Modération globale",
   BAN_PLATFORM:      "Bannir de la plateforme",
   VIEW_LOGS:         "Voir les logs globaux",
