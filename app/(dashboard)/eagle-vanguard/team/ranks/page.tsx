@@ -19,11 +19,11 @@ export default async function EagleVanguardRanksPage() {
     <div className="space-y-6">
       <div>
         <Link
-          href="/eagle-vanguard/team"
+          href="/eagle-vanguard/team/members"
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
-          Eagle Vanguard Team
+          Membres
         </Link>
         <h1 className="text-2xl font-bold">Eagle Vanguard Rôles et Fonctions</h1>
         <p className="text-sm text-muted-foreground">Hiérarchie interne du staff de la plateforme.</p>
