@@ -268,7 +268,12 @@ function RolesSection({ ranks, setRanks, isSuperAdmin }: {
                 <div className="flex items-center gap-2">
                   <span className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: selectedRank.color }} />
                   <span className="font-semibold text-sm">{selectedRank.name}</span>
-                  <span className="ml-auto text-xs border rounded px-1.5 py-0.5 text-muted-foreground">Protégé</span>
+                  {selectedRank.isHidden && (
+                    <span className="ml-auto text-xs border border-amber-500/50 rounded px-1.5 py-0.5 text-amber-500">Créateur</span>
+                  )}
+                  {!selectedRank.isHidden && (
+                    <span className="ml-auto text-xs border rounded px-1.5 py-0.5 text-muted-foreground">Protégé</span>
+                  )}
                 </div>
                 <Separator />
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Permissions</p>
