@@ -277,41 +277,43 @@ function RolesSection({ ranks, setRanks }: {
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Permissions</p>
                 <div className="space-y-0.5">
                   {EAGLE_VANGUARD_PERMISSIONS.map(perm => (
-                    <div key={perm} className="flex items-center justify-between px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors">
-                      <span className="text-sm">{EAGLE_VANGUARD_PERMISSION_LABELS[perm]}</span>
-                      <Switch checked={selectedRank.permissions.includes(perm)} onCheckedChange={() => togglePermission(perm)} />
-                    </div>
-                  ))}
-                </div>
-                {/* Peut attribuer — menu déroulant dans les permissions */}
-                <div className="rounded-md hover:bg-muted/50 transition-colors">
-                  <button
-                    onClick={() => setAssignableOpen(o => !o)}
-                    className="w-full flex items-center justify-between px-3 py-2.5"
-                  >
-                    <span className="text-sm">Peut attribuer les rôles</span>
-                    <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${assignableOpen ? "rotate-90" : ""}`} />
-                  </button>
-                  {assignableOpen && (
-                    <div className="border-t mx-3 mb-1 pt-1 space-y-0.5">
-                      {roleRanks.filter(r => r.id !== selectedRank.id).map(r => (
-                        <div key={r.id} className="flex items-center justify-between px-2 py-2 rounded-md hover:bg-muted/50 transition-colors">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
-                            <span className="text-sm">{r.name}</span>
-                            {r.isProtected && <Lock className="h-3 w-3 text-muted-foreground" />}
-                          </div>
-                          <Switch
-                            checked={selectedRank.assignableRankIds.includes(r.id)}
-                            onCheckedChange={() => toggleAssignable(r.id)}
-                          />
+                    <div key={perm}>
+                      <div className="flex items-center justify-between px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          {perm === "MANAGE_TEAM" && (
+                            <button
+                              onClick={() => setAssignableOpen(o => !o)}
+                              className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                            >
+                              <ChevronRight className={`h-3.5 w-3.5 transition-transform ${assignableOpen ? "rotate-90" : ""}`} />
+                            </button>
+                          )}
+                          <span className="text-sm">{EAGLE_VANGUARD_PERMISSION_LABELS[perm]}</span>
                         </div>
-                      ))}
-                      {roleRanks.filter(r => r.id !== selectedRank.id).length === 0 && (
-                        <p className="text-xs text-muted-foreground px-2 py-1">Aucun autre rôle disponible.</p>
+                        <Switch checked={selectedRank.permissions.includes(perm)} onCheckedChange={() => togglePermission(perm)} />
+                      </div>
+                      {perm === "MANAGE_TEAM" && assignableOpen && (
+                        <div className="ml-6 mb-1 border-l pl-3 space-y-0.5">
+                          {roleRanks.filter(r => r.id !== selectedRank.id).map(r => (
+                            <div key={r.id} className="flex items-center justify-between px-2 py-2 rounded-md hover:bg-muted/50 transition-colors">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
+                                <span className="text-sm">{r.name}</span>
+                                {r.isProtected && <Lock className="h-3 w-3 text-muted-foreground" />}
+                              </div>
+                              <Switch
+                                checked={selectedRank.assignableRankIds.includes(r.id)}
+                                onCheckedChange={() => toggleAssignable(r.id)}
+                              />
+                            </div>
+                          ))}
+                          {roleRanks.filter(r => r.id !== selectedRank.id).length === 0 && (
+                            <p className="text-xs text-muted-foreground px-2 py-1">Aucun autre rôle disponible.</p>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
+                  ))}
                 </div>
 
                 <Separator />
