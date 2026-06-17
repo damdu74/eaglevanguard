@@ -50,13 +50,14 @@ interface Props {
   initialRanks: EagleVanguardRank[]
   initialMembers: Member[]
   currentUserId: string
+  isSuperAdmin: boolean
 }
 
-export function EagleVanguardMembersManager({ initialRanks, initialMembers, currentUserId }: Props) {
+export function EagleVanguardMembersManager({ initialRanks, initialMembers, currentUserId, isSuperAdmin }: Props) {
   const [ranks] = useState<EagleVanguardRank[]>(initialRanks)
   const [members, setMembers] = useState<Member[]>(initialMembers)
 
-  const roles = ranks.filter(r => r.category === "ROLE")
+  const roles = ranks.filter(r => r.category === "ROLE" && !r.isHidden)
   const functions = ranks.filter(r => r.category === "FUNCTION")
 
   const [assigningRoleId, setAssigningRoleId] = useState<string | null>(null)
