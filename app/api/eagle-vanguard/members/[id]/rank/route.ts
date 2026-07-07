@@ -21,9 +21,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (rank?.isProtected) return NextResponse.json({ error: "Ce grade est protégé" }, { status: 403 })
   }
 
-  // Bloquer le retrait d'un grade protégé
-  const target = await prisma.user.findUnique({ where: { id: params.id }, include: { eagleVanguardRank: true } })
-  if (target?.eagleVanguardRank?.isProtected) return NextResponse.json({ error: "Ce grade est protégé" }, { status: 403 })
+  // Bloquer le retrait d'un grade protégé (sauf si le requêteur est lui-même protégé et modifie sa propre fiche)
+  const [target, requester] = await Promise.all([
+    prisma.user.findUnique({ where: { id: params.id }, include: { eagleVanguardRank: true } }),
+    prisma.user.findUnique({ where: { id: session.user.id as string }, include: { eagleVanguardRank: true } }),
+  ])
+  const requesterIsProtected = !!requester?.eagleVanguardRank?.isProtected
+  const isSelfEdit = params.id === session.user.id
+  if (target?.eagleVanguardRank?.isProtected && !(isSelfEdit && requesterIsProtected)) {
+    return NextResponse.json({ error: "Ce grade est protégé" }, { status: 403 })
+  }
 
   const user = await prisma.user.update({
     where: { id: params.id },

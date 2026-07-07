@@ -53,7 +53,7 @@ interface Props {
   isSuperAdmin: boolean
 }
 
-export function EagleVanguardMembersManager({ initialRanks, initialMembers, currentUserId }: Props) {
+export function EagleVanguardMembersManager({ initialRanks, initialMembers, currentUserId, isSuperAdmin }: Props) {
   const [ranks] = useState<EagleVanguardRank[]>(initialRanks)
   const [members, setMembers] = useState<Member[]>(initialMembers)
 
@@ -238,6 +238,7 @@ export function EagleVanguardMembersManager({ initialRanks, initialMembers, curr
               const isSelf = member.id === currentUserId
               const isProtected = !!member.eagleVanguardRank?.isProtected
               const isHiddenRank = !!member.eagleVanguardRank?.isHidden
+              const canEditSelf = isSelf && isSuperAdmin
 
               return (
                 <TableRow key={member.id}>
@@ -254,9 +255,9 @@ export function EagleVanguardMembersManager({ initialRanks, initialMembers, curr
 
                   {/* Rôle */}
                   <TableCell>
-                    {isHiddenRank ? (
+                    {isHiddenRank && !canEditSelf ? (
                       <span className="text-xs text-muted-foreground">—</span>
-                    ) : isProtected ? (
+                    ) : isProtected && !canEditSelf ? (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Lock className="h-3 w-3" />
                         Protégé
@@ -274,7 +275,7 @@ export function EagleVanguardMembersManager({ initialRanks, initialMembers, curr
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">Aucun rôle</SelectItem>
-                          {roles.filter(r => !r.isProtected).map(r => (
+                          {roles.filter(r => canEditSelf || !r.isProtected).map(r => (
                             <SelectItem key={r.id} value={r.id}>
                               <span className="flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
