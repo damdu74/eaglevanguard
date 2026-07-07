@@ -49,7 +49,7 @@ export default async function MembersPage() {
                   isEagleVanguardTeam: true,
                 },
               },
-              rank: { select: { name: true } },
+              rank: { select: { name: true, order: true } },
             },
             orderBy: { role: "asc" },
           },
@@ -84,9 +84,14 @@ export default async function MembersPage() {
       <h1 className="text-2xl font-bold">Membres</h1>
 
       {memberships.map(({ community }) => {
-        const sorted = [...community.memberships].sort(
-          (a, b) => (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99)
-        )
+        const sorted = [...community.memberships].sort((a, b) => {
+          const roleA = ROLE_ORDER[a.role] ?? 99
+          const roleB = ROLE_ORDER[b.role] ?? 99
+          if (roleA !== roleB) return roleA - roleB
+          const rankOrderA = a.rank?.order ?? Infinity
+          const rankOrderB = b.rank?.order ?? Infinity
+          return rankOrderA - rankOrderB
+        })
 
         return (
           <section key={community.id} className="space-y-3">
