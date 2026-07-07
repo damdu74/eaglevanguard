@@ -16,7 +16,11 @@ import { Loader2, Plus, Trash2, Settings, Sword, Users, ChevronRight } from "luc
 import Link from "next/link"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-const GAMES = [{ value: "arma3", label: "Arma 3" }]
+const GAMES = [
+  { value: "arma3",           label: "Arma 3" },
+  { value: "arma3-principale", label: "Arma 3 — Trame Principale" },
+  { value: "arma3-secondaire", label: "Arma 3 — Hors Série" },
+]
 
 
 interface RpUnit {

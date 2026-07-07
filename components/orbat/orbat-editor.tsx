@@ -75,7 +75,11 @@ function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, tar
 
 const ROOT_ID = "root"
 const SNAP_GRID: [number, number] = [20, 20]
-const GAME_LABELS: Record<string, string> = { arma3: "Arma 3" }
+const GAME_LABELS: Record<string, string> = {
+  "arma3":            "Arma 3",
+  "arma3-principale": "Arma 3 — Trame Principale",
+  "arma3-secondaire": "Arma 3 — Hors Série",
+}
 
 // Dimensions du layout hiérarchique (px canvas)
 const LY_NODE_W      = 360
@@ -152,7 +156,7 @@ function buildGameLayout(
     if (gameIdx >= 0) {
       result[gameIdx] = { ...result[gameIdx], position: { x: gameX, y: LY_GAME_Y } }
     } else {
-      result.push({ id: gi.gameNodeId, type: "game-group", position: { x: gameX, y: LY_GAME_Y }, data: { label: GAME_LABELS[gi.game] ?? gi.game } })
+      result.push({ id: gi.gameNodeId, type: "game-group", position: { x: gameX, y: LY_GAME_Y }, data: { label: GAME_LABELS[gi.game] ?? gi.game, game: gi.game } })
     }
 
     // Redistribuer les unités en colonnes verticales (LY_MAX_COL max par colonne, nouvelle colonne à droite)
