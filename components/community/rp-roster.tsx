@@ -131,7 +131,7 @@ async function createUnit() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {units.map((unit) => (
             <div key={unit.id} className="relative group">
-              <Link href={`/communities/${communitySlug}/rp/${unit.id}`} className="block h-full">
+              <Link href={`/communities/${communitySlug}/rp/${unit.id}?from=registre`} className="block h-full">
                 <Card className="h-full transition-colors hover:bg-muted/50 cursor-pointer">
                   <CardContent className="p-4 flex flex-col h-full gap-2">
                     <div className="flex items-center gap-2 min-w-0">

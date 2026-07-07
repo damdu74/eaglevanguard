@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic"
 
 interface PageProps {
   params: { slug: string; unitId: string }
+  searchParams?: { from?: string }
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: PageProps) {
   return { title: unit?.name ?? "Unité RP" }
 }
 
-export default async function RpUnitPage({ params }: PageProps) {
+export default async function RpUnitPage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
 
   const community = await prisma.community.findUnique({ where: { slug: params.slug } })
@@ -58,9 +59,12 @@ export default async function RpUnitPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/dashboard" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1">
+        <Link
+          href={searchParams?.from === "registre" ? "/dashboard?tab=registre" : "/dashboard"}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1"
+        >
           <ChevronLeft className="h-4 w-4" />
-          Tableau de bord
+          {searchParams?.from === "registre" ? "Registre des unités" : "Tableau de bord"}
         </Link>
         <div className="flex items-center gap-2 flex-wrap">
           <h1 className="text-2xl font-bold">{unit.name}</h1>

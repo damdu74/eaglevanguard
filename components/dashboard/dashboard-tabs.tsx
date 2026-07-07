@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { RpRoster } from "@/components/community/rp-roster"
 import { OrbatEditor } from "@/components/orbat/orbat-editor"
@@ -55,7 +56,10 @@ export function DashboardTabs({ isEV, allCommunities, communitiesWithUnits, orba
     ...(showRegistre ? [{ id: "registre", label: "Registre des unités", icon: BookOpen }] : []),
   ]
 
-  const [activeTab, setActiveTab] = useState(tabs[0]?.id ?? "")
+  const searchParams = useSearchParams()
+  const requestedTab = searchParams.get("tab")
+  const initialTab = tabs.find(t => t.id === requestedTab)?.id ?? tabs[0]?.id ?? ""
+  const [activeTab, setActiveTab] = useState(initialTab)
 
   if (tabs.length === 0) return null
 
