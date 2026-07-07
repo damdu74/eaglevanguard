@@ -53,7 +53,7 @@ interface Props {
   isSuperAdmin: boolean
 }
 
-export function EagleVanguardMembersManager({ initialRanks, initialMembers, currentUserId, isSuperAdmin }: Props) {
+export function EagleVanguardMembersManager({ initialRanks, initialMembers, currentUserId, isSuperAdmin: _isSuperAdmin }: Props) {
   const [ranks] = useState<EagleVanguardRank[]>(initialRanks)
   const [members, setMembers] = useState<Member[]>(initialMembers)
 
