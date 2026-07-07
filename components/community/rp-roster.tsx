@@ -20,7 +20,7 @@ function GameSelect({ value, onChange }: { value: string; onChange: (v: string) 
   const base = value.startsWith("arma3") ? "arma3" : "__none__"
   const sub  = value === "arma3-principale" ? "arma3-principale"
              : value === "arma3-secondaire"  ? "arma3-secondaire"
-             : "arma3"
+             : "__none__"
   return (
     <div className="space-y-2">
       <Select value={base} onValueChange={(v) => onChange(v === "__none__" ? "" : "arma3")}>
@@ -31,10 +31,10 @@ function GameSelect({ value, onChange }: { value: string; onChange: (v: string) 
         </SelectContent>
       </Select>
       {base === "arma3" && (
-        <Select value={sub} onValueChange={onChange}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+        <Select value={sub} onValueChange={(v) => onChange(v === "__none__" ? "arma3" : v)}>
+          <SelectTrigger><SelectValue placeholder="Aucune variante" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="arma3">Général</SelectItem>
+            <SelectItem value="__none__">Aucune variante</SelectItem>
             <SelectItem value="arma3-principale">Trame Principale</SelectItem>
             <SelectItem value="arma3-secondaire">Hors Série</SelectItem>
           </SelectContent>

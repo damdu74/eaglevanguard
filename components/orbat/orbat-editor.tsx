@@ -75,24 +75,33 @@ function OrbatEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, tar
 
 const ROOT_ID = "root"
 const SNAP_GRID: [number, number] = [20, 20]
+
+// Jeux parents (arma3-* sont des enfants de arma3)
+const GAME_PARENTS: Record<string, string> = {
+  "arma3-principale": "arma3",
+  "arma3-secondaire": "arma3",
+}
+
 const GAME_LABELS: Record<string, string> = {
   "arma3":            "Arma 3",
-  "arma3-principale": "Arma 3 — Trame Principale",
-  "arma3-secondaire": "Arma 3 — Hors Série",
+  "arma3-principale": "Trame Principale",
+  "arma3-secondaire": "Hors Série",
 }
 
 // Dimensions du layout hiérarchique (px canvas)
-const LY_NODE_W      = 360
-const LY_H_GAP       = 40
-const LY_SLOT_W      = LY_NODE_W + LY_H_GAP
-const LY_ROOT_H      = 140
-const LY_GAME_H      = 60
-const LY_V_GAP       = 60
-const LY_GAME_Y      = Math.round((LY_ROOT_H + LY_V_GAP) / 20) * 20           // 200
-const LY_UNIT_Y      = Math.round((LY_GAME_Y + LY_GAME_H + 20) / 20) * 20 // 280
-const LY_ROOT_CX     = LY_NODE_W / 2                                            // 180
-const LY_MAX_COL     = 10   // max unités par colonne sous un groupe de jeu
-const LY_UNIT_ROW_H  = 100  // pas vertical entre nœuds d'une même colonne (≈ hauteur nœud + gap)
+const LY_NODE_W       = 360
+const LY_H_GAP        = 40
+const LY_SLOT_W       = LY_NODE_W + LY_H_GAP
+const LY_ROOT_H       = 140
+const LY_GAME_H       = 60
+const LY_V_GAP        = 60
+const LY_GAME_Y       = Math.round((LY_ROOT_H + LY_V_GAP) / 20) * 20   // 200
+const LY_SUB_GAME_Y   = Math.round((LY_GAME_Y + LY_GAME_H + LY_V_GAP) / 20) * 20  // 320
+const LY_UNIT_Y       = Math.round((LY_GAME_Y + LY_GAME_H + 20) / 20) * 20  // 280 (sans sous-jeux)
+const LY_UNIT_DEEP_Y  = Math.round((LY_SUB_GAME_Y + LY_GAME_H + LY_V_GAP) / 20) * 20  // 440 (avec sous-jeux)
+const LY_ROOT_CX      = LY_NODE_W / 2                                   // 180
+const LY_MAX_COL      = 10   // max unités par colonne sous un groupe de jeu
+const LY_UNIT_ROW_H   = 100  // pas vertical entre nœuds d'une même colonne
 
 type CommunityUnit = { id: string; name: string; game?: string | null }
 
@@ -100,24 +109,39 @@ function snapVal(v: number) {
   return Math.round(v / SNAP_GRID[0]) * SNAP_GRID[0]
 }
 
-/** Calcule le layout hiérarchique complet, crée les nœuds manquants et supprime les orphelins. */
+/** Calcule le layout hiérarchique (3 niveaux si sous-jeux), crée les nœuds manquants et supprime les orphelins. */
 function buildGameLayout(
   nds: Node[],
   units: CommunityUnit[],
   unitRootData?: Record<string, Record<string, unknown>>
 ): Node[] {
-  const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
+  const allGameValues = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
 
-  // Supprimer les nœuds d'unités supprimées et les game-group obsolètes
+  // IDs des game-group nécessaires (inclus parents des sous-jeux)
+  const neededGameNodeIds = new Set<string>()
+  for (const g of allGameValues) {
+    neededGameNodeIds.add(`game-${g}`)
+    if (GAME_PARENTS[g]) neededGameNodeIds.add(`game-${GAME_PARENTS[g]}`)
+  }
+
+  // Cleanup : supprimer nœuds d'unités supprimées et game-group obsolètes
   const validUnitIds = new Set(units.map((u) => u.id))
-  const activeGames  = new Set(games)
   const result = nds.filter((n) => {
     if (n.data?.rpUnitId) return validUnitIds.has(n.data.rpUnitId as string)
-    if (n.type === "game-group") return activeGames.has(n.id.slice("game-".length))
+    if (n.type === "game-group") return neededGameNodeIds.has(n.id)
     return true
   })
 
-  if (!games.length) return result
+  if (!allGameValues.length) return result
+
+  // Jeux de niveau supérieur (pas de parent) + parents implicites
+  const topGames = Array.from(new Set([
+    ...allGameValues.filter((g) => !GAME_PARENTS[g]),
+    ...allGameValues.filter((g) => GAME_PARENTS[g]).map((g) => GAME_PARENTS[g]),
+  ]))
+
+  const hasSubGames = allGameValues.some((g) => GAME_PARENTS[g])
+  const unitBaseY   = hasSubGames ? LY_UNIT_DEEP_Y : LY_UNIT_Y
 
   // Créer les nœuds pour les nouvelles unités (pas encore dans le graphe)
   const existingRpIds = new Set(result.filter((n) => n.data?.rpUnitId).map((n) => n.data.rpUnitId as string))
@@ -127,91 +151,153 @@ function buildGameLayout(
     result.push({
       id: `unit-${u.id}`,
       type: "unit",
-      position: { x: 0, y: LY_UNIT_Y },
+      position: { x: 0, y: unitBaseY },
       data: {
-        label: rootData?.label ? String(rootData.label) : u.name,
-        type: rootData?.type ? String(rootData.type) : "",
-        size: rootData?.size ? String(rootData.size) : "",
+        label:    rootData?.label    ? String(rootData.label)    : u.name,
+        type:     rootData?.type     ? String(rootData.type)     : "",
+        size:     rootData?.size     ? String(rootData.size)     : "",
         callsign: rootData?.callsign ? String(rootData.callsign) : "",
         imageUrl: rootData?.imageUrl ? String(rootData.imageUrl) : "",
         modifier: rootData?.modifier ? String(rootData.modifier) : "",
-        roles: Array.isArray(rootData?.roles) ? rootData.roles : [],
+        roles:    Array.isArray(rootData?.roles) ? rootData.roles : [],
         rpUnitId: u.id,
       },
     })
   }
 
-  // Calculer les sous-arbres par jeu (colonnes verticales de LY_MAX_COL unités max)
-  const gameInfos = games.map((game) => {
-    const unitIds  = new Set(units.filter((u) => u.game === game).map((u) => u.id))
-    const count    = result.filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId)).length
-    const numCols  = Math.max(1, Math.ceil(count / LY_MAX_COL))
-    const subtreeW = numCols * LY_NODE_W + (numCols - 1) * LY_H_GAP
-    return { game, gameNodeId: `game-${game}`, count, numCols, subtreeW }
+  // Calcul de la largeur de sous-arbre pour un groupe d'unités
+  function subtreeWidthForUnits(unitIds: Set<string>): number {
+    const count   = result.filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId as string)).length
+    const numCols = Math.max(1, Math.ceil(count / LY_MAX_COL))
+    return Math.max(LY_NODE_W, numCols * LY_NODE_W + (numCols - 1) * LY_H_GAP)
+  }
+
+  // Positionner les unités sous un nœud parent centré sur centerX
+  function layoutUnits(unitIds: Set<string>, centerX: number, unitY: number) {
+    const linked = result
+      .filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId as string))
+      .sort((a, b) => a.position.x - b.position.x || a.position.y - b.position.y)
+    const numCols = Math.max(1, Math.ceil(linked.length / LY_MAX_COL))
+    const w       = numCols * LY_NODE_W + (numCols - 1) * LY_H_GAP
+    const left    = centerX - w / 2
+    for (let ui = 0; ui < linked.length; ui++) {
+      const col = Math.floor(ui / LY_MAX_COL)
+      const row = ui % LY_MAX_COL
+      const idx = result.findIndex((n) => n.id === linked[ui].id)
+      if (idx >= 0) result[idx] = { ...result[idx], position: { x: snapVal(left + col * LY_SLOT_W), y: snapVal(unitY + row * LY_UNIT_ROW_H) } }
+    }
+  }
+
+  // Créer ou repositionner un nœud game-group
+  function upsertGameNode(nodeId: string, game: string, x: number, y: number) {
+    const idx = result.findIndex((n) => n.id === nodeId)
+    if (idx >= 0) {
+      result[idx] = { ...result[idx], position: { x, y } }
+    } else {
+      result.push({ id: nodeId, type: "game-group", position: { x, y }, data: { label: GAME_LABELS[game] ?? game, game } })
+    }
+  }
+
+  // Calculer la largeur du sous-arbre de chaque jeu de niveau supérieur
+  type TopInfo = { game: string; nodeId: string; subtreeW: number; centerX: number }
+  const topInfos: TopInfo[] = topGames.map((g) => {
+    const subs = allGameValues.filter((sg) => GAME_PARENTS[sg] === g)
+    const directUnitIds = new Set(units.filter((u) => u.game === g).map((u) => u.id))
+
+    let subtreeW: number
+    if (subs.length > 0) {
+      const subsW    = subs.reduce((s, sg) => s + subtreeWidthForUnits(new Set(units.filter((u) => u.game === sg).map((u) => u.id))), 0)
+                       + Math.max(0, subs.length - 1) * LY_H_GAP
+      const directW  = directUnitIds.size > 0 ? subtreeWidthForUnits(directUnitIds) + LY_H_GAP : 0
+      subtreeW = Math.max(LY_NODE_W, subsW + directW)
+    } else {
+      subtreeW = subtreeWidthForUnits(directUnitIds)
+    }
+    return { game: g, nodeId: `game-${g}`, subtreeW, centerX: 0 }
   })
 
-  const totalW = gameInfos.reduce((s, g) => s + g.subtreeW, 0) + (gameInfos.length - 1) * LY_H_GAP
+  const totalW = topInfos.reduce((s, gi) => s + gi.subtreeW, 0) + Math.max(0, topInfos.length - 1) * LY_H_GAP
   let curX = LY_ROOT_CX - totalW / 2
 
-  for (const gi of gameInfos) {
-    const centerX = curX + gi.subtreeW / 2
+  for (const gi of topInfos) {
+    gi.centerX = curX + gi.subtreeW / 2
     curX += gi.subtreeW + LY_H_GAP
+    upsertGameNode(gi.nodeId, gi.game, snapVal(gi.centerX - LY_NODE_W / 2), LY_GAME_Y)
 
-    const gameX = snapVal(centerX - LY_NODE_W / 2)
+    const subs = allGameValues.filter((sg) => GAME_PARENTS[sg] === gi.game)
+    const directUnitIds = new Set(units.filter((u) => u.game === gi.game).map((u) => u.id))
 
-    // Créer ou repositionner le nœud game-group
-    const gameIdx = result.findIndex((n) => n.id === gi.gameNodeId)
-    if (gameIdx >= 0) {
-      result[gameIdx] = { ...result[gameIdx], position: { x: gameX, y: LY_GAME_Y } }
-    } else {
-      result.push({ id: gi.gameNodeId, type: "game-group", position: { x: gameX, y: LY_GAME_Y }, data: { label: GAME_LABELS[gi.game] ?? gi.game, game: gi.game } })
-    }
+    if (subs.length > 0) {
+      // Placer les sous-jeux + leurs unités
+      const subsW = subs.reduce((s, sg) => s + subtreeWidthForUnits(new Set(units.filter((u) => u.game === sg).map((u) => u.id))), 0)
+                    + Math.max(0, subs.length - 1) * LY_H_GAP
+      const directW = directUnitIds.size > 0 ? subtreeWidthForUnits(directUnitIds) : 0
+      const totalSubsAreaW = subsW + (directW > 0 ? LY_H_GAP + directW : 0)
+      let subCurX = gi.centerX - totalSubsAreaW / 2
 
-    // Redistribuer les unités en colonnes verticales (LY_MAX_COL max par colonne, nouvelle colonne à droite)
-    if (gi.count > 0) {
-      const unitIds   = new Set(units.filter((u) => u.game === gi.game).map((u) => u.id))
-      const linked    = result
-        .filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId))
-        .sort((a, b) => a.position.x - b.position.x || a.position.y - b.position.y)
-      const subLeft   = centerX - gi.subtreeW / 2
-
-      for (let ui = 0; ui < linked.length; ui++) {
-        const col   = Math.floor(ui / LY_MAX_COL)
-        const row   = ui % LY_MAX_COL
-        const unitX = snapVal(subLeft + col * LY_SLOT_W)
-        const unitY = snapVal(LY_UNIT_Y + row * LY_UNIT_ROW_H)
-        const idx   = result.findIndex((n) => n.id === linked[ui].id)
-        if (idx >= 0) result[idx] = { ...result[idx], position: { x: unitX, y: unitY } }
+      for (const sg of subs) {
+        const sgUnitIds = new Set(units.filter((u) => u.game === sg).map((u) => u.id))
+        const sgW       = subtreeWidthForUnits(sgUnitIds)
+        const sgCenterX = subCurX + sgW / 2
+        subCurX += sgW + LY_H_GAP
+        upsertGameNode(`game-${sg}`, sg, snapVal(sgCenterX - LY_NODE_W / 2), LY_SUB_GAME_Y)
+        layoutUnits(sgUnitIds, sgCenterX, unitBaseY)
       }
+
+      // Unités directes du jeu parent (game=arma3) placées à droite des sous-jeux
+      if (directUnitIds.size > 0) {
+        const directCenterX = subCurX + directW / 2
+        layoutUnits(directUnitIds, directCenterX, unitBaseY)
+      }
+    } else {
+      // Pas de sous-jeux : unités directement sous le nœud
+      layoutUnits(directUnitIds, gi.centerX, unitBaseY)
     }
   }
 
   return result
 }
 
-/** Synchronise les liens automatiques : supprime les orphelins, ajoute les manquants. */
+/** Synchronise les liens automatiques avec la hiérarchie à 3 niveaux (root → jeu → sous-jeu → unités). */
 function buildAutoEdges(eds: Edge[], nds: Node[], units: CommunityUnit[]): Edge[] {
-  const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
+  const allGameValues = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
 
-  // Supprimer les liens dont la source ou la cible n'existe plus
   const nodeIds = new Set(nds.map((n) => n.id))
-  const next = eds.filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
-  let changed = next.length !== eds.length
+  const next    = eds.filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
+  let changed   = next.length !== eds.length
 
-  if (!games.length) return changed ? next : eds
+  if (!allGameValues.length) return changed ? next : eds
 
-  for (const game of games) {
-    const gameNodeId = `game-${game}`
-    if (!next.find((e) => e.source === ROOT_ID && e.target === gameNodeId)) {
-      next.push({ id: `auto-root-${gameNodeId}`, source: ROOT_ID, sourceHandle: "bottom", target: gameNodeId, targetHandle: "top", type: "orbat" } as Edge)
+  function ensureEdge(id: string, source: string, target: string) {
+    if (!nodeIds.has(source) || !nodeIds.has(target)) return
+    if (!next.find((e) => e.source === source && e.target === target)) {
+      next.push({ id, source, sourceHandle: "bottom", target, targetHandle: "top", type: "orbat" } as Edge)
       changed = true
     }
-    const unitIds = new Set(units.filter((u) => u.game === game).map((u) => u.id))
-    for (const n of nds.filter((n) => n.type === "unit" && unitIds.has(n.data?.rpUnitId))) {
-      if (!next.find((e) => e.source === gameNodeId && e.target === n.id)) {
-        next.push({ id: `auto-${gameNodeId}-${n.id}`, source: gameNodeId, sourceHandle: "bottom", target: n.id, targetHandle: "top", type: "orbat" } as Edge)
-        changed = true
+  }
+
+  const topGames = Array.from(new Set([
+    ...allGameValues.filter((g) => !GAME_PARENTS[g]),
+    ...allGameValues.filter((g) => GAME_PARENTS[g]).map((g) => GAME_PARENTS[g]),
+  ]))
+
+  for (const g of topGames) {
+    const gameNodeId = `game-${g}`
+    ensureEdge(`auto-root-${gameNodeId}`, ROOT_ID, gameNodeId)
+
+    // Sous-jeux
+    const subs = allGameValues.filter((sg) => GAME_PARENTS[sg] === g)
+    for (const sg of subs) {
+      const subNodeId = `game-${sg}`
+      ensureEdge(`auto-${gameNodeId}-${subNodeId}`, gameNodeId, subNodeId)
+      for (const n of nds.filter((n) => n.type === "unit" && units.some((u) => u.game === sg && u.id === n.data?.rpUnitId))) {
+        ensureEdge(`auto-${subNodeId}-${n.id}`, subNodeId, n.id)
       }
+    }
+
+    // Unités directes (game = g exactement)
+    for (const n of nds.filter((n) => n.type === "unit" && units.some((u) => u.game === g && u.id === n.data?.rpUnitId))) {
+      ensureEdge(`auto-${gameNodeId}-${n.id}`, gameNodeId, n.id)
     }
   }
 
@@ -603,7 +689,7 @@ const toggleLock = useCallback((nodeId: string) => {
         return {
           ...n,
           draggable: isCommunityOrbat || isGameGroup || n.id === ROOT_ID ? false : !n.data.locked,
-          deletable: !isGameGroup && n.id !== ROOT_ID && (!isCommunityOrbat || !!n.data?.manualNode),
+          deletable: !isGameGroup && n.id !== ROOT_ID && (!isCommunityOrbat || !!n.data?.manualNode || !n.data?.rpUnitId),
           selectable: !isGameGroup,
           data: {
             ...n.data,
