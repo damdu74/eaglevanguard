@@ -30,10 +30,13 @@ export function AvatarUpload({ currentImage, displayName }: AvatarUploadProps) {
         const formData = new FormData()
         formData.append("file", file)
         const res = await fetch("/api/profile/avatar", { method: "POST", body: formData })
-        if (!res.ok) throw new Error("Upload échoué")
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          throw new Error(body?.error ?? `Erreur ${res.status}`)
+        }
         window.location.reload()
-      } catch {
-        setError("Erreur lors de l'upload. Réessayez.")
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erreur lors de l'upload. Réessayez.")
         setPreview(currentImage ?? null)
       }
     })
