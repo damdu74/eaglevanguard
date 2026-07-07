@@ -100,16 +100,24 @@ function snapVal(v: number) {
   return Math.round(v / SNAP_GRID[0]) * SNAP_GRID[0]
 }
 
-/** Calcule le layout hiérarchique complet et crée les nœuds manquants. */
+/** Calcule le layout hiérarchique complet, crée les nœuds manquants et supprime les orphelins. */
 function buildGameLayout(
   nds: Node[],
   units: CommunityUnit[],
   unitRootData?: Record<string, Record<string, unknown>>
 ): Node[] {
   const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
-  if (!games.length) return nds
 
-  const result = [...nds]
+  // Supprimer les nœuds d'unités supprimées et les game-group obsolètes
+  const validUnitIds = new Set(units.map((u) => u.id))
+  const activeGames  = new Set(games)
+  let result = nds.filter((n) => {
+    if (n.data?.rpUnitId) return validUnitIds.has(n.data.rpUnitId as string)
+    if (n.type === "game-group") return activeGames.has(n.id.slice("game-".length))
+    return true
+  })
+
+  if (!games.length) return result
 
   // Créer les nœuds pour les nouvelles unités (pas encore dans le graphe)
   const existingRpIds = new Set(result.filter((n) => n.data?.rpUnitId).map((n) => n.data.rpUnitId as string))
@@ -181,13 +189,16 @@ function buildGameLayout(
   return result
 }
 
-/** Ajoute les liens automatiques manquants (racine→jeu→unités). */
+/** Synchronise les liens automatiques : supprime les orphelins, ajoute les manquants. */
 function buildAutoEdges(eds: Edge[], nds: Node[], units: CommunityUnit[]): Edge[] {
   const games = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
-  if (!games.length) return eds
 
-  let changed = false
-  const next = [...eds]
+  // Supprimer les liens dont la source ou la cible n'existe plus
+  const nodeIds = new Set(nds.map((n) => n.id))
+  let next = eds.filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
+  let changed = next.length !== eds.length
+
+  if (!games.length) return changed ? next : eds
 
   for (const game of games) {
     const gameNodeId = `game-${game}`
@@ -351,10 +362,8 @@ export function OrbatEditor({
   useEffect(() => {
     if (!isCommunityOrbat) return
     const units = liveUnitsRef.current
-    let newNodes = nodesRef.current
-    if (units.some((u) => u.game)) {
-      newNodes = buildGameLayout(newNodes, units, unitRootData)
-    }
+    // Toujours passer par buildGameLayout pour nettoyer les nœuds orphelins même si aucune unité n'a de jeu
+    let newNodes = buildGameLayout(nodesRef.current, units, unitRootData)
     newNodes = buildManualNodesLayout(newNodes)
     setNodes(newNodes)
     setEdges((eds) => buildAutoEdges(eds, newNodes, units))
@@ -474,10 +483,16 @@ export function OrbatEditor({
         .then((r) => r.json())
         .then(({ units }: { units: CommunityUnit[] }) => {
           if (!units) return
-          const currentIds = new Set(liveUnitsRef.current.map((u) => u.id))
-          if (units.some((u) => !currentIds.has(u.id))) {
-            setLiveUnits(units)
-          }
+          const current    = liveUnitsRef.current
+          const currentIds = new Set(current.map((u) => u.id))
+          const incomingIds = new Set(units.map((u) => u.id))
+          const hasNew     = units.some((u) => !currentIds.has(u.id))
+          const hasDeleted = current.some((u) => !incomingIds.has(u.id))
+          const hasGameChange = units.some((u) => {
+            const existing = current.find((e) => e.id === u.id)
+            return existing && existing.game !== u.game
+          })
+          if (hasNew || hasDeleted || hasGameChange) setLiveUnits(units)
         })
         .catch(() => {})
     }
@@ -492,14 +507,14 @@ export function OrbatEditor({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [communitySlug])
 
-  // Re-layout automatique quand de nouvelles unités sont détectées
+  // Re-layout automatique quand les unités changent (ajout, suppression, changement de jeu)
   useEffect(() => {
     if (!isCommunityOrbat) return
-    const currentRpIds = new Set(
-      nodesRef.current.filter((n) => n.data?.rpUnitId).map((n) => n.data.rpUnitId as string)
-    )
-    const hasNewUnits = liveUnits.some((u) => u.game && !currentRpIds.has(u.id))
-    if (!hasNewUnits) return
+    const currentRpIds  = new Set(nodesRef.current.filter((n) => n.data?.rpUnitId).map((n) => n.data.rpUnitId as string))
+    const liveUnitIds   = new Set(liveUnits.map((u) => u.id))
+    const hasNewUnits   = liveUnits.some((u) => u.game && !currentRpIds.has(u.id))
+    const hasDeletedUnits = nodesRef.current.some((n) => n.data?.rpUnitId && !liveUnitIds.has(n.data.rpUnitId as string))
+    if (!hasNewUnits && !hasDeletedUnits) return
 
     let newNodes = buildGameLayout(nodesRef.current, liveUnits, unitRootData)
     newNodes = buildManualNodesLayout(newNodes)
