@@ -126,8 +126,7 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
       <div
         className={cn(
           "w-[360px] rounded-lg border-2 bg-background shadow-sm overflow-hidden transition-colors",
-          selected ? "border-primary" : data.isRoot ? "border-violet-500" : data.locked ? "border-red-500/60" : "border-border",
-          data.isRoot && "bg-violet-50 dark:bg-violet-950/30"
+          selected ? "border-primary" : data.locked ? "border-red-500/60" : "border-border"
         )}
       >
         {/* Case racine communauté : logo centré + nom uniquement, non éditable */}
@@ -141,8 +140,8 @@ export const OrbatUnitNode = memo(function OrbatUnitNode({ id, data, selected }:
                 style={{ width: 72, height: 72, objectFit: "contain", display: "block" }}
               />
             ) : (
-              <div className="w-[72px] h-[72px] rounded-lg bg-violet-200/50 dark:bg-violet-900/30 flex items-center justify-center">
-                <span className="text-2xl font-bold text-violet-400">{data.label?.[0]?.toUpperCase()}</span>
+              <div className="w-[72px] h-[72px] rounded-lg bg-muted flex items-center justify-center">
+                <span className="text-2xl font-bold text-muted-foreground">{data.label?.[0]?.toUpperCase()}</span>
               </div>
             )}
             <p className="text-sm font-bold text-center leading-tight">{data.label}</p>
