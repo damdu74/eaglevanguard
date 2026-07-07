@@ -715,7 +715,7 @@ const toggleLock = useCallback((nodeId: string) => {
       const filtered = nds.filter((n) => {
         if (!n.selected) return true
         if (n.id === ROOT_ID || n.type === "game-group") return true
-        if (isCommunityOrbat && !n.data?.manualNode) return true
+        if (isCommunityOrbat && !!n.data?.rpUnitId) return true
         return false
       })
       return isCommunityOrbat ? buildManualNodesLayout(filtered) : filtered
@@ -822,9 +822,10 @@ const toggleLock = useCallback((nodeId: string) => {
           imageUrl: n.data?.imageUrl ?? "",
           modifier: n.data?.modifier ?? "",
           roles:    n.data?.roles    ?? [],
-          isRoot:   n.data?.isRoot   ?? false,
-          locked:   n.data?.locked   ?? false,
-          rpUnitId: n.data?.rpUnitId ?? null,
+          isRoot:     n.data?.isRoot     ?? false,
+          locked:     n.data?.locked     ?? false,
+          rpUnitId:   n.data?.rpUnitId   ?? null,
+          manualNode: n.data?.manualNode ?? false,
         },
       }))
       const res = await fetch(apiBase, {
