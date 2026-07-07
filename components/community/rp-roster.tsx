@@ -14,13 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { Loader2, Plus, Trash2, Settings, Sword, Users, ChevronRight } from "lucide-react"
 import Link from "next/link"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-const GAMES = [
-  { value: "arma3",           label: "Arma 3" },
-  { value: "arma3-principale", label: "Arma 3 — Trame Principale" },
-  { value: "arma3-secondaire", label: "Arma 3 — Hors Série" },
-]
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 
 interface RpUnit {
@@ -208,7 +202,12 @@ async function createUnit() {
                 <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">Aucun</SelectItem>
-                  {GAMES.map((g) => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
+                  <SelectGroup>
+                    <SelectLabel>Arma 3</SelectLabel>
+                    <SelectItem value="arma3">Arma 3 — Général</SelectItem>
+                    <SelectItem value="arma3-principale">Arma 3 — Trame Principale</SelectItem>
+                    <SelectItem value="arma3-secondaire">Arma 3 — Hors Série</SelectItem>
+                  </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
@@ -247,7 +246,12 @@ async function createUnit() {
                 <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">Aucun</SelectItem>
-                  {GAMES.map((g) => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
+                  <SelectGroup>
+                    <SelectLabel>Arma 3</SelectLabel>
+                    <SelectItem value="arma3">Arma 3 — Général</SelectItem>
+                    <SelectItem value="arma3-principale">Arma 3 — Trame Principale</SelectItem>
+                    <SelectItem value="arma3-secondaire">Arma 3 — Hors Série</SelectItem>
+                  </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
