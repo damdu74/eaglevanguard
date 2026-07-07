@@ -27,11 +27,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Seules les images sont acceptées" }, { status: 400 })
     }
 
-    const ext = file.name.split(".").pop()
-    const blob = await put(`avatars/${session.user.id}.${ext}`, file, {
-      access: "public",
-      allowOverwrite: true,
-    })
+    const ext = file.name.split(".").pop() ?? "png"
+
+    let blob
+    try {
+      blob = await put(`avatars/${session.user.id}.${ext}`, file, {
+        access: "public",
+        allowOverwrite: true,
+      })
+    } catch (err) {
+      console.error("[avatar upload] Blob error:", err)
+      const msg = err instanceof Error ? err.message : "Erreur Vercel Blob"
+      return NextResponse.json({ error: msg }, { status: 500 })
+    }
 
     await prisma.user.update({
       where: { id: session.user.id },
