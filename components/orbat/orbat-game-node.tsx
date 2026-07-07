@@ -21,9 +21,9 @@ const GAME_THEME: Record<string, { border: string; bg: string; text: string; Ico
     Icon:   Star,
   },
   "arma3-secondaire": {
-    border: "border-amber-500",
-    bg:     "bg-amber-50 dark:bg-amber-950/30",
-    text:   "text-amber-700 dark:text-amber-300",
+    border: "border-yellow-400",
+    bg:     "bg-yellow-50 dark:bg-yellow-950/30",
+    text:   "text-yellow-700 dark:text-yellow-300",
     Icon:   BookOpen,
   },
 }
