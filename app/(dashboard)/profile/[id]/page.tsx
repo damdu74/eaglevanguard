@@ -78,32 +78,47 @@ export default async function PublicProfilePage({ params, searchParams }: { para
   if (!target) notFound()
 
   const isFriend = friendship?.status === "ACCEPTED"
+  const displayName = target.steamName ?? target.discordName ?? target.name ?? "Joueur"
+  const displayAvatar = target.customAvatar ?? target.steamAvatar ?? target.discordAvatar ?? target.image ?? ""
 
   if (target.visibility === "PRIVATE") {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-24 text-muted-foreground">
-        <Lock className="h-12 w-12" />
-        <p className="text-lg font-medium">Ce profil est privé.</p>
+        <Avatar className="h-20 w-20">
+          <AvatarImage src={displayAvatar} />
+          <AvatarFallback className="text-2xl">{displayName[0]?.toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <p className="text-xl font-semibold text-foreground">{displayName}</p>
+        <div className="flex items-center gap-2">
+          <Lock className="h-4 w-4" />
+          <p className="text-sm">Le profil de <span className="font-medium text-foreground">{displayName}</span> est privé.</p>
+        </div>
       </div>
     )
   }
 
   if (target.visibility === "FRIENDS" && !isFriend) {
+    let friendStatus: { type: "none" } | { type: "sent"; friendshipId: string } | { type: "received"; friendshipId: string } = { type: "none" }
+    if (friendship?.status === "PENDING") {
+      friendStatus = friendship.requesterId === session.user.id
+        ? { type: "sent", friendshipId: friendship.id }
+        : { type: "received", friendshipId: friendship.id }
+    }
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-24 text-muted-foreground max-w-md mx-auto text-center">
-        <Users className="h-12 w-12" />
-        <p className="text-lg font-medium">Profil réservé aux amis.</p>
-        <p className="text-sm">Ajoutez ce joueur pour voir son profil.</p>
-        <FriendButton
-          targetId={params.id}
-          initialStatus={{ type: "none" }}
-        />
+        <Avatar className="h-20 w-20">
+          <AvatarImage src={displayAvatar} />
+          <AvatarFallback className="text-2xl">{displayName[0]?.toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <p className="text-xl font-semibold text-foreground">{displayName}</p>
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4" />
+          <p className="text-sm">Le profil de <span className="font-medium text-foreground">{displayName}</span> est réservé aux amis.</p>
+        </div>
+        <FriendButton targetId={params.id} initialStatus={friendStatus} />
       </div>
     )
   }
-
-  const displayName = target.steamName ?? target.discordName ?? target.name ?? "Joueur"
-  const displayAvatar = target.customAvatar ?? target.steamAvatar ?? target.discordAvatar ?? target.image ?? ""
 
   type FriendStatus =
     | { type: "none" }
