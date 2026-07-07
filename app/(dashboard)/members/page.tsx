@@ -49,7 +49,7 @@ export default async function MembersPage() {
                   isEagleVanguardTeam: true,
                 },
               },
-              rank: { select: { name: true, order: true } },
+              rank: { select: { name: true, order: true, permissions: true } },
             },
             orderBy: { role: "asc" },
           },
@@ -88,6 +88,10 @@ export default async function MembersPage() {
           const roleA = ROLE_ORDER[a.role] ?? 99
           const roleB = ROLE_ORDER[b.role] ?? 99
           if (roleA !== roleB) return roleA - roleB
+          // Plus de permissions = plus important = apparaît en premier
+          const permA = a.rank?.permissions.length ?? -1
+          const permB = b.rank?.permissions.length ?? -1
+          if (permA !== permB) return permB - permA
           const rankOrderA = a.rank?.order ?? Infinity
           const rankOrderB = b.rank?.order ?? Infinity
           return rankOrderA - rankOrderB
