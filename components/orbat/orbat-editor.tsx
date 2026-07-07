@@ -111,7 +111,7 @@ function buildGameLayout(
   // Supprimer les nœuds d'unités supprimées et les game-group obsolètes
   const validUnitIds = new Set(units.map((u) => u.id))
   const activeGames  = new Set(games)
-  let result = nds.filter((n) => {
+  const result = nds.filter((n) => {
     if (n.data?.rpUnitId) return validUnitIds.has(n.data.rpUnitId as string)
     if (n.type === "game-group") return activeGames.has(n.id.slice("game-".length))
     return true
@@ -195,7 +195,7 @@ function buildAutoEdges(eds: Edge[], nds: Node[], units: CommunityUnit[]): Edge[
 
   // Supprimer les liens dont la source ou la cible n'existe plus
   const nodeIds = new Set(nds.map((n) => n.id))
-  let next = eds.filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
+  const next = eds.filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
   let changed = next.length !== eds.length
 
   if (!games.length) return changed ? next : eds
