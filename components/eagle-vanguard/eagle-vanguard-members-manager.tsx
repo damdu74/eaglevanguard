@@ -232,7 +232,11 @@ export function EagleVanguardMembersManager({ initialRanks, initialMembers, curr
                 </TableCell>
               </TableRow>
             )}
-            {members.map(member => {
+            {[...members].sort((a, b) => {
+              const oA = a.eagleVanguardRank?.order ?? Infinity
+              const oB = b.eagleVanguardRank?.order ?? Infinity
+              return oA !== oB ? oA - oB : (a.eagleVanguardRank?.name ?? "").localeCompare(b.eagleVanguardRank?.name ?? "")
+            }).map(member => {
               const displayName = member.steamName ?? member.discordName ?? member.name ?? "Membre"
               const avatar = member.customAvatar ?? member.steamAvatar ?? member.discordAvatar
               const isSelf = member.id === currentUserId
