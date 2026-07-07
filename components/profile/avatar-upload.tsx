@@ -17,7 +17,7 @@ function compressImage(file: File, maxSize = 512, quality = 0.85): Promise<File>
     img.onload = () => {
       URL.revokeObjectURL(url)
       const canvas = document.createElement("canvas")
-      let { width, height } = img
+      const { width, height } = img
       const ratio = Math.min(maxSize / width, maxSize / height, 1)
       canvas.width = Math.round(width * ratio)
       canvas.height = Math.round(height * ratio)
