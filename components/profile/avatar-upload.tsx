@@ -10,18 +10,37 @@ interface AvatarUploadProps {
   displayName: string
 }
 
+function compressImage(file: File, maxSize = 512, quality = 0.85): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const canvas = document.createElement("canvas")
+      let { width, height } = img
+      const ratio = Math.min(maxSize / width, maxSize / height, 1)
+      canvas.width = Math.round(width * ratio)
+      canvas.height = Math.round(height * ratio)
+      canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob(
+        (blob) => resolve(new File([blob!], "avatar.jpg", { type: "image/jpeg" })),
+        "image/jpeg",
+        quality
+      )
+    }
+    img.src = url
+  })
+}
+
 export function AvatarUpload({ currentImage, displayName }: AvatarUploadProps) {
   const [preview, setPreview] = useState<string | null>(currentImage ?? null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  async function handleFile(file: File) {
-    if (file.size > 4 * 1024 * 1024) {
-      setError("Fichier trop lourd (max 4 Mo)")
-      return
-    }
+  async function handleFile(rawFile: File) {
     setError(null)
+    const file = await compressImage(rawFile)
     const localPreview = URL.createObjectURL(file)
     setPreview(localPreview)
 
@@ -38,6 +57,7 @@ export function AvatarUpload({ currentImage, displayName }: AvatarUploadProps) {
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erreur lors de l'upload. Réessayez.")
         setPreview(currentImage ?? null)
+        URL.revokeObjectURL(localPreview)
       }
     })
   }
