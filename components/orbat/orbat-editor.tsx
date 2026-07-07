@@ -263,8 +263,9 @@ function buildAutoEdges(eds: Edge[], nds: Node[], units: CommunityUnit[]): Edge[
   const allGameValues = Array.from(new Set(units.filter((u) => u.game).map((u) => u.game as string)))
 
   const nodeIds = new Set(nds.map((n) => n.id))
-  const next    = eds.filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
-  let changed   = next.length !== eds.length
+  // Supprimer toutes les auto-edges (reconstruites ci-dessous) + les liens orphelins
+  const next  = eds.filter((e) => !e.id.startsWith("auto-") && nodeIds.has(e.source) && nodeIds.has(e.target))
+  let changed = next.length !== eds.length
 
   if (!allGameValues.length) return changed ? next : eds
 
