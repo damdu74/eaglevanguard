@@ -155,7 +155,6 @@ export default async function PublicProfilePage({ params, searchParams }: { para
         <Link
           href={
             searchParams?.back ? searchParams.back :
-            searchParams?.from === "members" ? "/members" :
             searchParams?.from === "friends" ? "/players/friends" :
             "/players"
           }
@@ -164,7 +163,6 @@ export default async function PublicProfilePage({ params, searchParams }: { para
           <ChevronLeft className="h-4 w-4" />
           {
             searchParams?.back?.includes("/communities/") ? "Membres" :
-            searchParams?.from === "members" ? "Mes membres" :
             searchParams?.from === "friends" ? "Mes amis" :
             "Annuaire des joueurs"
           }

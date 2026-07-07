@@ -59,73 +59,73 @@ enum FriendshipStatus {
 }
 
 model User {
-  id            String            @id @default(cuid())
-  name          String?
-  email         String?           @unique
-  emailVerified DateTime?
-  image         String?
-  steamId       String?           @unique
-  steamName     String?
-  steamAvatar   String?
-  customAvatar  String?
-  bio           String?           @db.Text
-  genre         String?
-  birthDate     DateTime?
-  theme         String            @default("system")
-  visibility    ProfileVisibility @default(PUBLIC)
-  discordId     String?           @unique
-  discordName   String?
-  discordAvatar String?
+  id                   String            @id @default(cuid())
+  name                 String?
+  email                String?           @unique
+  emailVerified        DateTime?
+  image                String?
+  steamId              String?           @unique
+  steamName            String?
+  steamAvatar          String?
+  customAvatar         String?
+  bio                  String?           @db.Text
+  genre                String?
+  birthDate            DateTime?
+  theme                String            @default("system")
+  visibility           ProfileVisibility @default(PUBLIC)
+  discordId            String?           @unique
+  discordName          String?
+  discordAvatar        String?
   isEagleVanguardTeam  Boolean           @default(false)
   isBannedFromPlatform Boolean           @default(false)
   eagleVanguardRankId  String?
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
 
-  accounts           Account[]
-  sessions           Session[]
-  memberships        Membership[]
-  applications       Application[]
-  createdCommunities Community[]       @relation("CommunityCreator")
-  events             EventParticipant[]
-  steamAuthCodes     SteamAuthCode[]
-  sentFriendRequests     Friendship[]  @relation("SentRequests")
-  receivedFriendRequests Friendship[]  @relation("ReceivedRequests")
-  notifications      Notification[]
-  rpCharacters       RpCharacter[]
-  posts              CommunityPost[]
+  accounts               Account[]
+  sessions               Session[]
+  memberships            Membership[]
+  applications           Application[]
+  createdCommunities     Community[]         @relation("CommunityCreator")
+  events                 EventParticipant[]
+  steamAuthCodes         SteamAuthCode[]
+  sentFriendRequests     Friendship[]        @relation("SentRequests")
+  receivedFriendRequests Friendship[]        @relation("ReceivedRequests")
+  notifications          Notification[]
+  rpCharacters           RpCharacter[]
+  posts                  CommunityPost[]
   eagleVanguardRank      EagleVanguardRank?  @relation("UserRole", fields: [eagleVanguardRankId], references: [id], onDelete: SetNull)
   eagleVanguardFunctions EagleVanguardRank[] @relation("UserFunctions")
-  moderationTarget   ModerationAction[] @relation("ModTarget")
-  moderationActed    ModerationAction[] @relation("ModActor")
-  moderationResolved ModerationAction[] @relation("ModResolver")
-  auditLogsAsActor   AuditLog[]         @relation("AuditActor")
-  auditLogsAsTarget  AuditLog[]         @relation("AuditTarget")
-  conversations1     Conversation[]     @relation("ConversationUser1")
-  conversations2     Conversation[]     @relation("ConversationUser2")
-  sentMessages       Message[]
-  blocksGiven        Block[]            @relation("BlocksGiven")
-  blocksReceived     Block[]            @relation("BlocksReceived")
+  moderationTarget       ModerationAction[]  @relation("ModTarget")
+  moderationActed        ModerationAction[]  @relation("ModActor")
+  moderationResolved     ModerationAction[]  @relation("ModResolver")
+  auditLogsAsActor       AuditLog[]          @relation("AuditActor")
+  auditLogsAsTarget      AuditLog[]          @relation("AuditTarget")
+  conversations1         Conversation[]      @relation("ConversationUser1")
+  conversations2         Conversation[]      @relation("ConversationUser2")
+  sentMessages           Message[]
+  blocksGiven            Block[]             @relation("BlocksGiven")
+  blocksReceived         Block[]             @relation("BlocksReceived")
 }
 
 // ─── EAGLE VANGUARD TEAM ─────────────────────────────────────────────────────
 
 model EagleVanguardRank {
-  id           String   @id @default(cuid())
-  name         String
-  abbreviation String
-  order        Int
-  color        String   @default("#6366f1")
+  id                    String   @id @default(cuid())
+  name                  String
+  abbreviation          String
+  order                 Int
+  color                 String   @default("#6366f1")
   permissions           String[]
   assignableRankIds     String[] @default([])
   assignableFunctionIds String[] @default([])
-  isProtected  Boolean  @default(false)
-  isHidden     Boolean  @default(false)
-  category     String   @default("ROLE")
-  createdAt    DateTime @default(now())
+  isProtected           Boolean  @default(false)
+  isHidden              Boolean  @default(false)
+  category              String   @default("ROLE")
+  createdAt             DateTime @default(now())
 
-  users          User[]  @relation("UserRole")
-  functionUsers  User[]  @relation("UserFunctions")
+  users         User[] @relation("UserRole")
+  functionUsers User[] @relation("UserFunctions")
 }
 
 model Notification {
@@ -171,9 +171,9 @@ model SteamAuthCode {
 // ─── COMMUNITIES ──────────────────────────────────────────────────────────────
 
 enum CommunityVisibility {
-  PUBLIC     // visible dans l'annuaire, rejoindre sans candidature
-  WHITELIST  // visible dans l'annuaire, candidature requise
-  INVISIBLE  // non visible dans l'annuaire (sauf membres + Eagle Vanguard Team)
+  PUBLIC // visible dans l'annuaire, rejoindre sans candidature
+  WHITELIST // visible dans l'annuaire, candidature requise
+  INVISIBLE // non visible dans l'annuaire (sauf membres + Eagle Vanguard Team)
 }
 
 model Community {
@@ -190,21 +190,21 @@ model Community {
   updatedAt   DateTime            @updatedAt
   creatorId   String
 
-  discordGuildId  String?
+  discordGuildId String?
 
-  creator      User          @relation("CommunityCreator", fields: [creatorId], references: [id])
-  memberships  Membership[]
-  ranks        Rank[]
-  units        Unit[]
-  orbat        OrbatNode[]
-  orbatEdges   OrbatEdge[]
-  events         Event[]
-  applications   Application[]
-  rpUnits        RpUnit[]
-  rpCharacters   RpCharacter[]
-  rpGroups       RpGroup[]
-  posts          CommunityPost[]
-  eventTemplates EventTemplate[]
+  creator           User               @relation("CommunityCreator", fields: [creatorId], references: [id])
+  memberships       Membership[]
+  ranks             Rank[]
+  units             Unit[]
+  orbat             OrbatNode[]
+  orbatEdges        OrbatEdge[]
+  events            Event[]
+  applications      Application[]
+  rpUnits           RpUnit[]
+  rpCharacters      RpCharacter[]
+  rpGroups          RpGroup[]
+  posts             CommunityPost[]
+  eventTemplates    EventTemplate[]
   moderationActions ModerationAction[]
   auditLogs         AuditLog[]
 }
@@ -385,56 +385,56 @@ model EventParticipant {
 // ─── ROSTER RP ────────────────────────────────────────────────────────────────
 
 model RpUnit {
-  id           String        @id @default(cuid())
+  id           String   @id @default(cuid())
   communityId  String
   name         String
-  description  String?       @db.Text
+  description  String?  @db.Text
   era          String?
   game         String?
   columnConfig Json?
-  createdAt    DateTime      @default(now())
+  createdAt    DateTime @default(now())
 
-  community   Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  characters  RpCharacter[]
-  rpGroups    RpGroup[]
-  orbatNodes  RpUnitOrbatNode[]
-  orbatEdges  RpUnitOrbatEdge[]
+  community  Community         @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  characters RpCharacter[]
+  rpGroups   RpGroup[]
+  orbatNodes RpUnitOrbatNode[]
+  orbatEdges RpUnitOrbatEdge[]
 
   @@index([communityId])
 }
 
 model RpGroup {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
   communityId String
   rpUnitId    String
   name        String
-  order       Int           @default(0)
-  createdAt   DateTime      @default(now())
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
 
-  community   Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  rpUnit      RpUnit        @relation(fields: [rpUnitId], references: [id], onDelete: Cascade)
-  characters  RpCharacter[]
+  community  Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  rpUnit     RpUnit        @relation(fields: [rpUnitId], references: [id], onDelete: Cascade)
+  characters RpCharacter[]
 }
 
 model RpCharacter {
-  id          String    @id @default(cuid())
-  communityId String
-  userId      String
-  rpUnitId    String?
-  rpGroupId   String?
+  id           String   @id @default(cuid())
+  communityId  String
+  userId       String
+  rpUnitId     String?
+  rpGroupId    String?
   name         String
   grade        String?
   role         String?
   customFields Json?
-  description  String?   @db.Text
-  imageUrl    String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  description  String?  @db.Text
+  imageUrl     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  community Community  @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rpUnit    RpUnit?    @relation(fields: [rpUnitId], references: [id], onDelete: Cascade)
-  rpGroup   RpGroup?   @relation(fields: [rpGroupId], references: [id], onDelete: SetNull)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rpUnit    RpUnit?   @relation(fields: [rpUnitId], references: [id], onDelete: Cascade)
+  rpGroup   RpGroup?  @relation(fields: [rpGroupId], references: [id], onDelete: SetNull)
 
   @@unique([rpUnitId, userId])
   @@index([communityId, userId])
@@ -534,13 +534,13 @@ model ModerationAction {
 // ─── MESSAGERIE ───────────────────────────────────────────────────────────────
 
 model Conversation {
-  id              String   @id @default(cuid())
-  user1Id         String
-  user2Id         String
-  deletedByUser1  Boolean  @default(false)
-  deletedByUser2  Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  user1Id        String
+  user2Id        String
+  deletedByUser1 Boolean  @default(false)
+  deletedByUser2 Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   user1    User      @relation("ConversationUser1", fields: [user1Id], references: [id], onDelete: Cascade)
   user2    User      @relation("ConversationUser2", fields: [user2Id], references: [id], onDelete: Cascade)
