@@ -263,11 +263,15 @@ function WW2Flag({ country }: { country: NationCode }) {
       </svg>
     ),
     fr: (
-      // Drapeau français / Free French tricolor
+      // Drapeau France Libre — tricolore + Croix de Lorraine
       <svg viewBox="0 0 60 40" width="36" height="24" xmlns="http://www.w3.org/2000/svg" className="shrink-0 border border-white/10">
         <rect width="20" height="40" fill="#002395"/>
         <rect x="20" width="20" height="40" fill="#fff"/>
         <rect x="40" width="20" height="40" fill="#ED2939"/>
+        {/* Croix de Lorraine centrée */}
+        <rect x="28.5" y="7" width="3" height="26" fill="#002395" stroke="#fff" strokeWidth="0.5"/>
+        <rect x="24"   y="12" width="12" height="3"  fill="#002395" stroke="#fff" strokeWidth="0.5"/>
+        <rect x="21"   y="20" width="18" height="3"  fill="#002395" stroke="#fff" strokeWidth="0.5"/>
       </svg>
     ),
     de: (
