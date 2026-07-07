@@ -3,16 +3,40 @@ import Image from "next/image"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
-const factions = [
-  { flag: "🇺🇸", name: "US Army", unit: "1st Infantry Division" },
-  { flag: "🇺🇸", name: "US Army", unit: "101st Airborne" },
-  { flag: "🇺🇸", name: "US Army", unit: "5th Ranger Battalion" },
-  { flag: "🇬🇧", name: "UK Army", unit: "3rd Infantry Division" },
-  { flag: "🇫🇷", name: "FFI", unit: "L'Aube Liberté" },
-  { flag: "🇫🇷", name: "FFL", unit: "Régiment de marche du Tchad" },
-  { flag: "🇫🇷", name: "FFL", unit: "2e Division Blindée" },
-  { flag: "🇩🇪", name: "Wehrmacht", unit: "716. Infanterie‑Division" },
-  { flag: "🇩🇪", name: "Wehrmacht", unit: "21. Panzer-Division" },
+const nations = [
+  {
+    flag: "🇺🇸",
+    nation: "États-Unis",
+    factions: [
+      { name: "US Army", unit: "1st Infantry Division" },
+      { name: "US Army", unit: "101st Airborne" },
+      { name: "US Army", unit: "5th Ranger Battalion" },
+    ],
+  },
+  {
+    flag: "🇬🇧",
+    nation: "Royaume-Uni",
+    factions: [
+      { name: "UK Army", unit: "3rd Infantry Division" },
+    ],
+  },
+  {
+    flag: "🇫🇷",
+    nation: "France",
+    factions: [
+      { name: "FFI", unit: "L'Aube Liberté" },
+      { name: "FFL", unit: "Régiment de marche du Tchad" },
+      { name: "FFL", unit: "2e Division Blindée" },
+    ],
+  },
+  {
+    flag: "🇩🇪",
+    nation: "Allemagne",
+    factions: [
+      { name: "Wehrmacht", unit: "716. Infanterie‑Division" },
+      { name: "Wehrmacht", unit: "21. Panzer-Division" },
+    ],
+  },
 ]
 
 export default async function HomePage() {
@@ -109,16 +133,26 @@ export default async function HomePage() {
           <div className="mx-auto max-w-3xl space-y-8">
             <div className="space-y-2">
               <SectionLabel label="Factions & Personnages" />
-              <h2 className="text-2xl font-bold text-white">9 Factions, <span className="text-[#e8003c]">9 points de vue</span></h2>
+              <h2 className="text-2xl font-bold text-white">4 Nations, <span className="text-[#e8003c]">9 factions</span></h2>
               <p className="text-sm text-white/60">Pour rendre cette expérience encore plus immersive, créez des personnages uniques que vous incarnerez dans chaque armée.</p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {factions.map(({ flag, name, unit }) => (
-                <div key={unit} className="flex items-center gap-3 border border-white/8 bg-white/[0.03] px-4 py-3 hover:border-[#e8003c]/30 transition-colors">
-                  <span className="text-xl">{flag}</span>
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-[#7a8a2a]">{name}</p>
-                    <p className="text-sm font-semibold text-white">{unit}</p>
+            <div className="space-y-6">
+              {nations.map(({ flag, nation, factions }) => (
+                <div key={nation}>
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="text-lg">{flag}</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50">{nation}</span>
+                    <div className="h-px flex-1 bg-white/5" />
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {factions.map(({ name, unit }) => (
+                      <div key={unit} className="flex items-center gap-3 border border-white/8 bg-white/[0.03] px-4 py-3 hover:border-[#e8003c]/30 transition-colors">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-widest text-[#7a8a2a]">{name}</p>
+                          <p className="text-sm font-semibold text-white">{unit}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
