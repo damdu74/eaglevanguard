@@ -275,11 +275,17 @@ function WW2Flag({ country }: { country: NationCode }) {
       </svg>
     ),
     de: (
-      // Reichsflagge (noir / blanc / rouge — sans croix gammée)
+      // Kriegsflagge — Reichsflagge + Balkenkreuz (croix de fer Wehrmacht)
       <svg viewBox="0 0 60 40" width="36" height="24" xmlns="http://www.w3.org/2000/svg" className="shrink-0 border border-white/10">
+        {/* Reichsflagge noir/blanc/rouge */}
         <rect width="60" height="40" fill="#000"/>
         <rect y="13.3" width="60" height="13.4" fill="#fff"/>
         <rect y="26.7" width="60" height="13.3" fill="#CC0000"/>
+        {/* Balkenkreuz — contour blanc puis bras noirs */}
+        <rect x="26.5" y="4"  width="7"  height="32" fill="#fff"/>
+        <rect x="9"    y="16.5" width="42" height="7"  fill="#fff"/>
+        <rect x="28"   y="4"  width="4"  height="32" fill="#1a1a1a"/>
+        <rect x="9"    y="18" width="42" height="4"  fill="#1a1a1a"/>
       </svg>
     ),
   }
