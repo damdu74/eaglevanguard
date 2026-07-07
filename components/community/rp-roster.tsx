@@ -14,7 +14,35 @@ import {
 } from "@/components/ui/dialog"
 import { Loader2, Plus, Trash2, Settings, Sword, Users, ChevronRight } from "lucide-react"
 import Link from "next/link"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+function GameSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const base = value.startsWith("arma3") ? "arma3" : "__none__"
+  const sub  = value === "arma3-principale" ? "arma3-principale"
+             : value === "arma3-secondaire"  ? "arma3-secondaire"
+             : "arma3"
+  return (
+    <div className="space-y-2">
+      <Select value={base} onValueChange={(v) => onChange(v === "__none__" ? "" : "arma3")}>
+        <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__none__">Aucun</SelectItem>
+          <SelectItem value="arma3">Arma 3</SelectItem>
+        </SelectContent>
+      </Select>
+      {base === "arma3" && (
+        <Select value={sub} onValueChange={onChange}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="arma3">Général</SelectItem>
+            <SelectItem value="arma3-principale">Trame Principale</SelectItem>
+            <SelectItem value="arma3-secondaire">Hors Série</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  )
+}
 
 
 interface RpUnit {
@@ -198,18 +226,7 @@ async function createUnit() {
             </div>
             <div className="space-y-1">
               <Label>Jeu <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-              <Select value={game || "__none__"} onValueChange={(v) => setGame(v === "__none__" ? "" : v)}>
-                <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Aucun</SelectItem>
-                  <SelectGroup>
-                    <SelectLabel>Arma 3</SelectLabel>
-                    <SelectItem value="arma3">Arma 3 — Général</SelectItem>
-                    <SelectItem value="arma3-principale">Arma 3 — Trame Principale</SelectItem>
-                    <SelectItem value="arma3-secondaire">Arma 3 — Hors Série</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <GameSelect value={game} onChange={setGame} />
             </div>
             <div className="space-y-1">
               <Label>Description <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
@@ -242,18 +259,7 @@ async function createUnit() {
             </div>
             <div className="space-y-1">
               <Label>Jeu <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-              <Select value={editGame || "__none__"} onValueChange={(v) => setEditGame(v === "__none__" ? "" : v)}>
-                <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Aucun</SelectItem>
-                  <SelectGroup>
-                    <SelectLabel>Arma 3</SelectLabel>
-                    <SelectItem value="arma3">Arma 3 — Général</SelectItem>
-                    <SelectItem value="arma3-principale">Arma 3 — Trame Principale</SelectItem>
-                    <SelectItem value="arma3-secondaire">Arma 3 — Hors Série</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <GameSelect value={editGame} onChange={setEditGame} />
             </div>
             <div className="space-y-1">
               <Label>Description <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
