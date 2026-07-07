@@ -1,11 +1,14 @@
+import React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
-const nations = [
+type NationCode = "us" | "uk" | "fr" | "de"
+
+const nations: { code: NationCode; nation: string; factions: { name: string; unit: string }[] }[] = [
   {
-    flag: "🇺🇸",
+    code: "us",
     nation: "États-Unis",
     factions: [
       { name: "US Army", unit: "1st Infantry Division" },
@@ -14,14 +17,14 @@ const nations = [
     ],
   },
   {
-    flag: "🇬🇧",
+    code: "uk",
     nation: "Royaume-Uni",
     factions: [
       { name: "UK Army", unit: "3rd Infantry Division" },
     ],
   },
   {
-    flag: "🇫🇷",
+    code: "fr",
     nation: "France",
     factions: [
       { name: "FFI", unit: "L'Aube Liberté" },
@@ -30,7 +33,7 @@ const nations = [
     ],
   },
   {
-    flag: "🇩🇪",
+    code: "de",
     nation: "Allemagne",
     factions: [
       { name: "Wehrmacht", unit: "716. Infanterie‑Division" },
@@ -137,10 +140,10 @@ export default async function HomePage() {
               <p className="text-sm text-white/60">Pour rendre cette expérience encore plus immersive, créez des personnages uniques que vous incarnerez dans chaque armée.</p>
             </div>
             <div className="space-y-6">
-              {nations.map(({ flag, nation, factions }) => (
+              {nations.map(({ code, nation, factions }) => (
                 <div key={nation}>
-                  <div className="mb-3 flex items-center gap-2">
-                    <span className="text-lg">{flag}</span>
+                  <div className="mb-3 flex items-center gap-3">
+                    <WW2Flag country={code} />
                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50">{nation}</span>
                     <div className="h-px flex-1 bg-white/5" />
                   </div>
@@ -225,6 +228,58 @@ export default async function HomePage() {
 
     </div>
   )
+}
+
+function WW2Flag({ country }: { country: NationCode }) {
+  const flags: Record<NationCode, React.ReactNode> = {
+    us: (
+      // US 48-star flag (1912–1959)
+      <svg viewBox="0 0 60 40" width="36" height="24" xmlns="http://www.w3.org/2000/svg" className="shrink-0 border border-white/10">
+        <rect width="60" height="40" fill="#B22234"/>
+        {[1,2,3,4,5,6].map(i => (
+          <rect key={i} y={i * 6.15 - 3.07} width="60" height="3.07" fill="#fff"/>
+        ))}
+        <rect width="24" height="21.5" fill="#3C3B6E"/>
+        {/* simplified stars grid */}
+        {Array.from({ length: 6 }, (_, row) =>
+          Array.from({ length: row % 2 === 0 ? 8 : 7 }, (_, col) => (
+            <circle key={`${row}-${col}`}
+              cx={row % 2 === 0 ? 1.5 + col * 3 : 3 + col * 3}
+              cy={1.8 + row * 3.5}
+              r="0.7" fill="#fff"
+            />
+          ))
+        )}
+      </svg>
+    ),
+    uk: (
+      // Union Jack
+      <svg viewBox="0 0 60 40" width="36" height="24" xmlns="http://www.w3.org/2000/svg" className="shrink-0 border border-white/10">
+        <rect width="60" height="40" fill="#012169"/>
+        <path d="M0,0 L60,40 M60,0 L0,40" stroke="#fff" strokeWidth="9"/>
+        <path d="M0,0 L60,40 M60,0 L0,40" stroke="#C8102E" strokeWidth="5"/>
+        <path d="M30,0 V40 M0,20 H60" stroke="#fff" strokeWidth="13"/>
+        <path d="M30,0 V40 M0,20 H60" stroke="#C8102E" strokeWidth="9"/>
+      </svg>
+    ),
+    fr: (
+      // Drapeau français / Free French tricolor
+      <svg viewBox="0 0 60 40" width="36" height="24" xmlns="http://www.w3.org/2000/svg" className="shrink-0 border border-white/10">
+        <rect width="20" height="40" fill="#002395"/>
+        <rect x="20" width="20" height="40" fill="#fff"/>
+        <rect x="40" width="20" height="40" fill="#ED2939"/>
+      </svg>
+    ),
+    de: (
+      // Reichsflagge (noir / blanc / rouge — sans croix gammée)
+      <svg viewBox="0 0 60 40" width="36" height="24" xmlns="http://www.w3.org/2000/svg" className="shrink-0 border border-white/10">
+        <rect width="60" height="40" fill="#000"/>
+        <rect y="13.3" width="60" height="13.4" fill="#fff"/>
+        <rect y="26.7" width="60" height="13.3" fill="#CC0000"/>
+      </svg>
+    ),
+  }
+  return <>{flags[country]}</>
 }
 
 function SectionLabel({ label, center }: { label: string; center?: boolean }) {
